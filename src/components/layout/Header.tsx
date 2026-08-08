@@ -1,0 +1,272 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, Sparkles } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
+
+export default function Header() {
+  const { toggleCart, totalCount } = useCart();
+  const { wishlistCount } = useWishlist();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <>
+      {/* Top Announcement Bar */}
+      <div className="bg-[#242321] text-[#F8F5EF] text-[11px] font-medium py-2 px-4 text-center tracking-widest uppercase flex items-center justify-center gap-3 border-b border-[#B49A6A]/20">
+        <Sparkles className="w-3 h-3 text-[#B49A6A]" />
+        <span>Tüm Türkiye'ye ₺1.500 Üzeri Ücretsiz Kargo &amp; Özel Hediye Kutusu</span>
+        <span className="hidden md:inline-block text-[#B49A6A]">|</span>
+        <span className="hidden md:inline-block">%100 Saf İpek &amp; El İşçiliği Kenar Garantisi</span>
+      </div>
+
+      {/* Main Header */}
+      <header
+        className={`sticky top-0 z-40 bg-[#F8F5EF]/95 backdrop-blur-md transition-all duration-300 border-b ${
+          isScrolled ? 'border-[#E6DFD5] shadow-sm py-3' : 'border-transparent py-5'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            {/* Mobile Menu Trigger */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden text-[#242321] hover:text-[#B49A6A] transition-colors p-1"
+              aria-label="Menüyü Aç"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+
+            {/* Logo */}
+            <div className="flex-1 lg:flex-initial text-center lg:text-left">
+              <Link href="/" className="inline-block">
+                <span className="font-serif text-2xl sm:text-3xl tracking-[0.25em] text-[#242321] font-semibold uppercase">
+                  VERA
+                </span>
+                <span className="block text-[9px] tracking-[0.4em] text-[#B49A6A] font-sans uppercase -mt-1 font-medium">
+                  E Ş A R P
+                </span>
+              </Link>
+            </div>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-widest font-medium text-[#242321]">
+              <Link href="/kategori/yeni-gelenler" className="hover:text-[#B49A6A] transition-colors py-1">
+                Yeni Gelenler
+              </Link>
+              
+              {/* Eşarp Dropdown Trigger */}
+              <div className="relative group py-1">
+                <Link href="/kategori/esarp" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1">
+                  <span>Eşarp</span>
+                  <ChevronDown className="w-3 h-3 text-[#8C857B] group-hover:rotate-180 transition-transform" />
+                </Link>
+                {/* Mega Menu Dropdown */}
+                <div className="absolute top-full left-0 w-64 bg-[#F8F5EF] border border-[#E6DFD5] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-4 space-y-3 z-50">
+                  <Link href="/kategori/esarp?fabric=ipek" className="block text-xs text-[#5A5652] hover:text-[#B49A6A] transition-colors">
+                     Saf Twill İpek Eşarp
+                  </Link>
+                  <Link href="/kategori/esarp?fabric=saten" className="block text-xs text-[#5A5652] hover:text-[#B49A6A] transition-colors">
+                     Parlak Saten Eşarp
+                  </Link>
+                  <Link href="/kategori/esarp?styleCategory=ofis" className="block text-xs text-[#5A5652] hover:text-[#B49A6A] transition-colors">
+                     Ofis &amp; İş Stili
+                  </Link>
+                  <Link href="/kategori/esarp?styleCategory=ozel-gun" className="block text-xs text-[#5A5652] hover:text-[#B49A6A] transition-colors">
+                     Özel Gün &amp; Davet
+                  </Link>
+                </div>
+              </div>
+
+              {/* Şal Dropdown */}
+              <div className="relative group py-1">
+                <Link href="/kategori/sal" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1">
+                  <span>Şal</span>
+                  <ChevronDown className="w-3 h-3 text-[#8C857B] group-hover:rotate-180 transition-transform" />
+                </Link>
+                <div className="absolute top-full left-0 w-64 bg-[#F8F5EF] border border-[#E6DFD5] shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 p-4 space-y-3 z-50">
+                  <Link href="/kategori/sal?fabric=medine-ipegi" className="block text-xs text-[#5A5652] hover:text-[#B49A6A] transition-colors">
+                     Medine İpeği Şal
+                  </Link>
+                  <Link href="/kategori/sal?fabric=pamuk" className="block text-xs text-[#5A5652] hover:text-[#B49A6A] transition-colors">
+                     Bambu &amp; Organik Pamuk
+                  </Link>
+                </div>
+              </div>
+
+              <Link href="/kategori/aksesuar" className="hover:text-[#B49A6A] transition-colors py-1">
+                Aksesuar
+              </Link>
+              <Link href="/koleksiyonlar" className="hover:text-[#B49A6A] transition-colors py-1">
+                Koleksiyonlar
+              </Link>
+              <Link href="/stil-rehberi" className="hover:text-[#B49A6A] transition-colors py-1">
+                Stil Rehberi
+              </Link>
+              <Link href="/kategori/kampanyalar" className="hover:text-[#B49A6A] transition-colors py-1 text-[#B49A6A]">
+                Kampanyalar
+              </Link>
+            </nav>
+
+            {/* Right Action Icons */}
+            <div className="flex items-center space-x-4 sm:space-x-5 text-[#242321]">
+              {/* Search Toggle */}
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="hover:text-[#B49A6A] transition-colors p-1"
+                aria-label="Arama Yap"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              {/* Wishlist Icon */}
+              <Link href="/favorilerim" className="relative hover:text-[#B49A6A] transition-colors p-1" aria-label="Favorilerim">
+                <Heart className="w-5 h-5" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#B49A6A] text-[#F8F5EF] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Account Link */}
+              <Link href="/hesabim" className="hidden sm:block hover:text-[#B49A6A] transition-colors p-1" aria-label="Hesabım">
+                <User className="w-5 h-5" />
+              </Link>
+
+              {/* Cart Drawer Trigger */}
+              <button
+                onClick={toggleCart}
+                className="relative hover:text-[#B49A6A] transition-colors p-1 flex items-center gap-1.5"
+                aria-label="Sepeti Aç"
+              >
+                <ShoppingBag className="w-5 h-5" />
+                {totalCount > 0 && (
+                  <span className="bg-[#242321] text-[#F8F5EF] text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                    {totalCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Expandable Live Search Bar */}
+          {isSearchOpen && (
+            <div className="mt-4 pt-4 border-t border-[#E6DFD5] transition-all">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchQuery.trim()) {
+                    window.location.href = `/arama?q=${encodeURIComponent(searchQuery)}`;
+                  }
+                }}
+                className="relative max-w-2xl mx-auto"
+              >
+                <input
+                  type="text"
+                  placeholder="İpek eşarp, Medine ipeği şal, altın broş ara..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#FFFFFF] border border-[#E6DFD5] py-3 px-5 pr-12 text-sm text-[#242321] placeholder-[#8C857B] focus:outline-none focus:border-[#B49A6A]"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#242321] hover:text-[#B49A6A] p-2"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile Drawer Menu */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="fixed inset-0 bg-[#242321]/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-[#F8F5EF] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
+            <div>
+              <div className="flex items-center justify-between pb-6 border-b border-[#E6DFD5]">
+                <span className="font-serif text-xl font-semibold tracking-widest">VERA EŞARP</span>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-[#242321]">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="py-6 space-y-4 text-sm font-medium uppercase tracking-wider text-[#242321]">
+                <Link
+                  href="/kategori/yeni-gelenler"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 hover:text-[#B49A6A]"
+                >
+                  Yeni Gelenler
+                </Link>
+                <Link
+                  href="/kategori/esarp"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 hover:text-[#B49A6A]"
+                >
+                  Eşarp Koleksiyonu
+                </Link>
+                <Link
+                  href="/kategori/sal"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 hover:text-[#B49A6A]"
+                >
+                  Şal Koleksiyonu
+                </Link>
+                <Link
+                  href="/kategori/aksesuar"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 hover:text-[#B49A6A]"
+                >
+                  Aksesuar
+                </Link>
+                <Link
+                  href="/koleksiyonlar"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 hover:text-[#B49A6A]"
+                >
+                  Koleksiyonlar
+                </Link>
+                <Link
+                  href="/stil-rehberi"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 hover:text-[#B49A6A]"
+                >
+                  Stil Rehberi &amp; Blog
+                </Link>
+                <Link
+                  href="/admin"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block py-2 text-[#B49A6A] font-bold"
+                >
+                  Admin Paneli
+                </Link>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-[#E6DFD5] space-y-3 text-xs text-[#5A5652]">
+              <p>Müşteri Hizmetleri: <strong>+90 (212) 555 83 72</strong></p>
+              <p>Hafta içi 09:00 - 18:00</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

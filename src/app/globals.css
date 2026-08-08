@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #F8F5EF;
+    --bg-secondary: #E8DED1;
+    --bg-surface: #FFFFFF;
+    --text-primary: #242321;
+    --text-secondary: #5A5652;
+    --text-muted: #8C857B;
+    --accent-gold: #B49A6A;
+    --accent-gold-hover: #988052;
+    --accent-rose: #C8A9A5;
+    --border-light: #E6DFD5;
+    --border-dark: #242321;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-manrope), sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-serif {
+    font-family: var(--font-cormorant), serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F8F5EF;
+}
+::-webkit-scrollbar-thumb {
+  background: #C8BBAA;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B49A6A;
+}
+
+/* Editorial Glass & Transitions */
+.editorial-hover {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+.editorial-hover:hover {
+  transform: scale(1.03);
+}
+
+.hotspot-pulse {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(180, 154, 106, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(180, 154, 106, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(180, 154, 106, 0);
+  }
+}

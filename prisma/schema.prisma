@@ -1,0 +1,80 @@
+// Prisma Schema for VERA EŞARP E-Commerce Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  sku              String   @unique
+  description      String
+  shortDescription String?
+  price            Float
+  compareAtPrice   Float?
+  currency         String   @default("TRY")
+  stock            Int      @default(0)
+  rating           Float    @default(5.0)
+  reviewCount      Int      @default(0)
+  category         String
+  subcategory      String?
+  fabric           String
+  styleCategory    String
+  collection       String?
+  colors           Json     // [{ name, hex, image }]
+  sizes            Json     // ["90x90 cm"]
+  images           Json     // ["url1", "url2"]
+  badges           Json?    // ["Yeni", "Çok Satan"]
+  features         Json?    // ["%100 Saf İpek"]
+  careInstructions String?
+  dimensions       String?
+  isNew            Boolean  @default(true)
+  isBestseller     Boolean  @default(false)
+  isFeatured       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  image       String?
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  orderNumber   String   @unique
+  customerName  String
+  email         String
+  phone         String
+  address       Json
+  items         Json
+  subtotal      Float
+  shipping      Float
+  discount      Float
+  total         Float
+  status        String   @default("Hazırlanıyor")
+  paymentMethod String   @default("İyzico Kredi Kartı")
+  createdAt     DateTime @default(now())
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String
+  coverImage  String
+  author      String
+  category    String
+  publishedAt DateTime @default(now())
+}
