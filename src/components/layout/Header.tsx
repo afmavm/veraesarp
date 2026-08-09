@@ -50,7 +50,7 @@ export default function Header() {
           isScrolled ? 'border-[#E6DFD5] shadow-sm py-3' : 'border-transparent py-5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Mobile Menu Trigger */}
             <button
@@ -61,8 +61,8 @@ export default function Header() {
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
-            {/* Logo */}
-            <div className="flex-1 lg:flex-initial text-center lg:text-left">
+            {/* Logo (Fixed Isolated Left) */}
+            <div className="shrink-0 mr-4 lg:mr-6 xl:mr-10 text-center lg:text-left">
               <Link href="/" className="inline-block">
                 <span className="font-serif text-2xl sm:text-3xl tracking-[0.25em] text-[#242321] font-semibold uppercase">
                   VERA
@@ -73,14 +73,14 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-widest font-medium text-[#242321]">
-              <Link href="/kategori/yeni-gelenler" className="hover:text-[#B49A6A] transition-colors py-1">
+            {/* Desktop Navigation Links (Centered & Spaced Safely) */}
+            <nav className="hidden lg:flex items-center justify-center gap-3 xl:gap-5 2xl:gap-7 text-[11px] xl:text-xs uppercase tracking-wider font-semibold text-[#242321] shrink whitespace-nowrap">
+              <Link href="/kategori/yeni-gelenler" className="hover:text-[#B49A6A] transition-colors py-1 shrink-0">
                 Yeni Gelenler
               </Link>
               
               {/* Eşarp Dropdown Trigger */}
-              <div className="relative group py-1">
+              <div className="relative group py-1 shrink-0">
                 <Link href="/kategori/esarp" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1">
                   <span>Eşarp</span>
                   <ChevronDown className="w-3 h-3 text-[#8C857B] group-hover:rotate-180 transition-transform" />
@@ -103,7 +103,7 @@ export default function Header() {
               </div>
 
               {/* Şal Dropdown */}
-              <div className="relative group py-1">
+              <div className="relative group py-1 shrink-0">
                 <Link href="/kategori/sal" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1">
                   <span>Şal</span>
                   <ChevronDown className="w-3 h-3 text-[#8C857B] group-hover:rotate-180 transition-transform" />
@@ -118,25 +118,25 @@ export default function Header() {
                 </div>
               </div>
 
-              <Link href="/kategori/aksesuar" className="hover:text-[#B49A6A] transition-colors py-1">
+              <Link href="/kategori/aksesuar" className="hover:text-[#B49A6A] transition-colors py-1 shrink-0">
                 Aksesuar
               </Link>
-              <Link href="/koleksiyonlar" className="hover:text-[#B49A6A] transition-colors py-1">
+              <Link href="/koleksiyonlar" className="hover:text-[#B49A6A] transition-colors py-1 shrink-0">
                 Koleksiyonlar
               </Link>
-              <Link href="/stil-rehberi" className="hover:text-[#B49A6A] transition-colors py-1">
+              <Link href="/stil-rehberi" className="hover:text-[#B49A6A] transition-colors py-1 shrink-0">
                 Stil Rehberi
               </Link>
-              <Link href="/kargo-takip" className="hover:text-[#B49A6A] transition-colors py-1">
+              <Link href="/kargo-takip" className="hover:text-[#B49A6A] transition-colors py-1 shrink-0">
                 Kargo Takip
               </Link>
-              <Link href="/kategori/kampanyalar" className="hover:text-[#B49A6A] transition-colors py-1 text-[#B49A6A]">
+              <Link href="/kategori/kampanyalar" className="hover:text-[#B49A6A] transition-colors py-1 text-[#B49A6A] font-bold shrink-0">
                 Kampanyalar
               </Link>
             </nav>
 
-            {/* Right Action Icons */}
-            <div className="flex items-center space-x-4 sm:space-x-5 text-[#242321]">
+            {/* Right Action Icons (Fixed Isolated Right) */}
+            <div className="shrink-0 ml-4 lg:ml-6 xl:ml-10 flex items-center space-x-3 sm:space-x-4 text-[#242321]">
               {/* Search Toggle */}
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
