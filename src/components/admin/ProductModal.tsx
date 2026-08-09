@@ -43,6 +43,13 @@ const DEFAULT_FABRICS = [
   { name: 'Krep & Şifon', slug: 'krep' },
 ];
 
+const DEFAULT_STYLES = [
+  { name: 'Ofis & İş Hayatı', slug: 'ofis' },
+  { name: 'Günlük Şıklık', slug: 'gunluk' },
+  { name: 'Gece & Davet', slug: 'davet' },
+  { name: 'Özel Gün & Düğün', slug: 'ozel-gun' },
+];
+
 export default function ProductModal({
   isOpen,
   onClose,
@@ -54,12 +61,15 @@ export default function ProductModal({
   // Dynamic Categories & Fabrics
   const [categoriesList, setCategoriesList] = useState(DEFAULT_CATEGORIES);
   const [fabricsList, setFabricsList] = useState(DEFAULT_FABRICS);
+  const [stylesList, setStylesList] = useState(DEFAULT_STYLES);
   const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [isFabricManagerOpen, setIsFabricManagerOpen] = useState(false);
+  const [isStyleManagerOpen, setIsStyleManagerOpen] = useState(false);
 
-  // New Category / Fabric inputs
+  // New Category / Fabric / Style inputs
   const [newCatName, setNewCatName] = useState('');
   const [newFabricName, setNewFabricName] = useState('');
+  const [newStyleName, setNewStyleName] = useState('');
 
   // Auto-slug tracking
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
@@ -122,6 +132,9 @@ export default function ProductModal({
 
       const savedFabrics = localStorage.getItem('veraesarp_custom_fabrics');
       if (savedFabrics) setFabricsList(JSON.parse(savedFabrics));
+
+      const savedStyles = localStorage.getItem('veraesarp_custom_styles');
+      if (savedStyles) setStylesList(JSON.parse(savedStyles));
     } catch (e) {
       console.error('Failed to load custom categories/fabrics', e);
     }
@@ -237,6 +250,23 @@ export default function ProductModal({
     setFabricsList(updated);
     localStorage.setItem('veraesarp_custom_fabrics', JSON.stringify(updated));
     showToast('Kumaş türü silindi.', 'info');
+  };
+
+  const handleAddStyle = () => {
+    if (!newStyleName.trim()) return;
+    const newSlug = slugifyTurkish(newStyleName);
+    const updated = [...stylesList, { name: newStyleName.trim(), slug: newSlug }];
+    setStylesList(updated);
+    localStorage.setItem('veraesarp_custom_styles', JSON.stringify(updated));
+    setNewStyleName('');
+    showToast(`"${newStyleName}" kullanım stili eklendi!`, 'success');
+  };
+
+  const handleDeleteStyle = (slug: string) => {
+    const updated = stylesList.filter((s) => s.slug !== slug);
+    setStylesList(updated);
+    localStorage.setItem('veraesarp_custom_styles', JSON.stringify(updated));
+    showToast('Kullanım stili silindi.', 'info');
   };
 
   // IMAGE REORDERING & UPLOAD HANDLERS
@@ -769,6 +799,32 @@ export default function ProductModal({
                   ))}
                 </select>
               </div>
+
+              {/* DYNAMIC STYLE SELECT WITH INLINE CRUD */}
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[#8C857B]">Kullanım Stili *</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsStyleManagerOpen(true)}
+                    className="text-[10px] text-[#B49A6A] hover:underline flex items-center gap-0.5"
+                  >
+                    <Settings2 className="w-3 h-3" />
+                    <span>Yönet</span>
+                  </button>
+                </div>
+                <select
+                  value={formData.styleCategory}
+                  onChange={(e) => setFormData({ ...formData, styleCategory: e.target.value })}
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                >
+                  {stylesList.map((s) => (
+                    <option key={s.slug} value={s.slug}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1250,6 +1306,52 @@ export default function ProductModal({
 
             <div className="flex justify-end pt-2">
               <button onClick={() => setIsFabricManagerOpen(false)} className="px-4 py-2 bg-[#3A3835] text-xs uppercase">
+                Tamam
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* MODAL 3: KULLANIM STİLİ YÖNETİCİSİ */}
+      {isStyleManagerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 max-w-md w-full text-[#F8F5EF] space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-[#2A2825]">
+              <h3 className="font-serif text-lg">Kullanım Stili Ekle / Sil / Yönet</h3>
+              <button onClick={() => setIsStyleManagerOpen(false)} className="text-[#8C857B] hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Yeni Kullanım Stili (ör: Spor & Rahat)"
+                value={newStyleName}
+                onChange={(e) => setNewStyleName(e.target.value)}
+                className="flex-1 p-2 bg-[#242321] border border-[#3A3835] text-xs"
+              />
+              <button onClick={handleAddStyle} className="px-4 py-2 bg-[#B49A6A] text-xs font-semibold uppercase">
+                Ekle
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {stylesList.map((s) => (
+                <div key={s.slug} className="flex justify-between items-center p-2.5 bg-[#242321] border border-[#3A3835] text-xs">
+                  <div>
+                    <span className="font-semibold text-white">{s.name}</span>
+                    <span className="block text-[10px] text-[#8C857B] font-mono">slug: {s.slug}</span>
+                  </div>
+                  <button onClick={() => handleDeleteStyle(s.slug)} className="text-rose-400 hover:text-rose-300 p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button onClick={() => setIsStyleManagerOpen(false)} className="px-4 py-2 bg-[#3A3835] text-xs uppercase">
                 Tamam
               </button>
             </div>

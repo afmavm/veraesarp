@@ -107,6 +107,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           const savedProducts = localStorage.getItem('veraesarp_products');
           if (savedProducts) setProducts(JSON.parse(savedProducts));
+
+          const savedOrders = localStorage.getItem('veraesarp_orders');
+          if (savedOrders) setOrders(JSON.parse(savedOrders));
+
+          const savedCari = localStorage.getItem('veraesarp_cari');
+          if (savedCari) setCariAccounts(JSON.parse(savedCari));
+
+          const savedCampaigns = localStorage.getItem('veraesarp_campaigns');
+          if (savedCampaigns) setCampaigns(JSON.parse(savedCampaigns));
+
+          const savedCoupons = localStorage.getItem('veraesarp_coupons');
+          if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
         } catch (err) {
           console.error(err);
         }

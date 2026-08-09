@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, use } from 'react';
+import React, { useState, useMemo, use, useEffect } from 'react';
 import Link from 'next/link';
 import { SlidersHorizontal, ChevronRight, X, Sparkles, Filter } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
@@ -16,6 +16,39 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const categorySlug = resolvedParams.category;
 
   const { products } = useData();
+
+  const DEFAULT_FABRIC_OPTS = [
+    { id: 'twill', label: 'Twill İpek' },
+    { id: 'saten', label: 'Saten İpek' },
+    { id: 'ipek', label: 'Saf İpek' },
+    { id: 'medine-ipegi', label: 'Medine İpeği' },
+    { id: 'pamuk', label: 'Pamuk & Bambu' },
+    { id: 'krep', label: 'Krep & Şifon' },
+  ];
+  const DEFAULT_STYLE_OPTS = [
+    { id: 'ofis', label: 'Ofis & İş Hayatı' },
+    { id: 'gunluk', label: 'Günlük Şıklık' },
+    { id: 'davet', label: 'Gece & Davet' },
+    { id: 'ozel-gun', label: 'Özel Gün & Düğün' },
+  ];
+
+  const [fabricFilterOptions, setFabricFilterOptions] = useState(DEFAULT_FABRIC_OPTS);
+  const [styleFilterOptions, setStyleFilterOptions] = useState(DEFAULT_STYLE_OPTS);
+
+  useEffect(() => {
+    try {
+      const savedFabrics = localStorage.getItem('veraesarp_custom_fabrics');
+      if (savedFabrics) {
+        const parsed = JSON.parse(savedFabrics) as { name: string; slug: string }[];
+        setFabricFilterOptions(parsed.map((f) => ({ id: f.slug, label: f.name })));
+      }
+      const savedStyles = localStorage.getItem('veraesarp_custom_styles');
+      if (savedStyles) {
+        const parsed = JSON.parse(savedStyles) as { name: string; slug: string }[];
+        setStyleFilterOptions(parsed.map((s) => ({ id: s.slug, label: s.name })));
+      }
+    } catch {}
+  }, []);
 
   // Filters State
   const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
@@ -176,13 +209,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             <div className="space-y-3">
               <h4 className="font-serif text-lg font-normal text-[#242321]">Kumaş Türü</h4>
               <div className="space-y-2 text-xs">
-                {[
-                  { id: 'twill', label: 'Twill İpek' },
-                  { id: 'saten', label: 'Saten İpek' },
-                  { id: 'ipek', label: 'Saf İpek' },
-                  { id: 'medine-ipegi', label: 'Medine İpeği' },
-                  { id: 'pamuk', label: 'Pamuk & Bambu' },
-                ].map((f) => (
+                {fabricFilterOptions.map((f) => (
                   <label key={f.id} className="flex items-center gap-2 cursor-pointer text-[#5A5652] hover:text-[#242321]">
                     <input
                       type="checkbox"
@@ -200,12 +227,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             <div className="space-y-3">
               <h4 className="font-serif text-lg font-normal text-[#242321]">Kullanım Stili</h4>
               <div className="space-y-2 text-xs">
-                {[
-                  { id: 'ofis', label: 'Ofis & İş Hayatı' },
-                  { id: 'gunluk', label: 'Günlük Şıklık' },
-                  { id: 'davet', label: 'Gece & Davet' },
-                  { id: 'ozel-gun', label: 'Özel Gün & Düğün' },
-                ].map((s) => (
+                {styleFilterOptions.map((s) => (
                   <label key={s.id} className="flex items-center gap-2 cursor-pointer text-[#5A5652] hover:text-[#242321]">
                     <input
                       type="checkbox"

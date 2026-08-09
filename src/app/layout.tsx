@@ -6,11 +6,7 @@ import { WishlistProvider } from '@/context/WishlistContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { DataProvider } from '@/context/DataContext';
 import { AuthProvider } from '@/context/AuthContext';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import MobileNav from '@/components/layout/MobileNav';
-import CartDrawer from '@/components/cart/CartDrawer';
-import WhatsAppFloatingButton from '@/components/ui/WhatsAppFloatingButton';
+import StoreLayoutWrapper from '@/components/layout/StoreLayoutWrapper';
 import { SITE_CONFIG } from '@/lib/data/mock-data';
 
 const cormorant = Cormorant_Garamond({
@@ -67,12 +63,7 @@ export default function RootLayout({
             <ToastProvider>
               <WishlistProvider>
                 <CartProvider>
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                  <CartDrawer />
-                  <MobileNav />
-                  <WhatsAppFloatingButton />
+                  <StoreLayoutWrapper>{children}</StoreLayoutWrapper>
                 </CartProvider>
               </WishlistProvider>
             </ToastProvider>

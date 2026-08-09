@@ -320,7 +320,64 @@
       "createdAt": "2026-08-02"
     }
   ],
-  "orders": [],
+  "orders": [
+    {
+      "id": "ord-1786306574787",
+      "orderNumber": "VER-752515",
+      "customerName": "Muhammed Danışmanı",
+      "email": "afmavm@gmail.com",
+      "phone": "05555555555",
+      "address": {
+        "fullAddress": "deneme",
+        "district": "Yakutiye",
+        "city": "Erzurum"
+      },
+      "items": [
+        {
+          "productName": "Vera Milano Twill İpek Eşarp — Krem & Altın",
+          "color": "Krem & Altın",
+          "quantity": 1,
+          "price": 1890,
+          "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop"
+        }
+      ],
+      "subtotal": 1890,
+      "shipping": 0,
+      "discount": 0,
+      "total": 1890,
+      "status": "Hazırlanıyor",
+      "paymentMethod": "Kredi Kartı",
+      "createdAt": "2026-08-09"
+    },
+    {
+      "id": "ord-1786306252331",
+      "orderNumber": "VER-448922",
+      "customerName": "Muhammed Danışmanı",
+      "email": "afmavm@gmail.com",
+      "phone": "05555555555",
+      "address": {
+        "fullAddress": "dddd",
+        "district": "Yakutiye",
+        "city": "Erzurum"
+      },
+      "items": [
+        {
+          "productName": "Vera Milano Twill İpek Eşarp — Krem & Altın",
+          "color": "Krem & Altın",
+          "quantity": 1,
+          "price": 1890,
+          "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop"
+        }
+      ],
+      "subtotal": 1890,
+      "shipping": 0,
+      "discount": 0,
+      "total": 1890,
+      "status": "Hazırlanıyor",
+      "paymentMethod": "Kredi Kartı",
+      "createdAt": "2026-08-09"
+    }
+  ],
   "cariAccounts": [
     {
       "id": "cari-usr-1786302079915",
@@ -329,7 +386,7 @@
       "taxOffice": "Bireysel Müşteri",
       "taxNumber": "-",
       "type": "Müşteri",
-      "balance": 0,
+      "balance": 3780,
       "balanceType": "Alacaklı",
       "phone": "05441494851",
       "email": "afmavm@gmail.com",
@@ -384,6 +441,46 @@
     }
   ],
   "cariTransactions": [
+    {
+      "id": "ctx-1786306574789",
+      "cariId": "cari-usr-1786302079915",
+      "date": "2026-08-09",
+      "documentNo": "VER-752515",
+      "description": "E-Ticaret Sipariş Satış Faturası (Kredi Kartı)",
+      "type": "Satış Faturası",
+      "amount": 1890,
+      "isDebt": false
+    },
+    {
+      "id": "ctx-1786306574789",
+      "cariId": "cari-usr-1786302079915",
+      "date": "2026-08-09",
+      "documentNo": "VER-752515",
+      "description": "E-Ticaret Sipariş Satış Faturası (Kredi Kartı)",
+      "type": "Satış Faturası",
+      "amount": 1890,
+      "isDebt": false
+    },
+    {
+      "id": "ctx-1786306252333",
+      "cariId": "cari-usr-1786302079915",
+      "date": "2026-08-09",
+      "documentNo": "VER-448922",
+      "description": "E-Ticaret Sipariş Satış Faturası (Kredi Kartı)",
+      "type": "Satış Faturası",
+      "amount": 1890,
+      "isDebt": false
+    },
+    {
+      "id": "ctx-1786306252333",
+      "cariId": "cari-usr-1786302079915",
+      "date": "2026-08-09",
+      "documentNo": "VER-448922",
+      "description": "E-Ticaret Sipariş Satış Faturası (Kredi Kartı)",
+      "type": "Satış Faturası",
+      "amount": 1890,
+      "isDebt": false
+    },
     {
       "id": "ctx-1",
       "cariId": "cari-101",
@@ -465,5 +562,5 @@
       "status": "Aktif"
     }
   ],
-  "updatedAt": "2026-08-09T19:46:30.377Z"
+  "updatedAt": "2026-08-09T21:20:49.204Z"
 }

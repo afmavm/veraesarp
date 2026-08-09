@@ -280,6 +280,12 @@ export interface EmailServerSettings {
   apiKey?: string;
 }
 
+// FİLTRE SEÇENEĞİ (Kategori Sayfası Yan Filtreler İçin)
+export interface FilterOption {
+  id: string;    // Ürün eşleştirmede kullanılan teknik değer (ör: twill, ofis)
+  label: string; // Ziyaretçiye gösterilen yazı (ör: Twill İpek)
+}
+
 // SİTE & MARKA AYARLARI (Footer, İletişim & Kurumsal Bilgiler)
 export interface SiteSettings {
   name: string;
@@ -297,4 +303,7 @@ export interface SiteSettings {
   taxNumber?: string;
   footerColumns?: FooterColumn[];
   emailSettings?: EmailServerSettings;
+  // Kategori sayfası filtre yönetimi
+  fabricFilters?: FilterOption[];   // Kumaş Türü filtre seçenekleri
+  styleFilters?: FilterOption[];    // Kullanım Stili filtre seçenekleri
 }

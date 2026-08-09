@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Truck, RotateCcw, Award, Mail } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, Award, Mail, Phone, MapPin, Copy, Check, ExternalLink } from 'lucide-react';
 import { InstagramIcon, TikTokIcon, PinterestIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/Icons';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
@@ -12,11 +12,21 @@ export default function Footer() {
   const { siteSettings } = useData();
   const { showToast } = useToast();
   const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const cleanPhone = (siteSettings.whatsappPhone || '+905344902557').replace(/[^0-9]/g, '');
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
     'Merhaba Vera Eşarp, ürünleriniz ve yeni sezon koleksiyonunuz hakkında bilgi almak istiyorum.'
   )}`;
+
+  const handleCopy = (text: string, label: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(label);
+      showToast(`📋 ${label} panoya kopyalandı!`, 'success');
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  };
 
   const handleNewsletterSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,11 +95,81 @@ export default function Footer() {
             <p className="text-xs text-[#8C857B] leading-relaxed max-w-sm">
               {siteSettings.tagline}
             </p>
-            <div className="text-xs text-[#8C857B] space-y-1.5 pt-2">
-              <p><strong className="text-[#E8DED1]">Müşteri Destek:</strong> {siteSettings.contactPhone}</p>
-              <p><strong className="text-[#E8DED1]">E-Posta:</strong> {siteSettings.contactEmail}</p>
-              <p><strong className="text-[#E8DED1]">Adres:</strong> {siteSettings.address}</p>
+            <div className="text-xs text-[#8C857B] space-y-2 pt-2">
+
+              {/* Telefon — Tıkla & Ara */}
+              <div className="group flex items-center justify-between gap-2">
+                <a
+                  href={`tel:${siteSettings.contactPhone.replace(/[^0-9+]/g, '')}`}
+                  className="flex items-center gap-2 hover:text-[#B49A6A] transition-colors"
+                  title="Tıklayın, hemen arayın"
+                >
+                  <Phone className="w-3.5 h-3.5 text-[#B49A6A] shrink-0" />
+                  <span>
+                    <strong className="text-[#E8DED1]">Müşteri Destek:</strong>{' '}
+                    <span className="group-hover:underline">{siteSettings.contactPhone}</span>
+                  </span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(siteSettings.contactPhone, 'Telefon numarası')}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-[#B49A6A]"
+                  title="Kopyala"
+                >
+                  {copiedField === 'Telefon numarası' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+
+              {/* E-Posta — Tıkla & Mail Gönder */}
+              <div className="group flex items-center justify-between gap-2">
+                <a
+                  href={`mailto:${siteSettings.contactEmail}`}
+                  className="flex items-center gap-2 hover:text-[#B49A6A] transition-colors"
+                  title="Tıklayın, e-posta gönderin"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#B49A6A] shrink-0" />
+                  <span>
+                    <strong className="text-[#E8DED1]">E-Posta:</strong>{' '}
+                    <span className="group-hover:underline">{siteSettings.contactEmail}</span>
+                  </span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(siteSettings.contactEmail, 'E-posta adresi')}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-[#B49A6A]"
+                  title="Kopyala"
+                >
+                  {copiedField === 'E-posta adresi' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+
+              {/* Adres — Tıkla & Google Maps */}
+              <div className="group flex items-center justify-between gap-2">
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(siteSettings.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-2 hover:text-[#B49A6A] transition-colors"
+                  title="Google Harita'da göster"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-[#B49A6A] shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-[#E8DED1]">Adres:</strong>{' '}
+                    <span className="group-hover:underline">{siteSettings.address}</span>
+                  </span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(siteSettings.address, 'Adres')}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-[#B49A6A] shrink-0"
+                  title="Kopyala"
+                >
+                  {copiedField === 'Adres' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+
             </div>
+
 
             {/* Newsletter Subscription Box */}
             <form onSubmit={handleNewsletterSubscribe} className="pt-2 space-y-2 max-w-sm">

@@ -58,6 +58,19 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
       ],
     },
   ],
+  fabricFilters: [
+    { id: 'twill', label: 'Twill İpek' },
+    { id: 'saten', label: 'Saten İpek' },
+    { id: 'ipek', label: 'Saf İpek' },
+    { id: 'medine-ipegi', label: 'Medine İpeği' },
+    { id: 'pamuk', label: 'Pamuk & Bambu' },
+  ],
+  styleFilters: [
+    { id: 'ofis', label: 'Ofis & İş Hayatı' },
+    { id: 'gunluk', label: 'Günlük Şıklık' },
+    { id: 'davet', label: 'Gece & Davet' },
+    { id: 'ozel-gun', label: 'Özel Gün & Düğün' },
+  ],
 };
 
 export const SITE_CONFIG = DEFAULT_SITE_SETTINGS;

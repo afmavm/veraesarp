@@ -1,80 +1,408 @@
 // Prisma Schema for VERA EŞARP E-Commerce Platform
+// Database Provider: MySQL (Production Standard)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  STAFF
+  EDITOR
+}
+
+enum MovementType {
+  PURCHASE
+  SALE
+  RETURN
+  ADJUSTMENT
+  CANCEL
+  DAMAGE
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+// ─── USER & CUSTOMER MANAGEMENT ──────────────────────────────────────────────
+model User {
+  id           String           @id @default(cuid())
+  name         String
+  email        String           @unique
+  passwordHash String
+  role         UserRole         @default(CUSTOMER)
+  phone        String?
+  status       String           @default("ACTIVE")
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  profile      CustomerProfile?
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model CustomerProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalSpent       Float     @default(0)
+  orderCount       Int       @default(0)
+  tier             String    @default("Standart Müşteri")
+  defaultAddressId String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  addresses        Address[]
+
+  @@map("customer_profiles")
+}
+
+model Address {
+  id                String          @id @default(cuid())
+  customerId        String
+  customer          CustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title             String
+  fullName          String
+  phone             String
+  city              String
+  district          String
+  addressLine       String          @db.Text
+  postalCode        String?
+  isDefaultShipping Boolean         @default(false)
+  isDefaultBilling  Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+
+  @@map("addresses")
+}
+
+// ─── CATALOG & PRODUCTS ───────────────────────────────────────────────────────
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  image       String?   @db.Text
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Collection {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  title       String
+  subtitle    String?
+  description String?   @db.Text
+  image       String?   @db.Text
+  bannerImage String?   @db.Text
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("collections")
 }
 
 model Product {
-  id               String   @id @default(cuid())
+  id               String           @id @default(cuid())
   name             String
-  slug             String   @unique
-  sku              String   @unique
-  description      String
-  shortDescription String?
-  price            Float
+  slug             String           @unique
+  sku              String           @unique
+  barcode          String?          @unique
+  description      String           @db.Text
+  shortDescription String?          @db.Text
+  basePrice        Float
   compareAtPrice   Float?
-  currency         String   @default("TRY")
-  stock            Int      @default(0)
-  rating           Float    @default(5.0)
-  reviewCount      Int      @default(0)
-  category         String
-  subcategory      String?
+  costPrice        Float?
+  currency         String           @default("₺")
+  stock            Int              @default(0)
+  rating           Float            @default(5.0)
+  reviewCount      Int              @default(0)
+  categoryId       String?
+  category         Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  collectionId     String?
+  collection       Collection?      @relation(fields: [collectionId], references: [id], onDelete: SetNull)
   fabric           String
   styleCategory    String
-  collection       String?
-  colors           Json     // [{ name, hex, image }]
-  sizes            Json     // ["90x90 cm"]
-  images           Json     // ["url1", "url2"]
-  badges           Json?    // ["Yeni", "Çok Satan"]
-  features         Json?    // ["%100 Saf İpek"]
-  careInstructions String?
+  colors           Json
+  sizes            Json
+  images           Json
+  videoUrl         String?          @db.Text
+  badges           Json?
+  features         Json?
+  careInstructions String?          @db.Text
   dimensions       String?
-  isNew            Boolean  @default(true)
-  isBestseller     Boolean  @default(false)
-  isFeatured       Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  isNew            Boolean          @default(true)
+  isBestseller     Boolean          @default(false)
+  isFeatured       Boolean          @default(false)
+  variants         ProductVariant[]
+  wishlists        Wishlist[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([collectionId])
+  @@index([fabric])
+  @@index([styleCategory])
+  @@map("products")
 }
 
-model Category {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  image       String?
-  createdAt   DateTime @default(now())
+model ProductVariant {
+  id             String          @id @default(cuid())
+  productId      String
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku            String          @unique
+  colorName      String
+  colorHex       String
+  size           String
+  price          Float
+  compareAtPrice Float?
+  stock          Int             @default(0)
+  image          String?         @db.Text
+  status         String          @default("ACTIVE")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  inventory      Inventory?
+  stockMovements StockMovement[]
+
+  @@index([productId])
+  @@map("product_variants")
 }
 
+// ─── INVENTORY & STOCK MOVEMENTS ──────────────────────────────────────────────
+model Inventory {
+  id                String         @id @default(cuid())
+  variantId         String         @unique
+  variant           ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity          Int            @default(0)
+  minStockAlert     Int            @default(5)
+  warehouseLocation String?        @default("Merkez Depo - Erzurum")
+  updatedAt         DateTime       @updatedAt
+
+  @@map("inventories")
+}
+
+model StockMovement {
+  id        String         @id @default(cuid())
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  type      MovementType
+  quantity  Int
+  notes     String?
+  createdBy String?
+  createdAt DateTime       @default(now())
+
+  @@index([variantId])
+  @@map("stock_movements")
+}
+
+// ─── ORDERS & ORDER ITEMS ────────────────────────────────────────────────────
 model Order {
-  id            String   @id @default(cuid())
-  orderNumber   String   @unique
-  customerName  String
-  email         String
-  phone         String
-  address       Json
-  items         Json
-  subtotal      Float
-  shipping      Float
-  discount      Float
-  total         Float
-  status        String   @default("Hazırlanıyor")
-  paymentMethod String   @default("İyzico Kredi Kartı")
-  createdAt     DateTime @default(now())
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  customerId        String?
+  customerName      String
+  email             String
+  phone             String
+  status            String      @default("Hazırlanıyor")
+  paymentStatus     String      @default("PAID")
+  fulfillmentStatus String      @default("UNFULFILLED")
+  subtotal          Float
+  discount          Float       @default(0)
+  shippingCost      Float       @default(0)
+  total             Float
+  currency          String      @default("₺")
+  shippingAddress   Json
+  billingAddress    Json?
+  notes             String?     @db.Text
+  paymentMethod     String      @default("Kredi Kartı")
+  couponCode        String?
+  carrierId         String?
+  carrierName       String?
+  trackingCode      String?
+  items             OrderItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                  String   @id @default(cuid())
+  orderId             String
+  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId           String
+  variantId           String?
+  productNameSnapshot String
+  skuSnapshot         String
+  colorSnapshot       String?
+  priceSnapshot       Float
+  quantity            Int
+  total               Float
+  createdAt           DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ─── COUPONS & PROMOTIONS ────────────────────────────────────────────────────
+model Coupon {
+  id                 String     @id @default(cuid())
+  code               String     @unique
+  discountType       CouponType @default(PERCENTAGE)
+  discountValue      Float
+  minSpend           Float      @default(0)
+  maxDiscount        Float?
+  usageLimit         Int?
+  usedCount          Int        @default(0)
+  usedByEmails       Json?
+  maxUsesPerCustomer Int        @default(1)
+  startDate          DateTime?
+  endDate            DateTime?
+  isActive           Boolean    @default(true)
+  createdAt          DateTime   @default(now())
+
+  @@map("coupons")
+}
+
+// ─── CARGO & LOGISTICS ────────────────────────────────────────────────────────
+model CargoSetting {
+  id                    String   @id @default(cuid())
+  name                  String
+  code                  String   @unique
+  logo                  String   @default("📦")
+  logoImage             String?  @db.LongText
+  fee                   Float    @default(45)
+  eta                   String   @default("1-2 iş günü")
+  isActive              Boolean  @default(true)
+  freeShippingThreshold Float    @default(1000)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("cargo_settings")
+}
+
+// ─── CARI ACCOUNTS (LEDGER) ───────────────────────────────────────────────────
+model CariAccount {
+  id           String            @id @default(cuid())
+  code         String            @unique
+  title        String
+  taxOffice    String?
+  taxNumber    String?
+  type         String            @default("Müşteri")
+  balance      Float             @default(0)
+  balanceType  String            @default("Dengede")
+  phone        String
+  email        String
+  address      String            @db.Text
+  city         String            @default("Erzurum")
+  transactions CariTransaction[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("cari_accounts")
+}
+
+model CariTransaction {
+  id          String      @id @default(cuid())
+  cariId      String
+  cari        CariAccount @relation(fields: [cariId], references: [id], onDelete: Cascade)
+  date        String
+  documentNo  String?
+  description String      @db.Text
+  type        String
+  amount      Float
+  isDebt      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  @@index([cariId])
+  @@map("cari_transactions")
+}
+
+// ─── WISHLIST & NOTIFICATIONS & AUDIT ─────────────────────────────────────────
+model Wishlist {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, productId])
+  @@map("wishlists")
+}
+
+model AdminNotification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  body      String   @db.Text
+  isRead    Boolean  @default(false)
+  timestamp DateTime @default(now())
+
+  @@map("admin_notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  timestamp DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@map("audit_logs")
+}
+
+model SiteSettings {
+  id                    String   @id @default(cuid())
+  name                  String
+  tagline               String
+  contactPhone          String
+  contactEmail          String
+  address               String   @db.Text
+  freeShippingThreshold Float    @default(1000)
+  instagramUrl          String
+  facebookUrl           String
+  pinterestUrl          String
+  whatsappPhone         String
+  workingHours          String
+  taxOffice             String?
+  taxNumber             String?
+  footerColumns         Json?
+  emailSettings         Json?
+  fabricFilters         Json?
+  styleFilters          Json?
+  updatedAt             DateTime @updatedAt
+
+  @@map("site_settings")
 }
 
 model BlogPost {
   id          String   @id @default(cuid())
   title       String
   slug        String   @unique
-  excerpt     String
-  content     String
-  coverImage  String
+  excerpt     String   @db.Text
+  content     String   @db.LongText
+  coverImage  String   @db.Text
   author      String
   category    String
+  readTime    String   @default("4 dk")
+  tags        Json?
   publishedAt DateTime @default(now())
+
+  @@map("blog_posts")
 }
