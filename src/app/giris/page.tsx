@@ -202,35 +202,6 @@ export default function AuthPage() {
                 <span>Giriş Yap</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-
-              {/* Social Login Buttons */}
-              <div className="pt-4 border-t border-[#3A3835] space-y-2">
-                <p className="text-[11px] text-[#8C857B] text-center">Sosyal Hesap ile Hızlı Giriş</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      login('google.user@example.com', 'demo');
-                      showToast('Google hesabınız ile hızlı giriş yapıldı.', 'success');
-                      router.push('/hesabim');
-                    }}
-                    className="py-2.5 bg-[#242321] hover:bg-[#3A3835] border border-[#3A3835] text-xs font-medium flex items-center justify-center gap-2"
-                  >
-                    <span>🌐 Google</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      login('apple.user@example.com', 'demo');
-                      showToast('Apple ID hesabınız ile hızlı giriş yapıldı.', 'success');
-                      router.push('/hesabim');
-                    }}
-                    className="py-2.5 bg-[#242321] hover:bg-[#3A3835] border border-[#3A3835] text-xs font-medium flex items-center justify-center gap-2"
-                  >
-                    <span> Apple ID</span>
-                  </button>
-                </div>
-              </div>
             </form>
           )}
 
