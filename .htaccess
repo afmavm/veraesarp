@@ -5,10 +5,5 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
 
-# Serve static files directly if they exist on server
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# Proxy all requests to Next.js running on Port 3000
+# Proxy all incoming web traffic to Next.js Standalone Port 3000
 RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]

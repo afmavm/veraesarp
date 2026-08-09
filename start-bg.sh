@@ -1,9 +1,15 @@
 #!/bin/bash
-# Vera Eşarp Node.js Server Background Runner for cPanel
-echo "Vera Eşarp Sunucusu Arka Planda Yeniden Başlatılıyor..."
-fuser -k 3000/tcp 2>/dev/null || pkill -f "next" 2>/dev/null
+# Vera Eşarp Node.js Server Standalone Runner for cPanel
+echo "Vera Eşarp Standalone Sunucusu Başlatılıyor..."
+fuser -k 3000/tcp 2>/dev/null || pkill -f "node" 2>/dev/null
 sleep 1
-nohup npm start > server.log 2>&1 &
+
+# Copy public and static assets to standalone folder
+cp -rn public .next/standalone/ 2>/dev/null
+cp -rn .next/static .next/standalone/.next/ 2>/dev/null
+
+PORT=3000 nohup node .next/standalone/server.js > server.log 2>&1 &
 sleep 2
-echo "✅ Port 3000 sunucu arka plan durumu:"
+
+echo "✅ Sunucu Başlatma Durumu:"
 head -n 20 server.log
