@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -22,7 +22,6 @@ import {
   Sparkles,
   Lock,
   FileText,
-  Clock,
   ShoppingBag,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
@@ -44,43 +43,75 @@ export default function AccountPage() {
 
   // Customer Profile Form
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || 'Ayşe Yılmaz',
-    email: user?.email || 'ayse.yilmaz@example.com',
-    phone: user?.phone || '+90 532 123 45 67',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
   });
 
-  // Saved Addresses State
-  const [addresses, setAddresses] = useState([
-    {
-      id: 'addr-1',
-      title: 'Ev Adresi (Varsayılan)',
-      name: 'Ayşe Yılmaz',
-      phone: '+90 532 123 45 67',
-      city: 'İstanbul',
-      district: 'Kadıköy',
-      fullAddress: 'Bağdat Caddesi No:142 D:8, Caddebostan',
-      isDefault: true,
-    },
-    {
-      id: 'addr-2',
-      title: 'İş Adresi',
-      name: 'Ayşe Yılmaz',
-      phone: '+90 532 123 45 67',
-      city: 'İstanbul',
-      district: 'Şişli',
-      fullAddress: 'Abdi İpekçi Caddesi No:28 K:4 Nişantaşı',
-      isDefault: false,
-    },
-  ]);
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [user]);
+
+  // Isolate orders specifically for current logged-in user
+  const userOrders = orders.filter((o) => {
+    if (!user) return false;
+    const matchEmail = o.email && o.email.toLowerCase() === user.email.toLowerCase();
+    const matchPhone =
+      o.phone && user.phone && o.phone.replace(/[^0-9]/g, '') === user.phone.replace(/[^0-9]/g, '');
+    const isDemoUser = user.email === 'ayse.yilmaz@example.com' || user.id === 'usr-1';
+    return matchEmail || matchPhone || (isDemoUser && o.customerName === 'Ayşe Yılmaz');
+  });
+
+  const userTotalSpent = userOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+
+  // Saved Addresses State (Isolated per user)
+  const [addresses, setAddresses] = useState(() => {
+    if (user?.email === 'ayse.yilmaz@example.com' || user?.id === 'usr-1') {
+      return [
+        {
+          id: 'addr-1',
+          title: 'Ev Adresi (Varsayılan)',
+          name: 'Ayşe Yılmaz',
+          phone: '+90 532 123 45 67',
+          city: 'İstanbul',
+          district: 'Kadıköy',
+          fullAddress: 'Bağdat Caddesi No:142 D:8, Caddebostan',
+          isDefault: true,
+        },
+        {
+          id: 'addr-2',
+          title: 'İş Adresi',
+          name: 'Ayşe Yılmaz',
+          phone: '+90 532 123 45 67',
+          city: 'İstanbul',
+          district: 'Şişli',
+          fullAddress: 'Abdi İpekçi Caddesi No:28 K:4 Nişantaşı',
+          isDefault: false,
+        },
+      ];
+    }
+    return [];
+  });
 
   const [newAddr, setNewAddr] = useState({ title: '', name: '', phone: '', city: '', district: '', fullAddress: '' });
   const [isAddingAddr, setIsAddingAddr] = useState(false);
 
-  // Saved Payment Cards (İyzico Tokenized Cards representation)
-  const [savedCards, setSavedCards] = useState([
-    { id: 'card-1', bank: 'Garanti BBVA', cardType: 'Mastercard', last4: '8492', holder: 'AYSE YILMAZ', exp: '12/28', isDefault: true },
-    { id: 'card-2', bank: 'İş Bankası', cardType: 'Visa', last4: '1948', holder: 'AYSE YILMAZ', exp: '09/27', isDefault: false },
-  ]);
+  // Saved Payment Cards (Isolated per user)
+  const [savedCards, setSavedCards] = useState(() => {
+    if (user?.email === 'ayse.yilmaz@example.com' || user?.id === 'usr-1') {
+      return [
+        { id: 'card-1', bank: 'Garanti BBVA', cardType: 'Mastercard', last4: '8492', holder: 'AYSE YILMAZ', exp: '12/28', isDefault: true },
+        { id: 'card-2', bank: 'İş Bankası', cardType: 'Visa', last4: '1948', holder: 'AYSE YILMAZ', exp: '09/27', isDefault: false },
+      ];
+    }
+    return [];
+  });
 
   // Copy Code State
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -134,7 +165,9 @@ export default function AccountPage() {
   };
 
   const handleCopyCoupon = (code: string) => {
-    navigator.clipboard.writeText(code);
+    try {
+      navigator.clipboard.writeText(code);
+    } catch (e) {}
     setCopiedCode(code);
     showToast(`"${code}" indirim kodu kopyalandı! Sepette kullanabilirsiniz.`, 'success');
     setTimeout(() => setCopiedCode(null), 3000);
@@ -161,7 +194,7 @@ export default function AccountPage() {
               {user?.avatar ? (
                 <Image src={user.avatar} alt={user.name} fill className="object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-xl font-serif font-bold text-[#B49A6A]">
+                <div className="w-full h-full flex items-center justify-center text-2xl font-serif font-bold text-[#B49A6A]">
                   {user?.name?.charAt(0)}
                 </div>
               )}
@@ -171,21 +204,21 @@ export default function AccountPage() {
                 <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#F8F5EF]">{user?.name}</h1>
                 <span className="px-2.5 py-0.5 bg-[#B49A6A]/20 border border-[#B49A6A]/50 text-[#B49A6A] text-[10px] font-semibold uppercase tracking-wider rounded-full flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
-                  <span>{user?.tier || 'Vera VIP Diamond'}</span>
+                  <span>{user?.tier || 'Vera Silver Üye'}</span>
                 </span>
               </div>
               <p className="text-xs text-[#8C857B] mt-0.5">{user?.email} • {user?.phone}</p>
             </div>
           </div>
 
-          {/* Quick Metrics */}
+          {/* Quick Metrics (Isolated for current user) */}
           <div className="grid grid-cols-3 gap-4 border-t md:border-t-0 md:border-l border-[#3A3835] pt-4 md:pt-0 md:pl-8 text-center w-full md:w-auto">
             <div>
-              <span className="block font-serif text-2xl text-[#B49A6A] font-semibold">{user?.orderCount || orders.length}</span>
+              <span className="block font-serif text-2xl text-[#B49A6A] font-semibold">{userOrders.length}</span>
               <span className="text-[10px] uppercase text-[#8C857B] font-medium">Sipariş</span>
             </div>
             <div>
-              <span className="block font-serif text-2xl text-[#F8F5EF] font-semibold">₺{(user?.totalSpent || 14850).toLocaleString('tr-TR')}</span>
+              <span className="block font-serif text-2xl text-[#F8F5EF] font-semibold">₺{userTotalSpent.toLocaleString('tr-TR')}</span>
               <span className="text-[10px] uppercase text-[#8C857B] font-medium">Toplam Harcama</span>
             </div>
             <div>
@@ -208,7 +241,7 @@ export default function AccountPage() {
             >
               <div className="flex items-center gap-2.5">
                 <Package className="w-4 h-4 text-[#B49A6A]" />
-                <span>Siparişlerim ({orders.length})</span>
+                <span>Siparişlerim ({userOrders.length})</span>
               </div>
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -320,77 +353,97 @@ export default function AccountPage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-center pb-4 border-b border-[#E6DFD5]">
                   <h2 className="font-serif text-2xl font-normal text-[#242321]">Sipariş Geçmişi &amp; Takip</h2>
-                  <span className="text-xs text-[#8C857B]">Toplam {orders.length} Sipariş</span>
+                  <span className="text-xs text-[#8C857B]">Toplam {userOrders.length} Sipariş</span>
                 </div>
 
-                <div className="space-y-6">
-                  {orders.map((ord) => (
-                    <div key={ord.id} className="border border-[#E6DFD5] p-5 space-y-4 hover:border-[#B49A6A] transition-colors">
-                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-3 border-b border-[#F8F5EF] text-xs">
-                        <div>
-                          <span className="font-serif text-base font-medium text-[#242321]">{ord.orderNumber}</span>
-                          <span className="text-[#8C857B] ml-2">Tarih: {ord.createdAt}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full ${
-                            ord.status === 'Teslim Edildi' ? 'bg-emerald-100 text-emerald-800' :
-                            ord.status === 'Kargoda' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {ord.status}
-                          </span>
-                          <span className="font-serif text-base font-normal text-[#242321]">₺{ord.total.toLocaleString('tr-TR')}</span>
-                        </div>
-                      </div>
-
-                      {/* Purchased Items List */}
-                      <div className="space-y-3">
-                        {ord.items.map((item, idx) => (
-                          <div key={idx} className="flex items-center gap-4 text-xs">
-                            <div className="relative w-14 h-16 bg-[#E8DED1] shrink-0 border border-[#E6DFD5]">
-                              {item.image ? (
-                                <Image src={item.image} alt={item.productName} fill className="object-cover" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px]">VERA</div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium text-[#242321]">{item.productName}</h4>
-                              <p className="text-[11px] text-[#8C857B]">
-                                Renk: {item.color} | Adet: {item.quantity}
-                              </p>
-                            </div>
-                            <div className="font-semibold text-[#242321]">
-                              ₺{(item.price * item.quantity).toLocaleString('tr-TR')}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Action Bar */}
-                      <div className="pt-3 border-t border-[#F8F5EF] flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                        <span className="text-[11px] text-[#8C857B]">
-                          Kargo: <strong>{ord.carrier || 'Yurtiçi Kargo'}</strong> {ord.trackingCode && `(${ord.trackingCode})`}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => showToast('E-Fatura PDF simülasyonu indirildi.', 'info')}
-                            className="px-3 py-1.5 bg-[#F8F5EF] text-[#242321] text-xs font-medium border border-[#E6DFD5] flex items-center gap-1 hover:border-[#B49A6A]"
-                          >
-                            <FileText className="w-3.5 h-3.5" />
-                            <span>E-Fatura İndir</span>
-                          </button>
-                          <Link
-                            href={`/kargo-takip?kod=${ord.orderNumber}`}
-                            className="px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A] transition-colors flex items-center gap-1.5"
-                          >
-                            <Truck className="w-3.5 h-3.5" />
-                            <span>Kargo Takibi Yap</span>
-                          </Link>
-                        </div>
-                      </div>
+                {userOrders.length === 0 ? (
+                  <div className="text-center py-12 px-4 border border-dashed border-[#E6DFD5] space-y-4 rounded-sm">
+                    <div className="w-16 h-16 rounded-full bg-[#F8F5EF] text-[#B49A6A] mx-auto flex items-center justify-center border border-[#E6DFD5]">
+                      <ShoppingBag className="w-8 h-8" />
                     </div>
-                  ))}
-                </div>
+                    <div className="space-y-1">
+                      <h3 className="font-serif text-xl text-[#242321]">Henüz verilmiş bir siparişiniz bulunmamaktadır</h3>
+                      <p className="text-xs text-[#8C857B] max-w-sm mx-auto">
+                        Vera Eşarp lüks koleksiyonlarını keşfedip %10 Hoş Geldin indirimiyle ilk siparişinizi hemen oluşturabilirsiniz.
+                      </p>
+                    </div>
+                    <Link
+                      href="/kategori/yeni-gelenler"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#242321] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#B49A6A] transition-colors shadow-md"
+                    >
+                      <span>🛍️ Koleksiyonları Keşfet</span>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {userOrders.map((ord) => (
+                      <div key={ord.id} className="border border-[#E6DFD5] p-5 space-y-4 hover:border-[#B49A6A] transition-colors">
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-3 border-b border-[#F8F5EF] text-xs">
+                          <div>
+                            <span className="font-serif text-base font-medium text-[#242321]">{ord.orderNumber}</span>
+                            <span className="text-[#8C857B] ml-2">Tarih: {ord.createdAt}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full ${
+                              ord.status === 'Teslim Edildi' ? 'bg-emerald-100 text-emerald-800' :
+                              ord.status === 'Kargoda' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {ord.status}
+                            </span>
+                            <span className="font-serif text-base font-normal text-[#242321]">₺{ord.total.toLocaleString('tr-TR')}</span>
+                          </div>
+                        </div>
+
+                        {/* Purchased Items List */}
+                        <div className="space-y-3">
+                          {ord.items.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-4 text-xs">
+                              <div className="relative w-14 h-16 bg-[#E8DED1] shrink-0 border border-[#E6DFD5]">
+                                {item.image ? (
+                                  <Image src={item.image} alt={item.productName} fill className="object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[10px]">VERA</div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-medium text-[#242321]">{item.productName}</h4>
+                                <p className="text-[11px] text-[#8C857B]">
+                                  Renk: {item.color} | Adet: {item.quantity}
+                                </p>
+                              </div>
+                              <div className="font-semibold text-[#242321]">
+                                ₺{(item.price * item.quantity).toLocaleString('tr-TR')}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="pt-3 border-t border-[#F8F5EF] flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                          <span className="text-[11px] text-[#8C857B]">
+                            Kargo: <strong>{ord.carrier || 'Yurtiçi Kargo'}</strong> {ord.trackingCode && `(${ord.trackingCode})`}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => showToast('E-Fatura PDF simülasyonu indirildi.', 'info')}
+                              className="px-3 py-1.5 bg-[#F8F5EF] text-[#242321] text-xs font-medium border border-[#E6DFD5] flex items-center gap-1 hover:border-[#B49A6A]"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>E-Fatura İndir</span>
+                            </button>
+                            <Link
+                              href={`/kargo-takip?kod=${ord.orderNumber}`}
+                              className="px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A] transition-colors flex items-center gap-1.5"
+                            >
+                              <Truck className="w-3.5 h-3.5" />
+                              <span>Kargo Takibi Yap</span>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -403,7 +456,16 @@ export default function AccountPage() {
                 </div>
 
                 {wishlist.length === 0 ? (
-                  <p className="text-xs text-[#8C857B]">Henüz favorilerinize ürün eklemediniz.</p>
+                  <div className="text-center py-10 px-4 border border-dashed border-[#E6DFD5] space-y-3">
+                    <Heart className="w-8 h-8 text-[#B49A6A] mx-auto" />
+                    <p className="text-xs text-[#8C857B]">Henüz favorilerinize ürün eklemediniz.</p>
+                    <Link
+                      href="/kategori/esarp"
+                      className="inline-block px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A]"
+                    >
+                      Ürünleri İncele
+                    </Link>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {wishlist.map((prod) => (
@@ -473,7 +535,7 @@ export default function AccountPage() {
                         type="text"
                         required
                         placeholder="Teslim Alacak Ad Soyad"
-                        value={newAddr.name}
+                        value={newAddr.name || user?.name || ''}
                         onChange={(e) => setNewAddr({ ...newAddr, name: e.target.value })}
                         className="p-2 bg-[#FFFFFF] border border-[#E6DFD5]"
                       />
@@ -499,7 +561,7 @@ export default function AccountPage() {
                         type="text"
                         required
                         placeholder="Telefon"
-                        value={newAddr.phone}
+                        value={newAddr.phone || user?.phone || ''}
                         onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
                         className="p-2 bg-[#FFFFFF] border border-[#E6DFD5]"
                       />
@@ -527,32 +589,45 @@ export default function AccountPage() {
                   </form>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {addresses.map((addr) => (
-                    <div key={addr.id} className="p-4 border border-[#E6DFD5] space-y-2 text-xs relative bg-[#F8F5EF]/30">
-                      <div className="flex justify-between items-center border-b border-[#E6DFD5] pb-2">
-                        <div className="flex items-center gap-2">
-                          <strong className="text-[#242321] font-semibold text-sm">{addr.title}</strong>
-                          {addr.isDefault && (
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] uppercase font-bold rounded-full">
-                              Varsayılan
-                            </span>
-                          )}
+                {addresses.length === 0 && !isAddingAddr ? (
+                  <div className="text-center py-10 px-4 border border-dashed border-[#E6DFD5] space-y-3">
+                    <MapPin className="w-8 h-8 text-[#B49A6A] mx-auto" />
+                    <p className="text-xs text-[#8C857B]">Henüz kayıtlı bir teslimat adresiniz bulunmamaktadır.</p>
+                    <button
+                      onClick={() => setIsAddingAddr(true)}
+                      className="px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A]"
+                    >
+                      + İlk Adresinizi Ekleyin
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {addresses.map((addr) => (
+                      <div key={addr.id} className="p-4 border border-[#E6DFD5] space-y-2 text-xs relative bg-[#F8F5EF]/30">
+                        <div className="flex justify-between items-center border-b border-[#E6DFD5] pb-2">
+                          <div className="flex items-center gap-2">
+                            <strong className="text-[#242321] font-semibold text-sm">{addr.title}</strong>
+                            {addr.isDefault && (
+                              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[9px] uppercase font-bold rounded-full">
+                                Varsayılan
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleDeleteAddress(addr.id)}
+                            className="text-rose-600 hover:text-rose-800 p-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleDeleteAddress(addr.id)}
-                          className="text-rose-600 hover:text-rose-800 p-1"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <p className="font-semibold text-[#242321]">{addr.name}</p>
+                        <p className="text-[#5A5652]">{addr.fullAddress}</p>
+                        <p className="text-[#5A5652]">{addr.district} / {addr.city}</p>
+                        <p className="text-[#8C857B] font-mono text-[11px]">Tel: {addr.phone}</p>
                       </div>
-                      <p className="font-semibold text-[#242321]">{addr.name}</p>
-                      <p className="text-[#5A5652]">{addr.fullAddress}</p>
-                      <p className="text-[#5A5652]">{addr.district} / {addr.city}</p>
-                      <p className="text-[#8C857B] font-mono text-[11px]">Tel: {addr.phone}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -573,29 +648,42 @@ export default function AccountPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {savedCards.map((c) => (
-                    <div key={c.id} className="p-5 bg-[#1C1B1A] text-[#F8F5EF] border border-[#B49A6A] space-y-4 shadow-md">
-                      <div className="flex justify-between items-center border-b border-[#3A3835] pb-2">
-                        <span className="font-mono text-xs text-[#B49A6A] font-bold uppercase">{c.bank}</span>
-                        <span className="text-xs font-bold text-white uppercase">{c.cardType}</span>
-                      </div>
-                      <div className="font-mono text-base tracking-widest text-white">
-                        •••• •••• •••• {c.last4}
-                      </div>
-                      <div className="flex justify-between items-end text-[11px] text-[#8C857B]">
-                        <div>
-                          <span>KART SAHİBİ</span>
-                          <strong className="block text-white font-medium">{c.holder}</strong>
+                {savedCards.length === 0 ? (
+                  <div className="text-center py-10 px-4 border border-dashed border-[#E6DFD5] space-y-3">
+                    <CreditCard className="w-8 h-8 text-[#B49A6A] mx-auto" />
+                    <p className="text-xs text-[#8C857B]">Henüz kayıtlı bir ödeme kartınız bulunmamaktadır.</p>
+                    <button
+                      onClick={() => showToast('İyzico 3D Secure Kart kaydetme ekranı başlatıldı.', 'info')}
+                      className="px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A]"
+                    >
+                      + Yeni Kart Ekle
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {savedCards.map((c) => (
+                      <div key={c.id} className="p-5 bg-[#1C1B1A] text-[#F8F5EF] border border-[#B49A6A] space-y-4 shadow-md">
+                        <div className="flex justify-between items-center border-b border-[#3A3835] pb-2">
+                          <span className="font-mono text-xs text-[#B49A6A] font-bold uppercase">{c.bank}</span>
+                          <span className="text-xs font-bold text-white uppercase">{c.cardType}</span>
                         </div>
-                        <div>
-                          <span>SON KULLANMA</span>
-                          <strong className="block text-white font-medium">{c.exp}</strong>
+                        <div className="font-mono text-base tracking-widest text-white">
+                          •••• •••• •••• {c.last4}
+                        </div>
+                        <div className="flex justify-between items-end text-[11px] text-[#8C857B]">
+                          <div>
+                            <span>KART SAHİBİ</span>
+                            <strong className="block text-white font-medium">{c.holder}</strong>
+                          </div>
+                          <div>
+                            <span>SON KULLANMA</span>
+                            <strong className="block text-white font-medium">{c.exp}</strong>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
