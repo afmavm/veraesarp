@@ -44,6 +44,7 @@ export interface Product {
   sizes: string[];
   variants?: ProductVariant[];
   images: string[]; // Base64 or HTTPS URLs
+  videoUrl?: string; // MP4 URL or Youtube embed URL or Base64 video
   badges?: ('Yeni' | 'Özel Fiyat' | 'Çok Satan' | 'Limited' | 'Flaş İndirim')[];
   features: string[];
   careInstructions: string;

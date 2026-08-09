@@ -118,19 +118,38 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mb-20">
           {/* Left Column: Image Gallery */}
           <div className="lg:col-span-7 space-y-4">
-            {/* Main Active Image */}
+            {/* Main Active Image / Video Viewer */}
             <div className="relative aspect-[3/4] w-full bg-[#E8DED1] overflow-hidden shadow-sm group">
-              <Image
-                src={product.images[selectedImageIndex] || product.images[0]}
-                alt={product.name}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
-              />
+              {selectedImageIndex === -1 && product.videoUrl ? (
+                product.videoUrl.includes('youtube') || product.videoUrl.includes('vimeo') ? (
+                  <iframe
+                    src={product.videoUrl}
+                    className="w-full h-full object-cover"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    src={product.videoUrl}
+                    controls
+                    autoPlay
+                    loop
+                    className="w-full h-full object-cover"
+                  />
+                )
+              ) : (
+                <Image
+                  src={product.images[selectedImageIndex] || product.images[0]}
+                  alt={product.name}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                />
+              )}
 
               {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
+              <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
                 {product.badges?.map((badge) => (
                   <span
                     key={badge}
@@ -142,22 +161,32 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               </div>
             </div>
 
-            {/* Thumbnail Navigation */}
-            {product.images.length > 1 && (
-              <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative w-20 h-24 bg-[#E8DED1] shrink-0 border-2 transition-all ${
-                      selectedImageIndex === idx ? 'border-[#B49A6A]' : 'border-transparent opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    <Image src={img} alt={`${product.name} Görsel ${idx + 1}`} fill className="object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Thumbnail Navigation (Images + Video) */}
+            <div className="flex items-center gap-3 overflow-x-auto pb-2">
+              {product.videoUrl && (
+                <button
+                  onClick={() => setSelectedImageIndex(-1)}
+                  className={`relative w-20 h-24 bg-[#1C1B1A] shrink-0 border-2 transition-all flex flex-col items-center justify-center text-[#B49A6A] ${
+                    selectedImageIndex === -1 ? 'border-[#B49A6A]' : 'border-transparent opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <Sparkles className="w-6 h-6 animate-pulse" />
+                  <span className="text-[10px] font-bold uppercase mt-1">Video</span>
+                </button>
+              )}
+
+              {product.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedImageIndex(idx)}
+                  className={`relative w-20 h-24 bg-[#E8DED1] shrink-0 border-2 transition-all ${
+                    selectedImageIndex === idx ? 'border-[#B49A6A]' : 'border-transparent opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <Image src={img} alt={`${product.name} Görsel ${idx + 1}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Right Column: Product Info & Purchase Form */}

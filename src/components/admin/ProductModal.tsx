@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { X, Plus, Trash2, Upload, Sparkles, Image as ImageIcon, Check } from 'lucide-react';
+import { X, Plus, Trash2, Upload, Sparkles, Image as ImageIcon, Check, MoveLeft, MoveRight, Video, Edit2, Settings2 } from 'lucide-react';
 import { Product, ProductVariant, ColorOption } from '@/lib/types/ecommerce';
 import { useToast } from '@/context/ToastContext';
 
@@ -13,6 +13,36 @@ interface ProductModalProps {
   productToEdit?: Product | null;
 }
 
+// Turkish slugify helper
+const slugifyTurkish = (str: string) => {
+  return str
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+};
+
+const DEFAULT_CATEGORIES = [
+  { name: 'Eşarp', slug: 'esarp' },
+  { name: 'Şal', slug: 'sal' },
+  { name: 'Aksesuar', slug: 'aksesuar' },
+];
+
+const DEFAULT_FABRICS = [
+  { name: 'Twill İpek', slug: 'twill' },
+  { name: 'Saten İpek', slug: 'saten' },
+  { name: 'Saf İpek', slug: 'ipek' },
+  { name: 'Medine İpeği', slug: 'medine-ipegi' },
+  { name: 'Pamuk & Bambu', slug: 'pamuk' },
+  { name: 'Krep & Şifon', slug: 'krep' },
+];
+
 export default function ProductModal({
   isOpen,
   onClose,
@@ -20,6 +50,19 @@ export default function ProductModal({
   productToEdit,
 }: ProductModalProps) {
   const { showToast } = useToast();
+
+  // Dynamic Categories & Fabrics
+  const [categoriesList, setCategoriesList] = useState(DEFAULT_CATEGORIES);
+  const [fabricsList, setFabricsList] = useState(DEFAULT_FABRICS);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
+  const [isFabricManagerOpen, setIsFabricManagerOpen] = useState(false);
+
+  // New Category / Fabric inputs
+  const [newCatName, setNewCatName] = useState('');
+  const [newFabricName, setNewFabricName] = useState('');
+
+  // Auto-slug tracking
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,11 +77,12 @@ export default function ProductModal({
     stock: 25,
     rating: 5.0,
     reviewCount: 12,
-    category: 'esarp' as 'esarp' | 'sal' | 'aksesuar',
+    category: 'esarp' as any,
     subcategory: 'twill-ipek',
     fabric: 'twill' as any,
     styleCategory: 'ofis' as any,
     collection: 'milano-romance',
+    videoUrl: '',
     careInstructions: 'Kuru temizleme önerilir. Elde yıkamada ılık su ve ipek şampuanı tercih edilmelidir.',
     dimensions: '90 cm x 90 cm',
   });
@@ -54,7 +98,6 @@ export default function ProductModal({
   ]);
 
   const [sizesList, setSizesList] = useState<string[]>(['90x90 cm']);
-
   const [badgesList, setBadgesList] = useState<('Yeni' | 'Özel Fiyat' | 'Çok Satan' | 'Limited' | 'Flaş İndirim')[]>([
     'Yeni',
     'Çok Satan',
@@ -74,6 +117,19 @@ export default function ProductModal({
   const [newColorName, setNewColorName] = useState('');
   const [newColorHex, setNewColorHex] = useState('#B49A6A');
   const [newImageUrl, setNewImageUrl] = useState('');
+
+  // Persistent custom categories & fabrics
+  useEffect(() => {
+    try {
+      const savedCats = localStorage.getItem('veraesarp_custom_categories');
+      if (savedCats) setCategoriesList(JSON.parse(savedCats));
+
+      const savedFabrics = localStorage.getItem('veraesarp_custom_fabrics');
+      if (savedFabrics) setFabricsList(JSON.parse(savedFabrics));
+    } catch (e) {
+      console.error('Failed to load custom categories/fabrics', e);
+    }
+  }, []);
 
   useEffect(() => {
     if (productToEdit) {
@@ -95,6 +151,7 @@ export default function ProductModal({
         fabric: productToEdit.fabric,
         styleCategory: productToEdit.styleCategory,
         collection: productToEdit.collection || 'milano-romance',
+        videoUrl: productToEdit.videoUrl || '',
         careInstructions: productToEdit.careInstructions,
         dimensions: productToEdit.dimensions,
       });
@@ -104,6 +161,7 @@ export default function ProductModal({
       setBadgesList(productToEdit.badges || []);
       setFeaturesList(productToEdit.features || []);
       setVariantsList(productToEdit.variants || []);
+      setIsSlugManuallyEdited(true);
     } else {
       setFormData({
         name: '',
@@ -123,6 +181,7 @@ export default function ProductModal({
         fabric: 'twill',
         styleCategory: 'ofis',
         collection: 'milano-romance',
+        videoUrl: '',
         careInstructions: 'Kuru temizleme önerilir. Elde yıkamada ılık su ve ipek şampuanı tercih edilmelidir. Düşük ısıda tersten ütüleyiniz.',
         dimensions: '90 cm x 90 cm',
       });
@@ -143,12 +202,70 @@ export default function ProductModal({
         '✓ Nefes Alan Doğal İpek Lifler',
       ]);
       setVariantsList([]);
+      setIsSlugManuallyEdited(false);
     }
   }, [productToEdit, isOpen]);
 
   if (!isOpen) return null;
 
-  // Image Upload Handlers
+  // AUTO-SLUG GENERATION HANDLER
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    if (!isSlugManuallyEdited) {
+      const autoSlug = slugifyTurkish(newName);
+      setFormData((prev) => ({ ...prev, name: newName, slug: autoSlug }));
+    } else {
+      setFormData((prev) => ({ ...prev, name: newName }));
+    }
+  };
+
+  // CATEGORY & FABRIC CRUD HANDLERS
+  const handleAddCategory = () => {
+    if (!newCatName.trim()) return;
+    const newSlug = slugifyTurkish(newCatName);
+    const updated = [...categoriesList, { name: newCatName.trim(), slug: newSlug }];
+    setCategoriesList(updated);
+    localStorage.setItem('veraesarp_custom_categories', JSON.stringify(updated));
+    setNewCatName('');
+    showToast(`"${newCatName}" kategorisi başarıyla eklendi!`, 'success');
+  };
+
+  const handleDeleteCategory = (slug: string) => {
+    const updated = categoriesList.filter((c) => c.slug !== slug);
+    setCategoriesList(updated);
+    localStorage.setItem('veraesarp_custom_categories', JSON.stringify(updated));
+    showToast('Kategori silindi.', 'info');
+  };
+
+  const handleAddFabric = () => {
+    if (!newFabricName.trim()) return;
+    const newSlug = slugifyTurkish(newFabricName);
+    const updated = [...fabricsList, { name: newFabricName.trim(), slug: newSlug }];
+    setFabricsList(updated);
+    localStorage.setItem('veraesarp_custom_fabrics', JSON.stringify(updated));
+    setNewFabricName('');
+    showToast(`"${newFabricName}" kumaş türü eklendi!`, 'success');
+  };
+
+  const handleDeleteFabric = (slug: string) => {
+    const updated = fabricsList.filter((f) => f.slug !== slug);
+    setFabricsList(updated);
+    localStorage.setItem('veraesarp_custom_fabrics', JSON.stringify(updated));
+    showToast('Kumaş türü silindi.', 'info');
+  };
+
+  // IMAGE REORDERING & UPLOAD HANDLERS
+  const handleMoveImage = (index: number, direction: 'left' | 'right') => {
+    const newIdx = direction === 'left' ? index - 1 : index + 1;
+    if (newIdx < 0 || newIdx >= imagesList.length) return;
+    const updated = [...imagesList];
+    const temp = updated[index];
+    updated[index] = updated[newIdx];
+    updated[newIdx] = temp;
+    setImagesList(updated);
+    showToast('Görsel sıralaması güncellendi.', 'info');
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -157,6 +274,20 @@ export default function ProductModal({
         if (typeof reader.result === 'string') {
           setImagesList((prev) => [...prev, reader.result as string]);
           showToast('Yerel resim yüklendi ve galeriye eklendi.', 'success');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setFormData((prev) => ({ ...prev, videoUrl: reader.result as string }));
+          showToast('Ürün tanıtım videosu başarıyla yüklendi.', 'success');
         }
       };
       reader.readAsDataURL(file);
@@ -212,8 +343,7 @@ export default function ProductModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const generatedSlug =
-      formData.slug.trim() ||
-      formData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      formData.slug.trim() || slugifyTurkish(formData.name);
 
     onSave({
       id: productToEdit ? productToEdit.id : undefined,
@@ -235,6 +365,7 @@ export default function ProductModal({
       description: formData.description,
       shortDescription: formData.shortDescription,
       images: imagesList.length > 0 ? imagesList : ['https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop'],
+      videoUrl: formData.videoUrl,
       colors: colorSwatches.length > 0 ? colorSwatches : [{ name: 'Standart', hex: '#242321' }],
       sizes: sizesList,
       badges: badgesList,
@@ -261,7 +392,7 @@ export default function ProductModal({
               {productToEdit ? 'Ürün & Detay Kartı Yönetimi' : 'Yeni Ürün & Tam Detay Ekle'}
             </h2>
             <p className="text-[11px] text-[#8C857B] mt-0.5">
-              Ürün kartlarında ve detay sayfasında görünen tüm alanları yönetin.
+              Ürün başlığından URL slug'ına, video galerisinden dinamik kategori ve kumaş yönetimine kadar her şeyi yönetin.
             </p>
           </div>
           <button
@@ -274,34 +405,40 @@ export default function ProductModal({
 
         {/* Scrollable Form Body */}
         <form id="productForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 text-xs">
-          {/* TAB 1: TEMEL BİLGİLER */}
+          {/* TAB 1: TEMEL BİLGİLER & OTOMATİK SLUG */}
           <div className="space-y-4">
             <h3 className="font-serif text-base text-[#B49A6A] border-b border-[#2A2825] pb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              <span>1. Ürün Kimlik &amp; Başlık Bilgileri</span>
+              <span>1. Ürün Kimlik &amp; Başlık Bilgileri (Otomatik URL / Slug)</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-              <div className="sm:col-span-8">
+              <div className="sm:col-span-7">
                 <label className="block text-[#8C857B] mb-1">Ürün Adı (Başlık) *</label>
                 <input
                   type="text"
                   required
                   placeholder="ör: Vera Milano Twill İpek Eşarp — Krem & Altın"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={handleNameChange}
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-serif text-sm focus:border-[#B49A6A] focus:outline-none"
                 />
               </div>
 
-              <div className="sm:col-span-4">
-                <label className="block text-[#8C857B] mb-1">URL / Slug (Opsiyonel)</label>
+              <div className="sm:col-span-5">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[#8C857B]">URL / Slug (Otomatik Oluşturulur)</label>
+                  <span className="text-[10px] text-[#B49A6A]">⚡ Otomatik SEO</span>
+                </div>
                 <input
                   type="text"
                   placeholder="ör: vera-milano-twill-ipek-esarp"
                   value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
+                  onChange={(e) => {
+                    setFormData({ ...formData, slug: e.target.value });
+                    setIsSlugManuallyEdited(true);
+                  }}
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#B49A6A] font-mono text-xs focus:border-[#B49A6A] focus:outline-none"
                 />
               </div>
             </div>
@@ -326,30 +463,56 @@ export default function ProductModal({
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
                 />
               </div>
+
+              {/* DYNAMIC CATEGORY SELECT WITH inline CRUD */}
               <div>
-                <label className="block text-[#8C857B] mb-1">Kategori *</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[#8C857B]">Kategori *</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryManagerOpen(true)}
+                    className="text-[10px] text-[#B49A6A] hover:underline flex items-center gap-0.5"
+                  >
+                    <Settings2 className="w-3 h-3" />
+                    <span>Yönet</span>
+                  </button>
+                </div>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
                 >
-                  <option value="esarp">Eşarp</option>
-                  <option value="sal">Şal</option>
-                  <option value="aksesuar">Aksesuar</option>
+                  {categoriesList.map((c) => (
+                    <option key={c.slug} value={c.slug}>
+                      {c.name}
+                    </option>
+                  ))}
                 </select>
               </div>
+
+              {/* DYNAMIC FABRIC SELECT WITH inline CRUD */}
               <div>
-                <label className="block text-[#8C857B] mb-1">Kumaş Türü *</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[#8C857B]">Kumaş Türü *</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsFabricManagerOpen(true)}
+                    className="text-[10px] text-[#B49A6A] hover:underline flex items-center gap-0.5"
+                  >
+                    <Settings2 className="w-3 h-3" />
+                    <span>Yönet</span>
+                  </button>
+                </div>
                 <select
                   value={formData.fabric}
-                  onChange={(e) => setFormData({ ...formData, fabric: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, fabric: e.target.value })}
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
                 >
-                  <option value="twill">Twill İpek</option>
-                  <option value="saten">Saten İpek</option>
-                  <option value="ipek">Saf İpek</option>
-                  <option value="medine-ipegi">Medine İpeği</option>
-                  <option value="pamuk">Pamuk &amp; Bambu</option>
+                  {fabricsList.map((f) => (
+                    <option key={f.slug} value={f.slug}>
+                      {f.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -406,20 +569,51 @@ export default function ProductModal({
             </div>
           </div>
 
-          {/* TAB 3: ÇOKLU GÖRSEL GALERİSİ & YEREL YÜKLEME */}
+          {/* TAB 3: ÇOKLU GÖRSEL GALERİSİ (SIRA DEĞİŞTİRME) & VİDEO EKLEME */}
           <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-xs font-semibold text-[#B49A6A] uppercase tracking-wider flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                <span>3. Çoklu Görsel Galerisi (Ürün Kartı &amp; Detay Galerisi)</span>
-              </h3>
-              <label className="cursor-pointer px-3 py-1.5 bg-[#B49A6A] text-[#F8F5EF] text-[11px] font-semibold uppercase hover:bg-[#988052] transition-colors flex items-center gap-1.5">
-                <Upload className="w-3.5 h-3.5" />
-                <span>Bilgisayardan Yükle</span>
-                <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-              </label>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <div>
+                <h3 className="text-xs font-semibold text-[#B49A6A] uppercase tracking-wider flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  <span>3. Çoklu Görsel Galerisi &amp; Video Yükleme</span>
+                </h3>
+                <p className="text-[10px] text-[#8C857B]">Görsellerin sırasını yön butonları ile sürükleyip değiştirebilirsiniz.</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="cursor-pointer px-3 py-1.5 bg-[#B49A6A] text-[#F8F5EF] text-[11px] font-semibold uppercase hover:bg-[#988052] transition-colors flex items-center gap-1.5 shadow-sm">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Resim Yükle</span>
+                  <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                </label>
+
+                <label className="cursor-pointer px-3 py-1.5 bg-[#3A3835] text-[#F8F5EF] text-[11px] font-semibold uppercase hover:bg-[#B49A6A] transition-colors flex items-center gap-1.5 shadow-sm border border-[#5A5652]">
+                  <Video className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Video Yükle (MP4)</span>
+                  <input type="file" accept="video/*" onChange={handleVideoFileUpload} className="hidden" />
+                </label>
+              </div>
             </div>
 
+            {/* Video Input URL */}
+            <div className="p-3 bg-[#1C1B1A] border border-[#3A3835] space-y-2">
+              <label className="block text-[11px] font-semibold text-[#B49A6A] flex items-center gap-1">
+                <Video className="w-3.5 h-3.5" />
+                <span>Ürün Tanıtım Videosu URL (MP4 / YouTube / Vimeo)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="ör: https://my-cdn.com/videos/esarp-tanitim.mp4 veya YouTube Embed URL"
+                value={formData.videoUrl}
+                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                className="w-full p-2 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono text-[11px]"
+              />
+              {formData.videoUrl && (
+                <p className="text-[10px] text-emerald-400">✓ Ürün detay sayfasında video oynatıcı kartı gösterilecek.</p>
+              )}
+            </div>
+
+            {/* Image URL add input */}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -437,20 +631,47 @@ export default function ProductModal({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 pt-2">
+            {/* Image Gallery Cards with Reordering Arrows */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
               {imagesList.map((img, idx) => (
-                <div key={idx} className="relative aspect-[3/4] bg-[#171615] border border-[#3A3835] group overflow-hidden">
+                <div key={idx} className="relative aspect-[3/4] bg-[#171615] border border-[#3A3835] group overflow-hidden flex flex-col justify-between p-1">
                   <Image src={img} alt={`Görsel ${idx + 1}`} fill className="object-cover" />
-                  <span className="absolute top-1 left-1 bg-black/70 text-[9px] px-1.5 py-0.5 text-white font-mono">
+                  
+                  <span className="relative z-10 self-start bg-black/80 text-[9px] px-1.5 py-0.5 text-white font-mono rounded">
                     {idx === 0 ? 'Ana Görsel' : idx === 1 ? 'Hover' : `#${idx + 1}`}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(idx)}
-                    className="absolute top-1 right-1 p-1 bg-rose-600/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+
+                  {/* Reordering & Action Overlay */}
+                  <div className="relative z-10 flex justify-between items-center bg-black/75 p-1 backdrop-blur-xs opacity-90 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => handleMoveImage(idx, 'left')}
+                      className="p-1 text-white hover:text-[#B49A6A] disabled:opacity-30 disabled:hover:text-white"
+                      title="Sola / Öne Taşı"
+                    >
+                      <MoveLeft className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="p-1 text-rose-400 hover:text-rose-300"
+                      title="Resmi Sil"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={idx === imagesList.length - 1}
+                      onClick={() => handleMoveImage(idx, 'right')}
+                      className="p-1 text-white hover:text-[#B49A6A] disabled:opacity-30 disabled:hover:text-white"
+                      title="Sağa / Arkaya Taşı"
+                    >
+                      <MoveRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -623,6 +844,100 @@ export default function ProductModal({
           </button>
         </div>
       </div>
+
+      {/* MODAL 1: KATEGORİ YÖNETİCİSİ */}
+      {isCategoryManagerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 max-w-md w-full text-[#F8F5EF] space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-[#2A2825]">
+              <h3 className="font-serif text-lg">Kategori Ekle / Sil / Yönet</h3>
+              <button onClick={() => setIsCategoryManagerOpen(false)} className="text-[#8C857B] hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Yeni Kategori Adı (ör: Şal)"
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                className="flex-1 p-2 bg-[#242321] border border-[#3A3835] text-xs"
+              />
+              <button onClick={handleAddCategory} className="px-4 py-2 bg-[#B49A6A] text-xs font-semibold uppercase">
+                Ekle
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {categoriesList.map((c) => (
+                <div key={c.slug} className="flex justify-between items-center p-2.5 bg-[#242321] border border-[#3A3835] text-xs">
+                  <div>
+                    <span className="font-semibold text-white">{c.name}</span>
+                    <span className="block text-[10px] text-[#8C857B] font-mono">slug: {c.slug}</span>
+                  </div>
+                  <button onClick={() => handleDeleteCategory(c.slug)} className="text-rose-400 hover:text-rose-300 p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button onClick={() => setIsCategoryManagerOpen(false)} className="px-4 py-2 bg-[#3A3835] text-xs uppercase">
+                Tamam
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: KUMAŞ TÜRÜ YÖNETİCİSİ */}
+      {isFabricManagerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 max-w-md w-full text-[#F8F5EF] space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-[#2A2825]">
+              <h3 className="font-serif text-lg">Kumaş Türü Ekle / Sil / Yönet</h3>
+              <button onClick={() => setIsFabricManagerOpen(false)} className="text-[#8C857B] hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Yeni Kumaş Türü (ör: Şifon)"
+                value={newFabricName}
+                onChange={(e) => setNewFabricName(e.target.value)}
+                className="flex-1 p-2 bg-[#242321] border border-[#3A3835] text-xs"
+              />
+              <button onClick={handleAddFabric} className="px-4 py-2 bg-[#B49A6A] text-xs font-semibold uppercase">
+                Ekle
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {fabricsList.map((f) => (
+                <div key={f.slug} className="flex justify-between items-center p-2.5 bg-[#242321] border border-[#3A3835] text-xs">
+                  <div>
+                    <span className="font-semibold text-white">{f.name}</span>
+                    <span className="block text-[10px] text-[#8C857B] font-mono">slug: {f.slug}</span>
+                  </div>
+                  <button onClick={() => handleDeleteFabric(f.slug)} className="text-rose-400 hover:text-rose-300 p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button onClick={() => setIsFabricManagerOpen(false)} className="px-4 py-2 bg-[#3A3835] text-xs uppercase">
+                Tamam
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
