@@ -83,15 +83,38 @@ const CORPORATE_CONTENTS: Record<string, { title: string; subtitle: string; cont
   },
 };
 
+import { useData } from '@/context/DataContext';
+
 export default function CorporatePage({ params }: CorporatePageProps) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
+  const { siteSettings } = useData();
 
-  const data = CORPORATE_CONTENTS[slug] || {
-    title: 'Bilgi Sayfası',
-    subtitle: 'Vera Eşarp Kurumsal Bilgileri',
-    content: '<p>Aradığınız kurumsal sayfa içeriği güncellenmektedir.</p>',
-  };
+  let data = CORPORATE_CONTENTS[slug];
+
+  if (slug === 'iletisim' || slug === 'magazalar') {
+    data = {
+      title: slug === 'iletisim' ? 'İletişim & Danışma Hattı' : 'Mağazalarımız',
+      subtitle: 'Vera Deneyimini Yerinde Yaşayın & Bize Ulaşın',
+      content: `
+        <div class="space-y-4">
+          <p><strong>Marka / Şirket Unvanı:</strong> ${siteSettings.name}</p>
+          <p><strong>Müşteri Destek Telefonu:</strong> ${siteSettings.contactPhone}</p>
+          <p><strong>E-Posta Adresi:</strong> ${siteSettings.contactEmail}</p>
+          <p><strong>Mağaza Açık Adresi:</strong> ${siteSettings.address}</p>
+          <p><strong>Çalışma Saatleri:</strong> ${siteSettings.workingHours}</p>
+          <p><strong>WhatsApp Danışma Hattı:</strong> ${siteSettings.whatsappPhone}</p>
+          ${siteSettings.taxOffice ? `<p><strong>Vergi Dairesi & No:</strong> ${siteSettings.taxOffice} / ${siteSettings.taxNumber}</p>` : ''}
+        </div>
+      `,
+    };
+  } else if (!data) {
+    data = {
+      title: 'Bilgi Sayfası',
+      subtitle: 'Vera Eşarp Kurumsal Bilgileri',
+      content: '<p>Aradığınız kurumsal sayfa içeriği güncellenmektedir.</p>',
+    };
+  }
 
   return (
     <div className="py-12 bg-[#F8F5EF] min-h-screen">

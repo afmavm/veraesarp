@@ -9,6 +9,7 @@ import {
   CargoTrackingData,
   CampaignRule,
   Coupon,
+  SiteSettings,
 } from '@/lib/types/ecommerce';
 import {
   MOCK_PRODUCTS,
@@ -18,9 +19,11 @@ import {
   MOCK_CARGO_DATA,
   MOCK_CAMPAIGNS,
   MOCK_COUPONS,
+  DEFAULT_SITE_SETTINGS,
 } from '@/lib/data/mock-data';
 
 interface DataContextType {
+  siteSettings: SiteSettings;
   products: Product[];
   orders: CustomerOrder[];
   cariAccounts: CariAccount[];
@@ -28,6 +31,8 @@ interface DataContextType {
   campaigns: CampaignRule[];
   coupons: Coupon[];
   cargoData: Record<string, CargoTrackingData>;
+  // Site settings action
+  updateSiteSettings: (newSettings: Partial<SiteSettings>) => void;
   // Product actions
   addProduct: (productData: Partial<Product>) => Product;
   updateProduct: (id: string, productData: Partial<Product>) => void;
@@ -61,6 +66,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [orders, setOrders] = useState<CustomerOrder[]>(MOCK_ORDERS);
   const [cariAccounts, setCariAccounts] = useState<CariAccount[]>(MOCK_CARI_ACCOUNTS);
@@ -73,6 +79,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Persistence via localStorage
   useEffect(() => {
     try {
+      const savedSettings = localStorage.getItem('veraesarp_site_settings');
+      if (savedSettings) setSiteSettings(JSON.parse(savedSettings));
+
       const savedProducts = localStorage.getItem('veraesarp_products');
       if (savedProducts) setProducts(JSON.parse(savedProducts));
 
@@ -96,6 +105,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (isInitialized) {
       try {
+        localStorage.setItem('veraesarp_site_settings', JSON.stringify(siteSettings));
         localStorage.setItem('veraesarp_products', JSON.stringify(products));
         localStorage.setItem('veraesarp_orders', JSON.stringify(orders));
         localStorage.setItem('veraesarp_cari', JSON.stringify(cariAccounts));
@@ -105,7 +115,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Failed to persist live data to localStorage', e);
       }
     }
-  }, [products, orders, cariAccounts, campaigns, coupons, isInitialized]);
+  }, [siteSettings, products, orders, cariAccounts, campaigns, coupons, isInitialized]);
+
+  // Site Settings Actions
+  const updateSiteSettings = (newSettings: Partial<SiteSettings>) => {
+    setSiteSettings((prev) => ({ ...prev, ...newSettings }));
+  };
 
   // Product Actions
   const addProduct = (productData: Partial<Product>): Product => {
@@ -329,6 +344,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <DataContext.Provider
       value={{
+        siteSettings,
         products,
         orders,
         cariAccounts,
@@ -336,6 +352,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         campaigns,
         coupons,
         cargoData,
+        updateSiteSettings,
         addProduct,
         updateProduct,
         deleteProduct,

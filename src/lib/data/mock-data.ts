@@ -1,14 +1,22 @@
-import { Product, Category, Collection, LookCombination, BlogPost, CustomerOrder, CariAccount, CariTransaction, CargoTrackingData, CampaignRule, Coupon } from '../types/ecommerce';
+import { Product, Category, Collection, LookCombination, BlogPost, CustomerOrder, CariAccount, CariTransaction, CargoTrackingData, CampaignRule, Coupon, SiteSettings } from '../types/ecommerce';
 
-export const SITE_CONFIG = {
+export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   name: 'VERA EŞARP',
-  tagline: 'Modern kadının stilini tamamlayan premium eşarp ve aksesuar markası.',
-  freeShippingThreshold: 1500, // ₺1500 üzeri ücretsiz kargo
-  currencySymbol: '₺',
-  contactEmail: 'destek@veraesarp.com',
+  tagline: 'Modern kadının stilini tamamlayan premium eşarp ve aksesuar markası. Zarafeti ve zamansız moda anlayışını gardırobunuza taşıyoruz.',
   contactPhone: '+90 (212) 555 83 72',
+  contactEmail: 'destek@veraesarp.com',
   address: 'Nişantaşı, Abdi İpekçi Caddesi No:42, Şişli / İstanbul',
+  freeShippingThreshold: 1500,
+  instagramUrl: 'https://instagram.com/veraesarp',
+  facebookUrl: 'https://facebook.com/veraesarp',
+  pinterestUrl: 'https://pinterest.com/veraesarp',
+  whatsappPhone: '+90 532 555 83 72',
+  workingHours: 'Hafta içi 09:00 - 18:00',
+  taxOffice: 'Şişli V.D.',
+  taxNumber: '1948201948',
 };
+
+export const SITE_CONFIG = DEFAULT_SITE_SETTINGS;
 
 export const MOCK_CATEGORIES: Category[] = [
   {

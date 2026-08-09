@@ -252,3 +252,20 @@ export interface Coupon {
   status: 'Aktif' | 'Pasif';
   expiryDate?: string;
 }
+
+// SİTE & MARKA AYARLARI (Footer, İletişim & Kurumsal Bilgiler)
+export interface SiteSettings {
+  name: string;
+  tagline: string;
+  contactPhone: string;
+  contactEmail: string;
+  address: string;
+  freeShippingThreshold: number;
+  instagramUrl: string;
+  facebookUrl: string;
+  pinterestUrl: string;
+  whatsappPhone: string;
+  workingHours: string;
+  taxOffice?: string;
+  taxNumber?: string;
+}

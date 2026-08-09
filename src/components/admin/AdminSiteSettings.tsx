@@ -1,44 +1,42 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, ShieldCheck, Key, CreditCard, Save, Building2, Phone, Mail, MapPin, Globe } from 'lucide-react';
+import { Save, Building2, Phone, Mail, MapPin, Globe, ShieldCheck, Clock } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 
-export default function AdminSettings() {
+export default function AdminSiteSettings() {
   const { siteSettings, updateSiteSettings } = useData();
   const { showToast } = useToast();
 
   const [formData, setFormData] = useState({ ...siteSettings });
-  const [iyzicoApiKey, setIyzicoApiKey] = useState('iyzi_sandbox_api_key_8492019482');
-  const [iyzicoSecretKey, setIyzicoSecretKey] = useState('iyzi_sandbox_secret_99482019');
-  const [isTestMode, setIsTestMode] = useState(true);
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateSiteSettings(formData);
-    showToast('Site, iletişim, marka ve API entegrasyon ayarları başarıyla kaydedildi!', 'success');
+    showToast('Site ve kurumsal iletişim bilgileri başarıyla güncellendi ve yayına alındı!', 'success');
   };
 
   return (
     <div className="space-y-6">
+      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-[#2A2825]">
         <div>
-          <h1 className="font-serif text-3xl font-normal text-[#F8F5EF]">Site, Marka &amp; Sistem Ayarları</h1>
-          <p className="text-xs text-[#8C857B]">Footer, adres, müşteri destek, sosyal medya ve ödeme entegrasyonlarını yönetin.</p>
+          <h1 className="font-serif text-3xl font-normal text-[#F8F5EF]">Site &amp; Marka İletişim Ayarları</h1>
+          <p className="text-xs text-[#8C857B]">Footer, iletişim, sosyal medya ve müşteri hizmetleri bilgilerini düzenleyin.</p>
         </div>
 
         <button
           type="submit"
-          form="settingsForm"
+          form="siteSettingsForm"
           className="px-6 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors flex items-center justify-center gap-2 shadow-lg"
         >
           <Save className="w-4 h-4" />
-          <span>Tüm Değişiklikleri Kaydet</span>
+          <span>Değişiklikleri Kaydet</span>
         </button>
       </div>
 
-      <form id="settingsForm" onSubmit={handleSaveSettings} className="space-y-8 text-xs text-[#F8F5EF] max-w-4xl">
+      <form id="siteSettingsForm" onSubmit={handleSubmit} className="space-y-8 text-xs text-[#F8F5EF]">
         {/* 1. Marka & Kurumsal Tanım */}
         <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2A2825]">
@@ -85,7 +83,7 @@ export default function AdminSettings() {
         <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2A2825]">
             <Phone className="w-4 h-4 text-[#B49A6A]" />
-            <h2 className="font-serif text-lg font-normal">Müşteri Hizmetleri &amp; Açık Adres (Footer &amp; İletişim)</h2>
+            <h2 className="font-serif text-lg font-normal">Müşteri Hizmetleri &amp; Açık Adres</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -186,56 +184,16 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        {/* 4. Payment Integration */}
-        <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
-          <h3 className="font-serif text-lg text-[#B49A6A] flex items-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            <span>İyzico &amp; PayTR Ödeme Entegrasyonu</span>
-          </h3>
-
-          <div className="flex items-center gap-3 p-3 bg-[#242321] border border-[#3A3835] text-xs">
-            <input
-              type="checkbox"
-              id="testMode"
-              checked={isTestMode}
-              onChange={(e) => setIsTestMode(e.target.checked)}
-              className="accent-[#B49A6A] w-4 h-4 cursor-pointer"
-            />
-            <label htmlFor="testMode" className="text-[#F8F5EF] font-medium cursor-pointer">
-              Test / Sandbox Modunu Etkinleştir (Canlı Ödeme Alınmaz)
-            </label>
-          </div>
-
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block text-[#8C857B] mb-1">İyzico API Key</label>
-              <input
-                type="text"
-                value={iyzicoApiKey}
-                onChange={(e) => setIyzicoApiKey(e.target.value)}
-                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[#8C857B] mb-1">İyzico Secret Key</label>
-              <input
-                type="password"
-                value={iyzicoSecretKey}
-                onChange={(e) => setIyzicoSecretKey(e.target.value)}
-                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
-              />
-            </div>
-          </div>
+        {/* Save Button */}
+        <div className="flex justify-end pt-4">
+          <button
+            type="submit"
+            className="px-8 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors flex items-center gap-2 shadow-xl"
+          >
+            <Save className="w-4 h-4" />
+            <span>Değişiklikleri Yayınla &amp; Kaydet</span>
+          </button>
         </div>
-
-        <button
-          type="submit"
-          className="px-8 py-3.5 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-widest hover:bg-[#988052] transition-colors flex items-center gap-2 shadow-xl"
-        >
-          <Save className="w-4 h-4" />
-          <span>Değişiklikleri Yayınla &amp; Kaydet</span>
-        </button>
       </form>
     </div>
   );

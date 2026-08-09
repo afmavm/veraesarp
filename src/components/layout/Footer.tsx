@@ -4,9 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, Truck, RotateCcw, Award } from 'lucide-react';
 import { InstagramIcon, TikTokIcon, PinterestIcon } from '@/components/ui/Icons';
-import { SITE_CONFIG } from '@/lib/data/mock-data';
+import { useData } from '@/context/DataContext';
 
 export default function Footer() {
+  const { siteSettings } = useData();
+
   return (
     <footer className="bg-[#242321] text-[#F8F5EF] pt-16 pb-24 lg:pb-12 border-t border-[#B49A6A]/20">
       {/* Brand Trust Badges */}
@@ -25,7 +27,7 @@ export default function Footer() {
               <Truck className="w-6 h-6" />
             </div>
             <h4 className="font-serif text-lg font-normal text-[#F8F5EF]">Hızlı &amp; Ücretsiz Kargo</h4>
-            <p className="text-xs text-[#8C857B] leading-relaxed">₺1.500 ve üzeri tüm siparişlerde aynı gün kargo.</p>
+            <p className="text-xs text-[#8C857B] leading-relaxed">₺{siteSettings.freeShippingThreshold.toLocaleString('tr-TR')} ve üzeri tüm siparişlerde aynı gün kargo.</p>
           </div>
 
           <div className="flex flex-col items-center space-y-2">
@@ -53,19 +55,19 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="inline-block">
               <span className="font-serif text-3xl tracking-[0.25em] text-[#F8F5EF] font-semibold uppercase">
-                VERA
+                {siteSettings.name.split(' ')[0] || 'VERA'}
               </span>
               <span className="block text-[10px] tracking-[0.4em] text-[#B49A6A] font-sans uppercase -mt-1 font-medium">
-                E Ş A R P
+                {siteSettings.name.split(' ').slice(1).join(' ') || 'E Ş A R P'}
               </span>
             </Link>
             <p className="text-xs text-[#8C857B] leading-relaxed max-w-sm">
-              {SITE_CONFIG.tagline} Zarafeti ve zamansız moda anlayışını gardırobunuza taşıyoruz.
+              {siteSettings.tagline}
             </p>
-            <div className="text-xs text-[#8C857B] space-y-1 pt-2">
-              <p><strong className="text-[#E8DED1]">Müşteri Destek:</strong> {SITE_CONFIG.contactPhone}</p>
-              <p><strong className="text-[#E8DED1]">E-Posta:</strong> {SITE_CONFIG.contactEmail}</p>
-              <p><strong className="text-[#E8DED1]">Adres:</strong> {SITE_CONFIG.address}</p>
+            <div className="text-xs text-[#8C857B] space-y-1.5 pt-2">
+              <p><strong className="text-[#E8DED1]">Müşteri Destek:</strong> {siteSettings.contactPhone}</p>
+              <p><strong className="text-[#E8DED1]">E-Posta:</strong> {siteSettings.contactEmail}</p>
+              <p><strong className="text-[#E8DED1]">Adres:</strong> {siteSettings.address}</p>
             </div>
           </div>
 
@@ -110,21 +112,27 @@ export default function Footer() {
 
       {/* Bottom Bar: Copyright & Social */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-[#3A3835] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#8C857B]">
-        <p>© 2026 VERA EŞARP. Tüm hakları saklıdır. Premium Kadın Moda &amp; Aksesuar Platformu.</p>
+        <p>© 2026 {siteSettings.name}. Tüm hakları saklıdır. Premium Kadın Moda &amp; Aksesuar Platformu.</p>
         
         <div className="flex items-center space-x-6 text-[#E8DED1]">
-          <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
-            <InstagramIcon className="w-4 h-4" />
-            <span>Instagram</span>
-          </a>
-          <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
-            <TikTokIcon className="w-4 h-4" />
-            <span>TikTok</span>
-          </a>
-          <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
-            <PinterestIcon className="w-4 h-4" />
-            <span>Pinterest</span>
-          </a>
+          {siteSettings.instagramUrl && (
+            <a href={siteSettings.instagramUrl} target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
+              <InstagramIcon className="w-4 h-4" />
+              <span>Instagram</span>
+            </a>
+          )}
+          {siteSettings.facebookUrl && (
+            <a href={siteSettings.facebookUrl} target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
+              <TikTokIcon className="w-4 h-4" />
+              <span>Facebook</span>
+            </a>
+          )}
+          {siteSettings.pinterestUrl && (
+            <a href={siteSettings.pinterestUrl} target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
+              <PinterestIcon className="w-4 h-4" />
+              <span>Pinterest</span>
+            </a>
+          )}
         </div>
       </div>
     </footer>
