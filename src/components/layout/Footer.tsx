@@ -3,11 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, Truck, RotateCcw, Award } from 'lucide-react';
-import { InstagramIcon, TikTokIcon, PinterestIcon } from '@/components/ui/Icons';
+import { InstagramIcon, TikTokIcon, PinterestIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/Icons';
 import { useData } from '@/context/DataContext';
 
 export default function Footer() {
   const { siteSettings } = useData();
+
+  const cleanPhone = (siteSettings.whatsappPhone || '+905325558372').replace(/[^0-9]/g, '');
+  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+    'Merhaba Vera Eşarp, ürünleriniz ve yeni sezon koleksiyonunuz hakkında bilgi almak istiyorum.'
+  )}`;
 
   return (
     <footer className="bg-[#242321] text-[#F8F5EF] pt-16 pb-24 lg:pb-12 border-t border-[#B49A6A]/20">
@@ -115,6 +120,10 @@ export default function Footer() {
         <p>© 2026 {siteSettings.name}. Tüm hakları saklıdır. Premium Kadın Moda &amp; Aksesuar Platformu.</p>
         
         <div className="flex items-center space-x-6 text-[#E8DED1]">
+          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-400 text-emerald-400 font-semibold transition-colors flex items-center gap-1.5">
+            <WhatsAppIcon className="w-4 h-4" />
+            <span>WhatsApp Destek</span>
+          </a>
           {siteSettings.instagramUrl && (
             <a href={siteSettings.instagramUrl} target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
               <InstagramIcon className="w-4 h-4" />
@@ -123,7 +132,7 @@ export default function Footer() {
           )}
           {siteSettings.facebookUrl && (
             <a href={siteSettings.facebookUrl} target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
-              <TikTokIcon className="w-4 h-4" />
+              <FacebookIcon className="w-4 h-4" />
               <span>Facebook</span>
             </a>
           )}
