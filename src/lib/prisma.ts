@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+type PrismaClient = any;
 
 let PrismaClientClass: any;
 try {
