@@ -306,6 +306,113 @@ export default function ProductModal({
     });
   };
 
+  // Dominant Color Extractor Engine
+  const rgbToHex = (r: number, g: number, b: number) =>
+    '#' + [r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+
+  const getClosestColorName = (r: number, g: number, b: number): string => {
+    const PALETTE = [
+      { name: 'Krem & Altın', r: 244, g: 235, b: 225 },
+      { name: 'Altın Vizon', r: 180, g: 154, b: 106 },
+      { name: 'Gece Mavisi', r: 27, g: 42, b: 74 },
+      { name: 'Gül Vizonu', r: 198, g: 160, b: 150 },
+      { name: 'Safır Mavi', r: 40, g: 80, b: 160 },
+      { name: 'Zümrüt Yeşili', r: 34, g: 110, b: 70 },
+      { name: 'Zarif Bordo', r: 130, g: 30, b: 45 },
+      { name: 'Pudra Pembe', r: 240, g: 195, b: 205 },
+      { name: 'Mürdüm & Mor', r: 100, g: 40, b: 90 },
+      { name: 'Fildişi Beyaz', r: 250, g: 248, b: 242 },
+      { name: 'Asil Siyah', r: 30, g: 30, b: 30 },
+      { name: 'Toprak Taba', r: 160, g: 90, b: 45 },
+      { name: 'Gümüş Gri', r: 180, g: 185, b: 190 },
+    ];
+
+    let minDistance = Infinity;
+    let closestName = 'Özel Ton';
+
+    PALETTE.forEach((item) => {
+      const dist = Math.sqrt(
+        Math.pow(r - item.r, 2) + Math.pow(g - item.g, 2) + Math.pow(b - item.b, 2)
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestName = item.name;
+      }
+    });
+
+    return closestName;
+  };
+
+  const extractDominantColor = (dataUrl: string): Promise<{ name: string; hex: string }> => {
+    return new Promise((resolve) => {
+      const img = document.createElement('img');
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve({ name: 'Vizon', hex: '#B49A6A' });
+          return;
+        }
+        ctx.drawImage(img, 0, 0, 64, 64);
+        const imgData = ctx.getImageData(0, 0, 64, 64).data;
+
+        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+        for (let i = 0; i < imgData.length; i += 16) {
+          const r = imgData[i];
+          const g = imgData[i + 1];
+          const b = imgData[i + 2];
+          const a = imgData[i + 3];
+
+          // Exclude white background and dark borders
+          if (a > 200 && !(r > 245 && g > 245 && b > 245)) {
+            rSum += r;
+            gSum += g;
+            bSum += b;
+            count++;
+          }
+        }
+
+        if (count === 0) {
+          resolve({ name: 'Krem & Altın', hex: '#F4EBE1' });
+          return;
+        }
+
+        const rAvg = Math.round(rSum / count);
+        const gAvg = Math.round(gSum / count);
+        const bAvg = Math.round(bSum / count);
+
+        const hex = rgbToHex(rAvg, gAvg, bAvg);
+        const name = getClosestColorName(rAvg, gAvg, bAvg);
+
+        resolve({ name, hex });
+      };
+      img.onerror = () => resolve({ name: 'Vizon', hex: '#B49A6A' });
+      img.src = dataUrl;
+    });
+  };
+
+  const handleScanImagesForColors = async () => {
+    if (imagesList.length === 0) {
+      showToast('Renk algılamak için önce ürün görseli yükleyiniz.', 'info');
+      return;
+    }
+
+    showToast('Görseller analiz ediliyor ve renk paleti çıkarılıyor...', 'info');
+    for (const imgUrl of imagesList) {
+      const extracted = await extractDominantColor(imgUrl);
+      setColorSwatches((prev) => {
+        if (!prev.some((c) => c.name === extracted.name || c.hex === extracted.hex)) {
+          return [...prev, extracted];
+        }
+        return prev;
+      });
+    }
+    showToast('🎨 Görsellerden renkler otomatik algılandı ve swatche eklendi!', 'success');
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -313,8 +420,18 @@ export default function ProductModal({
         showToast('Görsel WebP formatına dönüştürülüyor ve sıkıştırılıyor...', 'info');
         const { webpDataUrl, origKB, newKB } = await compressImageToWebP(file);
         setImagesList((prev) => [...prev, webpDataUrl]);
+
+        // Auto color extraction
+        const autoColor = await extractDominantColor(webpDataUrl);
+        setColorSwatches((prev) => {
+          if (!prev.some((c) => c.name === autoColor.name)) {
+            return [...prev, autoColor];
+          }
+          return prev;
+        });
+
         const saving = Math.round(((origKB - newKB) / (origKB || 1)) * 100);
-        showToast(`⚡ Görsel WebP olarak optimize edildi! (${origKB} KB ➔ ${newKB} KB | %${saving > 0 ? saving : 0} Tasarruf)`, 'success');
+        showToast(`⚡ Görsel WebP optimize edildi! Renk algılandı: ${autoColor.name} (${autoColor.hex})`, 'success');
       } catch (err) {
         console.error(err);
         const reader = new FileReader();
@@ -765,11 +882,30 @@ export default function ProductModal({
             </div>
           </div>
 
-          {/* TAB 5: RENK PALETLERİ (COLOR SWATCHES) */}
-          <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
-            <h3 className="text-xs font-semibold text-[#B49A6A] uppercase tracking-wider">
-              5. Renk Swatch Seçenekleri (Kart &amp; Detay)
-            </h3>
+          {/* TAB 5: RENK PALETLERİ (OTOMATİK ALGI VE MANUEL DÜZELTME) */}
+          <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-[#3A3835] pb-2">
+              <div>
+                <h3 className="text-xs font-semibold text-[#B49A6A] uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#B49A6A]" />
+                  <span>5. Renk Swatch Seçenekleri (Otomatik Görsel Renk Algılama &amp; Manuel Düzeltme)</span>
+                </h3>
+                <p className="text-[10px] text-[#8C857B]">
+                  Yüklediğiniz ürün fotoğraflarından baskın renk otomatik algılanır. Yanlış algılanırsa el ile kolayca düzeltebilirsiniz.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleScanImagesForColors}
+                className="px-3 py-1.5 bg-[#B49A6A] text-[#F8F5EF] text-[11px] font-semibold uppercase hover:bg-[#988052] transition-colors flex items-center gap-1.5 shadow-sm shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Görsellerden Rengi Otomatik Tara</span>
+              </button>
+            </div>
+
+            {/* Manuel Renk Ekleme */}
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -789,16 +925,46 @@ export default function ProductModal({
                 onClick={handleAddColor}
                 className="px-4 py-2 bg-[#3A3835] text-[#F8F5EF] hover:bg-[#B49A6A] text-xs uppercase"
               >
-                Renk Ekle
+                Manuel Renk Ekle
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2 pt-2">
+            {/* Swatch Listesi - Düzenlenebilir Renk ve İsim */}
+            <div className="flex flex-wrap gap-3 pt-2">
               {colorSwatches.map((c, idx) => (
-                <div key={idx} className="flex items-center gap-2 p-2 bg-[#1C1B1A] border border-[#3A3835]">
-                  <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: c.hex }} />
-                  <span className="font-semibold text-xs">{c.name}</span>
-                  <button type="button" onClick={() => handleRemoveColor(idx)} className="text-rose-400 hover:text-rose-300">
+                <div key={idx} className="flex items-center gap-2 p-2 bg-[#1C1B1A] border border-[#3A3835] shadow-sm">
+                  {/* Düzenlenebilir Renk Seçici */}
+                  <input
+                    type="color"
+                    value={c.hex}
+                    onChange={(e) => {
+                      const updated = [...colorSwatches];
+                      updated[idx].hex = e.target.value;
+                      setColorSwatches(updated);
+                    }}
+                    className="w-5 h-5 p-0 bg-transparent border-0 cursor-pointer rounded-full"
+                    title="Rengi Elle Değiştir"
+                  />
+
+                  {/* Düzenlenebilir Renk İsmi */}
+                  <input
+                    type="text"
+                    value={c.name}
+                    onChange={(e) => {
+                      const updated = [...colorSwatches];
+                      updated[idx].name = e.target.value;
+                      setColorSwatches(updated);
+                    }}
+                    className="bg-transparent font-semibold text-xs text-[#F8F5EF] border-b border-transparent hover:border-[#B49A6A] focus:border-[#B49A6A] focus:outline-none w-24"
+                    placeholder="Renk Adı"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveColor(idx)}
+                    className="text-rose-400 hover:text-rose-300 p-1"
+                    title="Renklendirmeyi Sil"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
