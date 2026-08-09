@@ -153,7 +153,8 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#171615]/90 backdrop-blur-lg animate-in fade-in duration-200">
+    // Solid 100% opaque bg-[#171615] ensures the underlying homepage graphics NEVER bleed through
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#171615] animate-in fade-in duration-200">
       {/* Search Header Container */}
       <div className="bg-[#1C1B1A] border-b border-[#B49A6A]/30 p-4 sm:p-6 shadow-2xl shrink-0">
         <div className="max-w-5xl mx-auto space-y-4">
@@ -260,197 +261,199 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
         </div>
       </div>
 
-      {/* Modal Results & Recommendations Scrollable Body Container */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-5xl w-full mx-auto space-y-8 text-[#F8F5EF]">
-        {/* State A: Initial State (No query typed) */}
-        {!query.trim() && (
-          <div className="space-y-8">
-            {/* Recent Searches */}
-            {recentSearches.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-wider text-[#B49A6A] font-semibold flex items-center gap-1.5">
-                    <History className="w-3.5 h-3.5" />
-                    Son Aramalarınız
-                  </span>
-                  <button
-                    onClick={clearRecentSearches}
-                    className="text-[10px] text-[#8C857B] hover:text-rose-400 transition-colors"
-                  >
-                    Geçmişi Temizle
-                  </button>
+      {/* Modal Results & Recommendations Solid Dark Body Container */}
+      <div className="flex-1 overflow-y-auto bg-[#171615] w-full">
+        <div className="max-w-5xl mx-auto p-4 sm:p-8 space-y-8 text-[#F8F5EF]">
+          {/* State A: Initial State (No query typed) */}
+          {!query.trim() && (
+            <div className="space-y-8">
+              {/* Recent Searches */}
+              {recentSearches.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-wider text-[#B49A6A] font-semibold flex items-center gap-1.5">
+                      <History className="w-3.5 h-3.5" />
+                      Son Aramalarınız
+                    </span>
+                    <button
+                      onClick={clearRecentSearches}
+                      className="text-[10px] text-[#8C857B] hover:text-rose-400 transition-colors"
+                    >
+                      Geçmişi Temizle
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((term, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSelectTag(term)}
+                        className="px-3 py-1.5 bg-[#1C1B1A] border border-[#3A3835] text-xs text-[#E8DED1] hover:border-[#B49A6A] hover:text-[#B49A6A] transition-colors rounded"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              )}
+
+              {/* Trending Tags */}
+              <div className="space-y-3">
+                <span className="text-xs uppercase tracking-wider text-[#B49A6A] font-semibold flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  Popüler Trend Aramalar
+                </span>
                 <div className="flex flex-wrap gap-2">
-                  {recentSearches.map((term, i) => (
+                  {TRENDING_TAGS.map((tag, i) => (
                     <button
                       key={i}
-                      onClick={() => handleSelectTag(term)}
-                      className="px-3 py-1.5 bg-[#1C1B1A] border border-[#3A3835] text-xs text-[#E8DED1] hover:border-[#B49A6A] hover:text-[#B49A6A] transition-colors rounded"
+                      onClick={() => handleSelectTag(tag)}
+                      className="px-3.5 py-1.5 bg-[#1C1B1A] border border-[#2A2825] text-xs text-[#F8F5EF] hover:border-[#B49A6A] hover:bg-[#242321] transition-colors rounded shadow-sm flex items-center gap-1.5"
                     >
-                      {term}
+                      <Tag className="w-3 h-3 text-[#B49A6A]" />
+                      <span>{tag}</span>
                     </button>
                   ))}
                 </div>
               </div>
-            )}
 
-            {/* Trending Tags */}
-            <div className="space-y-3">
-              <span className="text-xs uppercase tracking-wider text-[#B49A6A] font-semibold flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5" />
-                Popüler Trend Aramalar
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {TRENDING_TAGS.map((tag, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSelectTag(tag)}
-                    className="px-3.5 py-1.5 bg-[#1C1B1A] border border-[#2A2825] text-xs text-[#F8F5EF] hover:border-[#B49A6A] hover:bg-[#242321] transition-colors rounded shadow-sm flex items-center gap-1.5"
-                  >
-                    <Tag className="w-3 h-3 text-[#B49A6A]" />
-                    <span>{tag}</span>
-                  </button>
-                ))}
+              {/* Recommended Products Showcase */}
+              <div className="space-y-4 pt-4 border-t border-[#2A2825]">
+                <span className="text-xs uppercase tracking-wider text-[#8C857B] font-semibold block">
+                  Sizin İçin Seçtiklerimiz (Öne Çıkanlar)
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {products.slice(0, 4).map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/urun/${product.slug}`}
+                      onClick={onClose}
+                      className="group bg-[#1C1B1A] border border-[#2A2825] p-3 hover:border-[#B49A6A] transition-all flex flex-col justify-between shadow-md rounded"
+                    >
+                      <div className="aspect-square relative mb-3 overflow-hidden bg-[#242321]">
+                        {product.images[0] && (
+                          <Image
+                            src={product.images[0]}
+                            alt={product.name}
+                            fill
+                            sizes="150px"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-serif text-xs font-normal text-[#F8F5EF] line-clamp-1 group-hover:text-[#B49A6A] transition-colors">
+                          {product.name}
+                        </h4>
+                        <p className="text-xs font-semibold text-[#B49A6A] mt-1">₺{product.price.toLocaleString('tr-TR')}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Recommended Products Showcase */}
-            <div className="space-y-4 pt-4 border-t border-[#2A2825]">
-              <span className="text-xs uppercase tracking-wider text-[#8C857B] font-semibold block">
-                Sizin İçin Seçtiklerimiz (Öne Çıkanlar)
-              </span>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {products.slice(0, 4).map((product) => (
+          {/* State B: Live Instant Indexed Results */}
+          {query.trim() && searchResults.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-[#2A2825]">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-[#B49A6A] animate-pulse" />
+                  <h3 className="text-xs uppercase tracking-wider text-[#8C857B]">
+                    "{query}" İle Anlık İndekslendi: <strong className="text-[#F8F5EF] font-semibold text-sm">{searchResults.length} Ürün</strong>
+                  </h3>
+                </div>
+                <button
+                  onClick={handleSearchSubmit}
+                  className="text-xs text-[#B49A6A] hover:underline font-semibold flex items-center gap-1"
+                >
+                  <span>Tüm Sonuç Sayfasını Aç</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Live Search Results Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {searchResults.slice(0, 12).map((product) => (
                   <Link
                     key={product.id}
                     href={`/urun/${product.slug}`}
-                    onClick={onClose}
-                    className="group bg-[#1C1B1A] border border-[#2A2825] p-3 hover:border-[#B49A6A] transition-all flex flex-col justify-between shadow-md rounded"
+                    onClick={() => {
+                      addRecentSearch(query);
+                      onClose();
+                    }}
+                    className="group bg-[#1C1B1A] border border-[#2A2825] p-3.5 hover:border-[#B49A6A] transition-all flex items-center gap-4 shadow-lg rounded"
                   >
-                    <div className="aspect-square relative mb-3 overflow-hidden bg-[#242321]">
+                    <div className="w-16 h-16 relative bg-[#242321] shrink-0 overflow-hidden rounded">
                       {product.images[0] && (
                         <Image
                           src={product.images[0]}
                           alt={product.name}
                           fill
-                          sizes="150px"
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="64px"
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       )}
                     </div>
-                    <div>
-                      <h4 className="font-serif text-xs font-normal text-[#F8F5EF] line-clamp-1 group-hover:text-[#B49A6A] transition-colors">
+
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] text-[#B49A6A] uppercase tracking-wider block font-semibold">
+                        {product.category === 'esarp' ? 'İpek Eşarp' : product.category === 'sal' ? 'Şal' : 'Aksesuar'}
+                      </span>
+                      <h4 className="font-serif text-xs text-[#F8F5EF] truncate group-hover:text-[#B49A6A] transition-colors mt-0.5">
                         {product.name}
                       </h4>
-                      <p className="text-xs font-semibold text-[#B49A6A] mt-1">₺{product.price.toLocaleString('tr-TR')}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs font-bold text-[#B49A6A]">₺{product.price.toLocaleString('tr-TR')}</span>
+                        {product.compareAtPrice && (
+                          <span className="text-[10px] text-[#8C857B] line-through">₺{product.compareAtPrice.toLocaleString('tr-TR')}</span>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 ))}
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* State B: Live Instant Indexed Results */}
-        {query.trim() && searchResults.length > 0 && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-[#2A2825]">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#B49A6A] animate-pulse" />
-                <h3 className="text-xs uppercase tracking-wider text-[#8C857B]">
-                  "{query}" İle Anlık İndekslendi: <strong className="text-[#F8F5EF] font-semibold text-sm">{searchResults.length} Ürün</strong>
-                </h3>
+              {searchResults.length > 12 && (
+                <div className="text-center pt-4 pb-6">
+                  <button
+                    onClick={handleSearchSubmit}
+                    className="px-6 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shadow-lg rounded"
+                  >
+                    Tüm {searchResults.length} Sonucu İncele →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* State C: No Results Found */}
+          {query.trim() && searchResults.length === 0 && (
+            <div className="py-12 text-center space-y-6 bg-[#1C1B1A] border border-[#2A2825] p-8 rounded shadow-xl">
+              <div className="w-12 h-12 rounded-full bg-[#242321] border border-[#3A3835] flex items-center justify-center mx-auto text-[#B49A6A]">
+                <Search className="w-6 h-6" />
               </div>
-              <button
-                onClick={handleSearchSubmit}
-                className="text-xs text-[#B49A6A] hover:underline font-semibold flex items-center gap-1"
-              >
-                <span>Tüm Sonuç Sayfasını Aç</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {/* Live Search Results Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchResults.slice(0, 12).map((product) => (
-                <Link
-                  key={product.id}
-                  href={`/urun/${product.slug}`}
-                  onClick={() => {
-                    addRecentSearch(query);
-                    onClose();
-                  }}
-                  className="group bg-[#1C1B1A] border border-[#2A2825] p-3.5 hover:border-[#B49A6A] transition-all flex items-center gap-4 shadow-lg rounded"
-                >
-                  <div className="w-16 h-16 relative bg-[#242321] shrink-0 overflow-hidden rounded">
-                    {product.images[0] && (
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill
-                        sizes="64px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] text-[#B49A6A] uppercase tracking-wider block font-semibold">
-                      {product.category === 'esarp' ? 'İpek Eşarp' : product.category === 'sal' ? 'Şal' : 'Aksesuar'}
-                    </span>
-                    <h4 className="font-serif text-xs text-[#F8F5EF] truncate group-hover:text-[#B49A6A] transition-colors mt-0.5">
-                      {product.name}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs font-bold text-[#B49A6A]">₺{product.price.toLocaleString('tr-TR')}</span>
-                      {product.compareAtPrice && (
-                        <span className="text-[10px] text-[#8C857B] line-through">₺{product.compareAtPrice.toLocaleString('tr-TR')}</span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {searchResults.length > 12 && (
-              <div className="text-center pt-4 pb-6">
-                <button
-                  onClick={handleSearchSubmit}
-                  className="px-6 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shadow-lg rounded"
-                >
-                  Tüm {searchResults.length} Sonucu İncele →
-                </button>
+              <div>
+                <h3 className="font-serif text-xl font-normal text-[#F8F5EF]">"{query}" İle Eşleşen Ürün Bulunamadı</h3>
+                <p className="text-xs text-[#8C857B] mt-2 max-w-md mx-auto">
+                  Aradığınız kelimeye uygun bir ürün bulunamadı. Lütfen farklı bir kelime yazmayı veya aşağıdaki popüler terimlerden birini seçmeyi deneyin.
+                </p>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* State C: No Results Found */}
-        {query.trim() && searchResults.length === 0 && (
-          <div className="py-12 text-center space-y-6 bg-[#1C1B1A] border border-[#2A2825] p-8 rounded shadow-xl">
-            <div className="w-12 h-12 rounded-full bg-[#242321] border border-[#3A3835] flex items-center justify-center mx-auto text-[#B49A6A]">
-              <Search className="w-6 h-6" />
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                {TRENDING_TAGS.map((tag, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSelectTag(tag)}
+                    className="px-3 py-1.5 bg-[#242321] border border-[#3A3835] text-xs text-[#E8DED1] hover:border-[#B49A6A] hover:text-[#B49A6A] transition-colors rounded"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div>
-              <h3 className="font-serif text-xl font-normal text-[#F8F5EF]">"{query}" İle Eşleşen Ürün Bulunamadı</h3>
-              <p className="text-xs text-[#8C857B] mt-2 max-w-md mx-auto">
-                Aradığınız kelimeye uygun bir ürün bulunamadı. Lütfen farklı bir kelime yazmayı veya aşağıdaki popüler terimlerden birini seçmeyi deneyin.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-              {TRENDING_TAGS.map((tag, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleSelectTag(tag)}
-                  className="px-3 py-1.5 bg-[#242321] border border-[#3A3835] text-xs text-[#E8DED1] hover:border-[#B49A6A] hover:text-[#B49A6A] transition-colors rounded"
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
