@@ -37,12 +37,16 @@ export default function AuthPage() {
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPass) {
-      showToast('Lütfen e-posta ve şifrenizi giriniz.', 'error');
+      showToast('Lütfen e-posta / telefon ve şifrenizi giriniz.', 'error');
       return;
     }
-    login(loginEmail, loginPass);
-    showToast('Hoş geldiniz! Hesabınıza başarıyla giriş yapıldı.', 'success');
-    router.push('/hesabim');
+    const result = login(loginEmail, loginPass);
+    if (result.success && result.user) {
+      showToast(`Hoş geldiniz Sayın ${result.user.name}! Giriş başarılı.`, 'success');
+      router.push('/hesabim');
+    } else {
+      showToast(result.message || '⚠️ Geçersiz e-posta veya şifre! Bilgilerinizi kontrol ediniz.', 'error');
+    }
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -60,9 +64,13 @@ export default function AuthPage() {
       return;
     }
 
-    register(regName, regEmail, regPhone, regPass);
-    showToast('🎉 Tebrikler! Üyeliğiniz oluşturuldu ve %10 Hoş Geldin Kuponunuz hesabınıza tanımlandı.', 'success');
-    router.push('/hesabim');
+    const result = register(regName, regEmail, regPhone, regPass);
+    if (result.success && result.user) {
+      showToast(`🎉 Tebrikler Sayın ${result.user.name}! Üyeliğiniz oluşturuldu ve giriş yapıldı.`, 'success');
+      router.push('/hesabim');
+    } else {
+      showToast(result.message || 'Kayıt sırasında bir hata oluştu.', 'error');
+    }
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {
@@ -202,6 +210,12 @@ export default function AuthPage() {
                 <span>Giriş Yap</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              <div className="p-3 bg-[#242321] border border-[#3A3835] text-[11px] text-[#8C857B] rounded-sm space-y-1">
+                <span className="font-semibold text-[#B49A6A] block">💡 Doğrulama Testi İçin Kayıtlı Üye Hesabı:</span>
+                <p>E-Posta: <code className="text-[#F8F5EF]">ayse.yilmaz@example.com</code></p>
+                <p>Şifre: <code className="text-[#F8F5EF]">123456</code> (veya sekmeden Yeni Üye Kaydı oluşturabilirsiniz)</p>
+              </div>
             </form>
           )}
 
