@@ -65,6 +65,23 @@ export default function AccountPage() {
     'orders' | 'wishlist' | 'addresses' | 'cards' | 'coupons' | 'security' | 'profile'
   >('orders');
 
+  // Sync active tab from URL query parameter (?tab=orders, ?tab=profile, etc.)
+  useEffect(() => {
+    const checkTab = () => {
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        if (tabParam && ['orders', 'wishlist', 'addresses', 'cards', 'coupons', 'security', 'profile'].includes(tabParam)) {
+          setActiveTab(tabParam as any);
+        }
+      }
+    };
+
+    checkTab();
+    window.addEventListener('popstate', checkTab);
+    return () => window.removeEventListener('popstate', checkTab);
+  }, []);
+
   // Customer Profile Form
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',

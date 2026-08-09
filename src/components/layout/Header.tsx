@@ -198,24 +198,56 @@ export default function Header() {
                           {/* Navigation Links */}
                           <div className="space-y-1 text-xs font-medium">
                             <Link
-                              href="/hesabim"
-                              onClick={() => setIsAccountMenuOpen(false)}
+                              href="/hesabim?tab=profile"
+                              onClick={() => {
+                                setIsAccountMenuOpen(false);
+                                if (typeof window !== 'undefined' && window.location.pathname === '/hesabim') {
+                                  window.history.pushState({}, '', '/hesabim?tab=profile');
+                                  window.dispatchEvent(new Event('popstate'));
+                                }
+                              }}
                               className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
                             >
                               <span>Hesabım &amp; Profilim</span>
                               <span className="text-[10px] text-[#8C857B]">→</span>
                             </Link>
                             <Link
-                              href="/hesabim"
-                              onClick={() => setIsAccountMenuOpen(false)}
+                              href="/hesabim?tab=orders"
+                              onClick={() => {
+                                setIsAccountMenuOpen(false);
+                                if (typeof window !== 'undefined' && window.location.pathname === '/hesabim') {
+                                  window.history.pushState({}, '', '/hesabim?tab=orders');
+                                  window.dispatchEvent(new Event('popstate'));
+                                }
+                              }}
                               className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
                             >
                               <span>Siparişlerim &amp; Kargolarım</span>
                               <span className="text-[10px] text-[#8C857B]">→</span>
                             </Link>
                             <Link
-                              href="/hesabim"
-                              onClick={() => setIsAccountMenuOpen(false)}
+                              href="/hesabim?tab=addresses"
+                              onClick={() => {
+                                setIsAccountMenuOpen(false);
+                                if (typeof window !== 'undefined' && window.location.pathname === '/hesabim') {
+                                  window.history.pushState({}, '', '/hesabim?tab=addresses');
+                                  window.dispatchEvent(new Event('popstate'));
+                                }
+                              }}
+                              className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
+                            >
+                              <span>Kayıtlı Adreslerim</span>
+                              <span className="text-[10px] text-[#8C857B]">→</span>
+                            </Link>
+                            <Link
+                              href="/hesabim?tab=cards"
+                              onClick={() => {
+                                setIsAccountMenuOpen(false);
+                                if (typeof window !== 'undefined' && window.location.pathname === '/hesabim') {
+                                  window.history.pushState({}, '', '/hesabim?tab=cards');
+                                  window.dispatchEvent(new Event('popstate'));
+                                }
+                              }}
                               className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
                             >
                               <span>Kayıtlı Ödeme Kartlarım</span>
