@@ -94,6 +94,14 @@ export default function AccountPage() {
 
   const userTotalSpent = userOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
+  // Isolate coupons specifically for current logged-in user
+  const userCoupons = coupons.filter((cp) => {
+    if (user?.email === 'ayse.yilmaz@example.com' || user?.id === 'usr-1') {
+      return true;
+    }
+    return cp.code === 'VERAWELCOME10' || cp.code === 'HOŞGELDİN';
+  });
+
   // Saved Addresses State (Isolated & Persisted per user)
   const [addresses, setAddresses] = useState<SavedAddress[]>(() => {
     if (typeof window !== 'undefined' && user) {
@@ -393,7 +401,7 @@ export default function AccountPage() {
               <span className="text-[10px] uppercase text-[#8C857B] font-medium">Toplam Harcama</span>
             </div>
             <div>
-              <span className="block font-serif text-2xl text-emerald-400 font-semibold">{coupons.length}</span>
+              <span className="block font-serif text-2xl text-emerald-400 font-semibold">{userCoupons.length}</span>
               <span className="text-[10px] uppercase text-[#8C857B] font-medium">Kupon</span>
             </div>
           </div>
@@ -464,7 +472,7 @@ export default function AccountPage() {
             >
               <div className="flex items-center gap-2.5">
                 <Tag className="w-4 h-4 text-[#B49A6A]" />
-                <span>İndirim Kuponlarım ({coupons.length})</span>
+                <span>İndirim Kuponlarım ({userCoupons.length})</span>
               </div>
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -916,30 +924,37 @@ export default function AccountPage() {
                   <p className="text-xs text-[#8C857B]">Sepette hemen kullanabileceğiniz promosyon kodlarınız.</p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {coupons.map((cp) => (
-                    <div key={cp.id} className="p-4 bg-[#F8F5EF] border border-[#E6DFD5] space-y-3 relative">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="px-2 py-0.5 bg-[#B49A6A] text-[#F8F5EF] text-[10px] uppercase font-bold tracking-wider">
-                            {cp.discountText}
-                          </span>
-                          <h4 className="font-serif text-lg text-[#242321] font-semibold mt-1">{cp.code}</h4>
+                {userCoupons.length === 0 ? (
+                  <div className="text-center py-10 px-4 border border-dashed border-[#E6DFD5] space-y-3 rounded-sm">
+                    <Tag className="w-8 h-8 text-[#B49A6A] mx-auto" />
+                    <p className="text-xs text-[#8C857B]">Hesabınıza tanımlı aktif bir indirim kuponu bulunmamaktadır.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {userCoupons.map((cp) => (
+                      <div key={cp.id} className="p-4 bg-[#F8F5EF] border border-[#E6DFD5] space-y-3 relative">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="px-2 py-0.5 bg-[#B49A6A] text-[#F8F5EF] text-[10px] uppercase font-bold tracking-wider">
+                              {cp.discountText}
+                            </span>
+                            <h4 className="font-serif text-lg text-[#242321] font-semibold mt-1">{cp.code}</h4>
+                          </div>
+                          <button
+                            onClick={() => handleCopyCoupon(cp.code)}
+                            className="px-3 py-1 bg-[#242321] text-[#F8F5EF] text-xs font-semibold uppercase flex items-center gap-1 hover:bg-[#B49A6A]"
+                          >
+                            {copiedCode === cp.code ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedCode === cp.code ? 'Kopyalandı' : 'Kodu Kopyala'}</span>
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleCopyCoupon(cp.code)}
-                          className="px-3 py-1 bg-[#242321] text-[#F8F5EF] text-xs font-semibold uppercase flex items-center gap-1 hover:bg-[#B49A6A]"
-                        >
-                          {copiedCode === cp.code ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                          <span>{copiedCode === cp.code ? 'Kopyalandı' : 'Kodu Kopyala'}</span>
-                        </button>
+                        <p className="text-xs text-[#5A5652]">
+                          ₺{cp.minSpend.toLocaleString('tr-TR')} ve üzeri alışverişlerde geçerlidir.
+                        </p>
                       </div>
-                      <p className="text-xs text-[#5A5652]">
-                        ₺{cp.minSpend.toLocaleString('tr-TR')} ve üzeri alışverişlerde geçerlidir.
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

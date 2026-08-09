@@ -84,9 +84,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedSession = localStorage.getItem('veraesarp_user_session');
       if (savedSession) {
         setUser(JSON.parse(savedSession));
+      } else {
+        setUser(null);
       }
     } catch (e) {
       console.error('Failed to load user database', e);
+      setUser(null);
     }
   }, []);
 
