@@ -15,7 +15,7 @@ import AdminCustomers from '@/components/admin/AdminCustomers';
 import AdminEmails from '@/components/admin/AdminEmails';
 import AdminCoupons from '@/components/admin/AdminCoupons';
 import AdminCMS from '@/components/admin/AdminCMS';
-import AdminSettings from '@/components/admin/AdminSettings';
+import AdminSiteSettings from '@/components/admin/AdminSiteSettings';
 import ProductModal from '@/components/admin/ProductModal';
 import OrderInvoiceModal from '@/components/admin/OrderInvoiceModal';
 import { Product, CustomerOrder } from '@/lib/types/ecommerce';
@@ -177,7 +177,7 @@ export default function ExecutiveAdminDashboard() {
           {activeTab === 'emails' && <AdminEmails />}
           {activeTab === 'coupons' && <AdminCoupons />}
           {activeTab === 'cms' && <AdminCMS />}
-          {activeTab === 'settings' && <AdminSettings />}
+          {activeTab === 'settings' && <AdminSiteSettings />}
         </main>
       </div>
 
