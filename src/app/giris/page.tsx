@@ -18,6 +18,7 @@ import {
   Wand2,
   X,
   FileText,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -31,7 +32,8 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
-  const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false);
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'kvkk' | 'terms'>('kvkk');
   const [forgotEmail, setForgotEmail] = useState('');
 
   // Login Form State
@@ -387,7 +389,7 @@ export default function AuthPage() {
                 )}
               </div>
 
-              {/* KVKK & Terms Checkbox with Popup & New Tab Guard */}
+              {/* KVKK & Üyelik Sözleşmesi Checkbox with In-Page Modal & New Tab Guard */}
               <label className="flex items-start gap-2 cursor-pointer text-[#8C857B] pt-2">
                 <input
                   type="checkbox"
@@ -399,20 +401,25 @@ export default function AuthPage() {
                 <span className="leading-relaxed">
                   <button
                     type="button"
-                    onClick={() => setIsKvkkModalOpen(true)}
+                    onClick={() => {
+                      setModalTab('kvkk');
+                      setIsLegalModalOpen(true);
+                    }}
                     className="text-[#B49A6A] underline font-semibold hover:text-[#F8F5EF]"
                   >
                     KVKK Aydınlatma Metni
                   </button>{' '}
                   ve{' '}
-                  <a
-                    href="/kurumsal/kvkk"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalTab('terms');
+                      setIsLegalModalOpen(true);
+                    }}
                     className="text-[#B49A6A] underline font-semibold hover:text-[#F8F5EF]"
                   >
                     Üyelik Sözleşmesi
-                  </a>
+                  </button>
                   'ni okudum, kabul ediyorum.
                 </span>
               </label>
@@ -467,42 +474,97 @@ export default function AuthPage() {
         </div>
       )}
 
-      {/* In-Page KVKK Modal (Prevents losing form data) */}
-      {isKvkkModalOpen && (
+      {/* In-Page Dual Legal Modal (KVKK & Üyelik Sözleşmesi - Prevents losing form data) */}
+      {isLegalModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 sm:p-8 max-w-2xl w-full text-[#F8F5EF] space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#3A3835] pb-4">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#B49A6A]" />
-                <h3 className="font-serif text-xl font-normal text-[#F8F5EF]">KVKK Aydınlatma Metni &amp; Üyelik Sözleşmesi</h3>
+                <h3 className="font-serif text-xl font-normal text-[#F8F5EF]">Yasal Metinler &amp; Sözleşmeler</h3>
               </div>
-              <button onClick={() => setIsKvkkModalOpen(false)} className="p-1 text-[#8C857B] hover:text-[#F8F5EF]">
+              <button onClick={() => setIsLegalModalOpen(false)} className="p-1 text-[#8C857B] hover:text-[#F8F5EF]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="text-xs text-[#8C857B] space-y-3 leading-relaxed">
-              <p className="font-semibold text-[#F8F5EF]">1. Kişisel Verilerin İşlenme Amacı</p>
-              <p>
-                Vera Eşarp olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında; siparişlerinizin işleme alınması, teslimat adreslerinize ulaştırılması, müşteri hizmetleri ve yasal yükümlülüklerin yerine getirilmesi amacıyla kişisel verileriniz yüksek güvenlikli sunucularımızda saklanmaktadır.
-              </p>
-              <p className="font-semibold text-[#F8F5EF]">2. Veri Güvenliği ve 256-Bit SSL</p>
-              <p>
-                Ödeme ve hesap verileriniz İyzico altyapısı ve 256-Bit SSL şifreleme sertifikaları ile korunmakta olup 3. şahıslarla asla paylaşılmamaktadır.
-              </p>
-              <p className="font-semibold text-[#F8F5EF]">3. Üye Hakları</p>
-              <p>
-                Dilediğiniz an kişisel verilerinizin silinmesini, güncellenmesini veya aktarılmasını talep etme hakkına sahipsiniz.
-              </p>
+            {/* Modal Tabs */}
+            <div className="flex border-b border-[#3A3835]">
+              <button
+                onClick={() => setModalTab('kvkk')}
+                className={`py-2 px-4 text-xs font-semibold uppercase border-b-2 transition-colors ${
+                  modalTab === 'kvkk'
+                    ? 'border-[#B49A6A] text-[#B49A6A]'
+                    : 'border-transparent text-[#8C857B] hover:text-[#F8F5EF]'
+                }`}
+              >
+                KVKK Aydınlatma Metni
+              </button>
+              <button
+                onClick={() => setModalTab('terms')}
+                className={`py-2 px-4 text-xs font-semibold uppercase border-b-2 transition-colors ${
+                  modalTab === 'terms'
+                    ? 'border-[#B49A6A] text-[#B49A6A]'
+                    : 'border-transparent text-[#8C857B] hover:text-[#F8F5EF]'
+                }`}
+              >
+                Üyelik Sözleşmesi
+              </button>
             </div>
 
-            <div className="pt-4 border-t border-[#3A3835] flex justify-end">
+            {/* Tab 1: KVKK Content */}
+            {modalTab === 'kvkk' && (
+              <div className="text-xs text-[#8C857B] space-y-3 leading-relaxed">
+                <p className="font-semibold text-[#F8F5EF]">1. Kişisel Verilerin İşlenme Amacı</p>
+                <p>
+                  Vera Eşarp olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında; siparişlerinizin işleme alınması, teslimat adreslerinize ulaştırılması, müşteri hizmetleri ve yasal yükümlülüklerin yerine getirilmesi amacıyla kişisel verileriniz yüksek güvenlikli sunucularımızda saklanmaktadır.
+                </p>
+                <p className="font-semibold text-[#F8F5EF]">2. Veri Güvenliği ve 256-Bit SSL</p>
+                <p>
+                  Ödeme ve hesap verileriniz İyzico altyapısı ve 256-Bit SSL şifreleme sertifikaları ile korunmakta olup 3. şahıslarla asla paylaşılmamaktadır.
+                </p>
+                <p className="font-semibold text-[#F8F5EF]">3. Üye Hakları</p>
+                <p>
+                  Dilediğiniz an kişisel verilerinizin silinmesini, güncellenmesini veya aktarılmasını talep etme hakkına sahipsiniz.
+                </p>
+              </div>
+            )}
+
+            {/* Tab 2: Üyelik Sözleşmesi Content */}
+            {modalTab === 'terms' && (
+              <div className="text-xs text-[#8C857B] space-y-3 leading-relaxed">
+                <p className="font-semibold text-[#F8F5EF]">1. Taraflar ve Konu</p>
+                <p>
+                  İşbu Üyelik Sözleşmesi, Vera Eşarp e-ticaret platformu ile siteye üye olan müşteri arasında üyelik şartlarını ve tarafların karşılıklı hak ve yükümlülüklerini düzenler.
+                </p>
+                <p className="font-semibold text-[#F8F5EF]">2. Üyelik Şartları ve VIP Ayrıcalıklar</p>
+                <p>
+                  Üye, sisteme girmiş olduğu iletişim ve fatura bilgilerinin doğru olduğunu kabul ve beyan eder. Üyeler özel kampanya, Hoş Geldin Kuponu (%10) ve erken erişim haklarından yararlanır.
+                </p>
+                <p className="font-semibold text-[#F8F5EF]">3. İptal ve İade Hakları</p>
+                <p>
+                  Üye, satın aldığı ürünleri teslim tarihinden itibaren 14 gün içerisinde sebep göstermeksizin iade etme hakkına sahiptir.
+                </p>
+              </div>
+            )}
+
+            <div className="pt-4 border-t border-[#3A3835] flex justify-between items-center">
+              <a
+                href="/kurumsal/kvkk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-[#B49A6A] hover:underline flex items-center gap-1"
+              >
+                <span>Yeni Sekmede Tam Ekran Aç</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+
               <button
                 type="button"
                 onClick={() => {
                   setTermsAccepted(true);
-                  setIsKvkkModalOpen(false);
-                  showToast('KVKK şartları okundu ve kabul edildi.', 'success');
+                  setIsLegalModalOpen(false);
+                  showToast('KVKK ve Üyelik Sözleşmesi okundu ve kabul edildi.', 'success');
                 }}
                 className="px-6 py-2.5 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052]"
               >
