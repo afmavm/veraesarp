@@ -13,7 +13,7 @@ export default function Header() {
   const { toggleCart, totalCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { campaigns } = useData();
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, isAdmin } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -273,13 +273,15 @@ export default function Header() {
                 >
                   Stil Rehberi &amp; Blog
                 </Link>
-                <Link
-                  href="/admin"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block py-2 text-[#B49A6A] font-bold"
-                >
-                  Admin Paneli
-                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block py-2 text-[#B49A6A] font-bold"
+                  >
+                    Admin Paneli
+                  </Link>
+                )}
               </div>
             </div>
 

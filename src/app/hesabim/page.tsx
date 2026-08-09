@@ -55,7 +55,7 @@ export interface SavedCard {
 }
 
 export default function AccountPage() {
-  const { user, isLoggedIn, logout, updateUser } = useAuth();
+  const { user, isLoggedIn, isAdmin, logout, updateUser } = useAuth();
   const { orders, coupons } = useData();
   const { wishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -504,12 +504,14 @@ export default function AccountPage() {
             </button>
 
             <div className="pt-4 border-t border-[#E6DFD5] space-y-1">
-              <Link
-                href="/admin"
-                className="w-full flex items-center gap-2 p-3 text-xs font-bold uppercase tracking-wider text-[#B49A6A] hover:bg-[#F8F5EF]"
-              >
-                <span>Admin Paneline Git →</span>
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="w-full flex items-center gap-2 p-3 text-xs font-bold uppercase tracking-wider text-[#B49A6A] hover:bg-[#F8F5EF]"
+                >
+                  <span>Admin Paneline Git →</span>
+                </Link>
+              )}
 
               <button
                 onClick={() => {

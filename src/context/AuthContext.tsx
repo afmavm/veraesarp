@@ -8,6 +8,8 @@ export interface UserProfile {
   email: string;
   phone: string;
   password?: string;
+  role?: 'admin' | 'customer';
+  isAdmin?: boolean;
   tier: string;
   totalSpent: number;
   orderCount: number;
@@ -23,6 +25,7 @@ export interface AuthResult {
 interface AuthContextType {
   user: UserProfile | null;
   isLoggedIn: boolean;
+  isAdmin: boolean;
   registeredUsers: UserProfile[];
   login: (emailOrPhone: string, pass: string) => AuthResult;
   register: (name: string, email: string, phone: string, pass: string) => AuthResult;
@@ -33,25 +36,29 @@ interface AuthContextType {
 // Initial Registered Demo Users in Database
 const DEFAULT_REGISTERED_USERS: UserProfile[] = [
   {
+    id: 'usr-admin',
+    name: 'Vera Mağaza Yöneticisi',
+    email: 'destek@veraesarp.com',
+    phone: '+90 212 555 83 72',
+    password: '123456',
+    role: 'admin',
+    isAdmin: true,
+    tier: 'Vera Yönetici',
+    totalSpent: 0,
+    orderCount: 0,
+  },
+  {
     id: 'usr-1',
     name: 'Ayşe Yılmaz',
     email: 'ayse.yilmaz@example.com',
     phone: '+90 532 123 45 67',
     password: '123456',
+    role: 'customer',
+    isAdmin: false,
     tier: 'Vera VIP Diamond Müşteri',
     totalSpent: 14850,
     orderCount: 4,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
-  },
-  {
-    id: 'usr-2',
-    name: 'Vera Destek Üyesi',
-    email: 'destek@veraesarp.com',
-    phone: '+90 212 555 83 72',
-    password: '123456',
-    tier: 'Vera Gold Üye',
-    totalSpent: 4500,
-    orderCount: 2,
   },
   {
     id: 'usr-3',
@@ -59,6 +66,8 @@ const DEFAULT_REGISTERED_USERS: UserProfile[] = [
     email: 'demo@veraesarp.com',
     phone: '+90 555 000 00 00',
     password: '123456',
+    role: 'customer',
+    isAdmin: false,
     tier: 'Vera Silver Üye',
     totalSpent: 1890,
     orderCount: 1,
@@ -163,6 +172,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: cleanEmail,
       phone: phone || '+90 500 000 00 00',
       password: cleanPass,
+      role: 'customer',
+      isAdmin: false,
       tier: 'Vera Silver Üye',
       totalSpent: 0,
       orderCount: 0,
@@ -202,11 +213,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const isAdmin = !!user && (user.role === 'admin' || user.isAdmin === true || user.email === 'destek@veraesarp.com');
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isLoggedIn: !!user,
+        isAdmin,
         registeredUsers,
         login,
         register,
