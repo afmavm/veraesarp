@@ -137,7 +137,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           phone: newUser.phone || '',
           email: newUser.email,
           address: 'Bireysel Üyelik Adresi',
-          city: 'İstanbul',
+          city: 'Erzurum',
           createdAt: new Date().toISOString().slice(0, 10),
         };
         return [newCari, ...prev];
@@ -170,7 +170,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   phone: u.phone || '',
                   email: u.email,
                   address: 'Bireysel Üyelik Adresi',
-                  city: 'İstanbul',
+                  city: 'Erzurum',
                   createdAt: new Date().toISOString().slice(0, 10),
                 };
                 return [newCari, ...prev];
@@ -351,7 +351,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       estimatedDelivery: '3 İş Günü İçinde',
       currentStatus: 'Hazırlanıyor - Sipariş Onaylandı',
       timeline: [
-        { step: 'Sipariş Alındı & Onaylandı', timestamp: 'Bugün', location: 'Vera Nişantaşı Depo', done: true, isCurrent: true },
+        { step: 'Sipariş Alındı & Onaylandı', timestamp: 'Bugün', location: 'Vera Erzurum Merkez Depo', done: true, isCurrent: true },
         { step: 'Paketleme & Hediye Kutusu Hazırlığı', timestamp: 'Bekleniyor', location: 'Vera Depo', done: false, isCurrent: false },
         { step: 'Kargo Şubesine Teslimat', timestamp: 'Bekleniyor', location: 'Kargo Şubesi', done: false, isCurrent: false },
         { step: 'Dağıtıma Çıkarıldı', timestamp: 'Bekleniyor', location: 'Teslimat Şubesi', done: false, isCurrent: false },

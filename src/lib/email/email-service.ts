@@ -91,7 +91,7 @@ const EMAIL_HEADER_HTML = `
       VERA EŞARP
     </h1>
     <p style="color: #8C857B; font-size: 11px; margin-top: 5px; text-transform: uppercase; letter-spacing: 2px;">
-      LUXURY SILK COLLECTION — NİŞANTAŞI / İSTANBUL
+      ÖZEL İPEK VE ŞAL KOLEKSİYONU — ERZURUM
     </p>
   </div>
 `;

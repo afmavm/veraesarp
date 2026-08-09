@@ -38,10 +38,10 @@ export default function AdminSidebar({
     { id: 'orders', label: 'Siparişler & Lojistik', icon: ShoppingBag, badge: pendingOrdersCount, badgeColor: 'bg-emerald-500/20 text-emerald-300' },
     { id: 'cari', label: 'Gelişmiş Cari İşlemler', icon: CreditCard },
     { id: 'growth', label: 'Satış Stratejileri & Kampanya', icon: TrendingUp },
-    { id: 'customers', label: 'Müşteri İlişkileri (CRM)', icon: Users },
+    { id: 'customers', label: 'Müşteri İlişkileri Yönetimi', icon: Users },
     { id: 'emails', label: 'E-Posta Bildirim Yönetimi', icon: Mail },
     { id: 'coupons', label: 'Kupon Kodları', icon: Tag },
-    { id: 'cms', label: 'CMS & Banner', icon: Sparkles },
+    { id: 'cms', label: 'Görsel & Banner Yönetimi', icon: Sparkles },
     { id: 'settings', label: 'Sistem & API Ayarları', icon: Settings },
   ];
 
@@ -56,16 +56,16 @@ export default function AdminSidebar({
                 VERA
               </span>
               <span className="block text-[8px] tracking-[0.4em] text-[#B49A6A] font-sans uppercase -mt-1 font-medium">
-                E X E C U T I V E
+                Y Ö N E T İ M
               </span>
             </Link>
             <span className="px-2 py-0.5 bg-[#B49A6A]/20 text-[#B49A6A] text-[10px] uppercase font-bold border border-[#B49A6A]/30">
-              v2.5 PRO
+              v2.5 Sürümü
             </span>
           </div>
           <p className="text-[11px] text-[#8C857B] mt-2 flex items-center gap-1.5">
             <Store className="w-3.5 h-3.5 text-[#B49A6A]" />
-            <span>Nişantaşı Flagship &amp; Global Store</span>
+            <span>Merkez Mağaza &amp; Genel Merkez</span>
           </p>
         </div>
 
@@ -110,8 +110,8 @@ export default function AdminSidebar({
           <span>Mağazaya Dön</span>
         </Link>
         <div className="text-[10px] text-[#8C857B] text-center">
-          <p>© 2026 VERA EŞARP Executive Suite</p>
-          <p className="text-emerald-400 font-medium">SSL 256-Bit Live Data Sync</p>
+          <p>© 2026 VERA EŞARP Yönetim Paneli</p>
+          <p className="text-emerald-400 font-medium">256-Bit Canlı Veri Senkronizasyonu</p>
         </div>
       </div>
     </aside>

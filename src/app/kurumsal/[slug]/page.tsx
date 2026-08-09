@@ -78,7 +78,7 @@ const CORPORATE_CONTENTS: Record<string, { title: string; subtitle: string; cont
     title: 'Mağazalarımız',
     subtitle: 'Vera Deneyimini Yerinde Yaşayın',
     content: `
-      <p><strong>İstanbul Nişantaşı Mağazası:</strong><br/>Abdi İpekçi Caddesi No:42, Şişli / İstanbul<br/>Telefon: +90 (212) 555 83 72</p>
+      <p><strong>Erzurum Merkez Mağazası:</strong><br/>Lalapaşa Mah. Pelit Meydanı Cad. No:14, Yakutiye / Erzurum<br/>Telefon: +90 (534) 490 25 57</p>
     `,
   },
 };

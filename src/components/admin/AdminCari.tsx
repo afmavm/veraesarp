@@ -42,7 +42,7 @@ export default function AdminCari() {
     phone: '',
     email: '',
     address: '',
-    city: 'İstanbul',
+    city: 'Erzurum',
   });
 
   // New Transaction Form State
@@ -73,7 +73,7 @@ export default function AdminCari() {
           phone: u.phone || '',
           email: u.email,
           address: 'Bireysel Üyelik Adresi',
-          city: 'İstanbul',
+          city: 'Erzurum',
           createdAt: new Date().toISOString().slice(0, 10),
         });
       }

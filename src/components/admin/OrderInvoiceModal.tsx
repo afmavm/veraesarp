@@ -29,7 +29,7 @@ export default function OrderInvoiceModal({ order, onClose }: OrderInvoiceModalP
               E-TİCARET FATURA VE İRSALİYE
             </span>
             <p className="text-[11px] text-[#5A5652] mt-2">
-              Vera Eşarp Tekstil A.Ş. • Nişantaşı, Abdi İpekçi Cad. No:42, Şişli / İstanbul
+              Vera Eşarp Tekstil A.Ş. • Lalapaşa Mah. Pelit Meydanı Cad. No:14, Yakutiye / Erzurum
             </p>
           </div>
 

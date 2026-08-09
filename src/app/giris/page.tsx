@@ -152,7 +152,7 @@ export default function AuthPage() {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#B49A6A]/20 border border-[#B49A6A]/40 text-[#B49A6A] text-[10px] uppercase tracking-widest font-semibold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>VERA PRIVILEGE CLUB</span>
+              <span>VERA ÖZEL ÜYE KULÜBÜ</span>
             </div>
             
             <h2 className="font-serif text-3xl font-normal text-[#F8F5EF] leading-tight">

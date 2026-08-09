@@ -24,7 +24,7 @@ export default function AdminCustomers() {
         name: u.name,
         email: u.email,
         phone: u.phone,
-        city: 'İstanbul',
+        city: 'Erzurum',
         ordersCount: userOrders.length,
         totalSpent: totalSpent,
         tier: u.tier || (totalSpent > 10000 ? 'Vera VIP Diamond' : totalSpent > 5000 ? 'Vera Gold Müşteri' : 'Vera Silver Üye'),

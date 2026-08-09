@@ -334,7 +334,7 @@
       "phone": "05441494851",
       "email": "afmavm@gmail.com",
       "address": "Bireysel Üyelik Adresi",
-      "city": "İstanbul",
+      "city": "Erzurum",
       "createdAt": "2026-08-09"
     },
     {
@@ -355,16 +355,16 @@
     {
       "id": "cari-102",
       "code": "CAR-TOP-02",
-      "title": "Nişantaşı Butik A.Ş.",
-      "taxOffice": "Şişli V.D.",
+      "title": "Vera Mağazacılık A.Ş.",
+      "taxOffice": "Aziziye V.D.",
       "taxNumber": "1948201948",
       "type": "Toptancı",
       "balance": 68500,
       "balanceType": "Alacaklı",
-      "phone": "0212 240 50 60",
-      "email": "siparis@nisantasibutik.com",
-      "address": "Abdi İpekçi Cad. No:88, Şişli / İstanbul",
-      "city": "İstanbul",
+      "phone": "0534 490 25 57",
+      "email": "siparis@veraesarp.com",
+      "address": "Pelit Meydanı Cad. No:14, Yakutiye / Erzurum",
+      "city": "Erzurum",
       "createdAt": "2026-01-10"
     },
     {
@@ -465,5 +465,5 @@
       "status": "Aktif"
     }
   ],
-  "updatedAt": "2026-08-09T19:06:00.064Z"
+  "updatedAt": "2026-08-09T19:20:10.439Z"
 }

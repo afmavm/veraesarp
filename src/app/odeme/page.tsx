@@ -17,8 +17,8 @@ export default function CheckoutPage() {
     lastName: '',
     email: '',
     phone: '',
-    city: 'İstanbul',
-    district: 'Kadıköy',
+    city: 'Erzurum',
+    district: 'Yakutiye',
     address: '',
     cardNumber: '',
     cardExpiry: '',
@@ -161,6 +161,7 @@ export default function CheckoutPage() {
                       onChange={handleChange}
                       className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
                     >
+                      <option value="Erzurum">Erzurum</option>
                       <option value="İstanbul">İstanbul</option>
                       <option value="Ankara">Ankara</option>
                       <option value="İzmir">İzmir</option>

@@ -38,7 +38,7 @@ export default function AdminOverview({ products, orders, onNavigateTab }: Admin
             <span>CANLI MAĞAZA METRİKLERİ</span>
           </div>
           <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#F8F5EF]">
-            Hoş Geldiniz, Vera Executive Suite
+            Hoş Geldiniz, Vera Yönetim Paneli
           </h1>
           <p className="text-xs text-[#8C857B] max-w-xl leading-relaxed">
             E-ticaret platformunuz %99.8 çalışma süresi ve 256-bit İyzico/PayTR güvenliği ile kesintisiz satış yapmaya devam ediyor.

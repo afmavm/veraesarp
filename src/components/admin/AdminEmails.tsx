@@ -132,7 +132,7 @@ export default function AdminEmails() {
       {/* Log Filter & Table */}
       <div className="bg-[#1C1B1A] border border-[#2A2825] overflow-hidden space-y-4 p-4">
         <div className="flex items-center justify-between border-b border-[#2A2825] pb-3 text-xs">
-          <span className="text-[#8C857B] font-semibold">Gönderim Günlüğü (Live Email Queue)</span>
+          <span className="text-[#8C857B] font-semibold">Gönderim Günlüğü (Canlı E-Posta Akışı)</span>
           <div className="flex items-center gap-2">
             <Filter className="w-3.5 h-3.5 text-[#8C857B]" />
             <select
