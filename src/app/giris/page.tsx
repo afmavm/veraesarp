@@ -3,7 +3,22 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, Lock, Mail, Phone, Eye, EyeOff, Sparkles, ShieldCheck, Check, ArrowRight, KeyRound } from 'lucide-react';
+import {
+  User,
+  Lock,
+  Mail,
+  Phone,
+  Eye,
+  EyeOff,
+  Sparkles,
+  ShieldCheck,
+  Check,
+  ArrowRight,
+  KeyRound,
+  Wand2,
+  X,
+  FileText,
+} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 
@@ -14,7 +29,9 @@ export default function AuthPage() {
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [isKvkkModalOpen, setIsKvkkModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
 
   // Login Form State
@@ -33,6 +50,42 @@ export default function AuthPage() {
   if (isLoggedIn) {
     router.push('/hesabim');
   }
+
+  // Strong Password Generator
+  const generateStrongPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+    let newPass = 'Vera#';
+    for (let i = 0; i < 7; i++) {
+      newPass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setRegPass(newPass);
+    setRegPassConfirm(newPass);
+    setShowRegPassword(true);
+
+    try {
+      navigator.clipboard.writeText(newPass);
+    } catch (e) {}
+
+    showToast(`✨ Güçlü şifreniz oluşturuldu ve panoya kopyalandı: ${newPass}`, 'success');
+  };
+
+  // Password Strength Assessor
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: '', color: 'bg-transparent', textColor: '' };
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (pass.length >= 10) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(pass)) score++;
+
+    if (score <= 2) return { score: 1, label: 'Zayıf', color: 'bg-rose-500', textColor: 'text-rose-400' };
+    if (score <= 3) return { score: 2, label: 'Orta Güçlükte', color: 'bg-amber-500', textColor: 'text-amber-400' };
+    if (score === 4) return { score: 3, label: 'Güçlü Şifre ✨', color: 'bg-[#B49A6A]', textColor: 'text-[#B49A6A]' };
+    return { score: 4, label: 'Çok Güçlü Şifre 🔒', color: 'bg-emerald-500', textColor: 'text-emerald-400' };
+  };
+
+  const passStrength = getPasswordStrength(regPass);
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,37 +321,74 @@ export default function AuthPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[#8C857B] mb-1">Şifre *</label>
-                  <input
-                    type="password"
-                    name="new-password"
-                    autoComplete="new-password"
-                    required
-                    placeholder="••••••••"
-                    value={regPass}
-                    onChange={(e) => setRegPass(e.target.value)}
-                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
-                  />
+              {/* Password Area with Generator & Strength Meter */}
+              <div className="space-y-3 pt-1">
+                <div className="flex justify-between items-center">
+                  <label className="text-[#8C857B]">Şifre Belirleyin *</label>
+                  <button
+                    type="button"
+                    onClick={generateStrongPassword}
+                    className="text-[11px] text-[#B49A6A] hover:text-[#F8F5EF] transition-colors flex items-center gap-1 font-semibold"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    <span>✨ Güçlü Şifre Oluştur</span>
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-[#8C857B] mb-1">Şifre Tekrarı *</label>
-                  <input
-                    type="password"
-                    name="confirm-password"
-                    autoComplete="new-password"
-                    required
-                    placeholder="••••••••"
-                    value={regPassConfirm}
-                    onChange={(e) => setRegPassConfirm(e.target.value)}
-                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="relative">
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      name="new-password"
+                      autoComplete="new-password"
+                      required
+                      placeholder="••••••••"
+                      value={regPass}
+                      onChange={(e) => setRegPass(e.target.value)}
+                      className="w-full p-3 pr-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegPassword(!showRegPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C857B] hover:text-[#F8F5EF]"
+                    >
+                      {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  <div className="relative">
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      name="confirm-password"
+                      autoComplete="new-password"
+                      required
+                      placeholder="Şifre Tekrarı"
+                      value={regPassConfirm}
+                      onChange={(e) => setRegPassConfirm(e.target.value)}
+                      className="w-full p-3 pr-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                    />
+                  </div>
                 </div>
+
+                {/* Password Strength Indicator Bar */}
+                {regPass && (
+                  <div className="space-y-1 text-[10px]">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#8C857B]">Şifre Güvenlik Seviyesi:</span>
+                      <span className={`font-semibold ${passStrength.textColor}`}>{passStrength.label}</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1 h-1.5 bg-[#242321] rounded-full overflow-hidden">
+                      <div className={`h-full transition-all ${passStrength.score >= 1 ? passStrength.color : 'bg-transparent'}`} />
+                      <div className={`h-full transition-all ${passStrength.score >= 2 ? passStrength.color : 'bg-transparent'}`} />
+                      <div className={`h-full transition-all ${passStrength.score >= 3 ? passStrength.color : 'bg-transparent'}`} />
+                      <div className={`h-full transition-all ${passStrength.score >= 4 ? passStrength.color : 'bg-transparent'}`} />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <label className="flex items-start gap-2 cursor-pointer text-[#8C857B] pt-1">
+              {/* KVKK & Terms Checkbox with Popup & New Tab Guard */}
+              <label className="flex items-start gap-2 cursor-pointer text-[#8C857B] pt-2">
                 <input
                   type="checkbox"
                   required
@@ -307,10 +397,23 @@ export default function AuthPage() {
                   className="accent-[#B49A6A] mt-0.5"
                 />
                 <span className="leading-relaxed">
-                  <Link href="/kurumsal/kvkk" className="text-[#B49A6A] underline">
+                  <button
+                    type="button"
+                    onClick={() => setIsKvkkModalOpen(true)}
+                    className="text-[#B49A6A] underline font-semibold hover:text-[#F8F5EF]"
+                  >
                     KVKK Aydınlatma Metni
-                  </Link>{' '}
-                  ve Üyelik Sözleşmesi'ni okudum, kabul ediyorum.
+                  </button>{' '}
+                  ve{' '}
+                  <a
+                    href="/kurumsal/kvkk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#B49A6A] underline font-semibold hover:text-[#F8F5EF]"
+                  >
+                    Üyelik Sözleşmesi
+                  </a>
+                  'ni okudum, kabul ediyorum.
                 </span>
               </label>
 
@@ -360,6 +463,52 @@ export default function AuthPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* In-Page KVKK Modal (Prevents losing form data) */}
+      {isKvkkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 sm:p-8 max-w-2xl w-full text-[#F8F5EF] space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#3A3835] pb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#B49A6A]" />
+                <h3 className="font-serif text-xl font-normal text-[#F8F5EF]">KVKK Aydınlatma Metni &amp; Üyelik Sözleşmesi</h3>
+              </div>
+              <button onClick={() => setIsKvkkModalOpen(false)} className="p-1 text-[#8C857B] hover:text-[#F8F5EF]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="text-xs text-[#8C857B] space-y-3 leading-relaxed">
+              <p className="font-semibold text-[#F8F5EF]">1. Kişisel Verilerin İşlenme Amacı</p>
+              <p>
+                Vera Eşarp olarak 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında; siparişlerinizin işleme alınması, teslimat adreslerinize ulaştırılması, müşteri hizmetleri ve yasal yükümlülüklerin yerine getirilmesi amacıyla kişisel verileriniz yüksek güvenlikli sunucularımızda saklanmaktadır.
+              </p>
+              <p className="font-semibold text-[#F8F5EF]">2. Veri Güvenliği ve 256-Bit SSL</p>
+              <p>
+                Ödeme ve hesap verileriniz İyzico altyapısı ve 256-Bit SSL şifreleme sertifikaları ile korunmakta olup 3. şahıslarla asla paylaşılmamaktadır.
+              </p>
+              <p className="font-semibold text-[#F8F5EF]">3. Üye Hakları</p>
+              <p>
+                Dilediğiniz an kişisel verilerinizin silinmesini, güncellenmesini veya aktarılmasını talep etme hakkına sahipsiniz.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-[#3A3835] flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setTermsAccepted(true);
+                  setIsKvkkModalOpen(false);
+                  showToast('KVKK şartları okundu ve kabul edildi.', 'success');
+                }}
+                className="px-6 py-2.5 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052]"
+              >
+                Okudum, Kabul Ediyorum
+              </button>
+            </div>
           </div>
         </div>
       )}
