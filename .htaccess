@@ -1,21 +1,12 @@
 # VERA EŞARP cPanel Apache Configuration
-DirectoryIndex disabled
-Options -Indexes +FollowSymLinks
+DirectoryIndex index.php
 RewriteEngine On
 
 # Redirect HTTP to HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
 
-# Proxy Pass Rules for cPanel Apache
-<IfModule mod_proxy.c>
-  ProxyPreserveHost On
-  ProxyPass / http://127.0.0.1:3000/
-  ProxyPassReverse / http://127.0.0.1:3000/
-</IfModule>
-
-# Fallback Proxy Rules
-RewriteRule ^$ http://127.0.0.1:3000/ [P,L]
+# Route all incoming requests through index.php PHP Proxy
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
+RewriteRule ^(.*)$ index.php [L,QSA]
