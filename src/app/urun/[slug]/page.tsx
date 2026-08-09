@@ -26,14 +26,48 @@ interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+const slugifyTurkish = (text: string): string => {
+  return (text || '')
+    .toString()
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
+
 export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
+  const { products, isDbLoading } = useData();
 
-  const { products } = useData();
+  // Flexible & robust slug matching (handles URL decoding, Turkish characters, SKU & ID lookups)
+  const decodedSlug = decodeURIComponent(slug);
+  const normRequested = slugifyTurkish(decodedSlug);
 
-  // Match by slug or id
-  const product = products.find((p) => p.slug === slug || p.id === slug);
+  const product = products.find((p) => {
+    if (p.slug === slug || p.slug === decodedSlug || p.id === slug) return true;
+    if (slugifyTurkish(p.slug) === normRequested) return true;
+    if (slugifyTurkish(p.name) === normRequested) return true;
+    return false;
+  });
+
+  if (!product && isDbLoading) {
+    return (
+      <div className="py-24 bg-[#F8F5EF] min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-[#B49A6A] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="font-serif text-lg text-[#242321]">Ürün Detayı Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
