@@ -347,77 +347,7 @@ export const MOCK_BLOG_POSTS: BlogPost[] = [
   },
 ];
 
-export const MOCK_ORDERS: CustomerOrder[] = [
-  {
-    id: 'ord-1001',
-    orderNumber: 'VER-849201',
-    customerName: 'Ayşe Yılmaz',
-    email: 'ayse.yilmaz@example.com',
-    phone: '0532 123 45 67',
-    address: {
-      city: 'İstanbul',
-      district: 'Kadıköy',
-      fullAddress: 'Bağdat Caddesi No:142 D:8',
-      postalCode: '34740',
-    },
-    items: [
-      {
-        productName: 'Vera Milano Twill İpek Eşarp — Krem & Altın',
-        color: 'Krem & Altın',
-        quantity: 1,
-        price: 1890,
-        image: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
-      },
-      {
-        productName: 'Vera Gold Kaplama İpek Broşu',
-        color: 'Altın',
-        quantity: 1,
-        price: 650,
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1200&auto=format&fit=crop',
-      },
-    ],
-    subtotal: 2540,
-    shipping: 0,
-    discount: 0,
-    total: 2540,
-    status: 'Kargoda',
-    trackingCode: 'YURT-94820194',
-    carrier: 'Yurtiçi Kargo',
-    paymentMethod: 'Kredi Kartı (İyzico)',
-    createdAt: '2026-08-08 14:32',
-  },
-  {
-    id: 'ord-1002',
-    orderNumber: 'VER-849198',
-    customerName: 'Zeynep Kaya',
-    email: 'zeynep.kaya@example.com',
-    phone: '0544 987 65 43',
-    address: {
-      city: 'Ankara',
-      district: 'Çankaya',
-      fullAddress: 'Arjantin Caddesi No:15 D:3',
-      postalCode: '06680',
-    },
-    items: [
-      {
-        productName: 'Minimalist Medine İpeği Şal — Ekru',
-        color: 'Ekru',
-        quantity: 2,
-        price: 890,
-        image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop',
-      },
-    ],
-    subtotal: 1780,
-    shipping: 0,
-    discount: 100,
-    total: 1680,
-    status: 'Teslim Edildi',
-    trackingCode: 'ARAS-88492019',
-    carrier: 'Aras Kargo',
-    paymentMethod: 'Kredi Kartı (PayTR)',
-    createdAt: '2026-08-07 10:15',
-  },
-];
+export const MOCK_ORDERS: CustomerOrder[] = [];
 
 // MOCK CARİ HESAPLAR (Current Accounts)
 export const MOCK_CARI_ACCOUNTS: CariAccount[] = [

@@ -173,7 +173,7 @@ export interface CariTransaction {
   date: string;
   documentNo: string;
   description: string;
-  type: 'Fatura' | 'Tahsilat' | 'Ödeme' | 'İrsaliye' | 'Devir';
+  type: 'Fatura' | 'Tahsilat' | 'Ödeme' | 'İrsaliye' | 'Devir' | 'Satış Faturası';
   amount: number;
   isDebt: boolean; // true: Borç (Alacaklı taraf), false: Alacak
 }
@@ -184,7 +184,7 @@ export interface CariAccount {
   title: string;
   taxOffice?: string;
   taxNumber?: string;
-  type: 'Tedarikçi' | 'Toptancı' | 'Kurumsal Müşteri' | 'Perakende Müşteri';
+  type: 'Tedarikçi' | 'Toptancı' | 'Kurumsal Müşteri' | 'Perakende Müşteri' | 'Müşteri';
   balance: number;
   balanceType: 'Borçlu' | 'Alacaklı' | 'Dengede';
   phone: string;

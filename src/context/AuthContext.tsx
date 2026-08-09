@@ -33,66 +33,54 @@ interface AuthContextType {
   updateUser: (updates: Partial<UserProfile>) => void;
 }
 
-// Initial Registered Demo Users in Database
-const DEFAULT_REGISTERED_USERS: UserProfile[] = [
-  {
-    id: 'usr-admin',
-    name: 'Vera Mağaza Yöneticisi',
-    email: 'destek@veraesarp.com',
-    phone: '+90 212 555 83 72',
-    password: '123456',
-    role: 'admin',
-    isAdmin: true,
-    tier: 'Vera Yönetici',
-    totalSpent: 0,
-    orderCount: 0,
-  },
-  {
-    id: 'usr-1',
-    name: 'Ayşe Yılmaz',
-    email: 'ayse.yilmaz@example.com',
-    phone: '+90 532 123 45 67',
-    password: '123456',
-    role: 'customer',
-    isAdmin: false,
-    tier: 'Vera VIP Diamond Müşteri',
-    totalSpent: 14850,
-    orderCount: 4,
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
-  },
-  {
-    id: 'usr-3',
-    name: 'Demo Müşteri',
-    email: 'demo@veraesarp.com',
-    phone: '+90 555 000 00 00',
-    password: '123456',
-    role: 'customer',
-    isAdmin: false,
-    tier: 'Vera Silver Üye',
-    totalSpent: 1890,
-    orderCount: 1,
-  },
-];
+// Store Official Admin Account (Demo customer accounts removed completely)
+const OFFICIAL_ADMIN_ACCOUNT: UserProfile = {
+  id: 'usr-admin',
+  name: 'Vera Mağaza Yöneticisi',
+  email: 'destek@veraesarp.com',
+  phone: '+90 212 555 83 72',
+  password: '123456',
+  role: 'admin',
+  isAdmin: true,
+  tier: 'Vera Yönetici',
+  totalSpent: 0,
+  orderCount: 0,
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>(DEFAULT_REGISTERED_USERS);
+  const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>([OFFICIAL_ADMIN_ACCOUNT]);
 
   // Load Saved Users & Active Session from Storage
   useEffect(() => {
     try {
       const savedUsers = localStorage.getItem('veraesarp_registered_users');
       if (savedUsers) {
-        setRegisteredUsers(JSON.parse(savedUsers));
+        const parsed: UserProfile[] = JSON.parse(savedUsers);
+        // Ensure official admin is always present and clean out old demo accounts if desired
+        const hasAdmin = parsed.some((u) => u.email === OFFICIAL_ADMIN_ACCOUNT.email);
+        const filtered = parsed.filter(
+          (u) => u.email !== 'ayse.yilmaz@example.com' && u.email !== 'demo@veraesarp.com'
+        );
+        const updatedUsers = hasAdmin ? filtered : [OFFICIAL_ADMIN_ACCOUNT, ...filtered];
+        setRegisteredUsers(updatedUsers);
+        localStorage.setItem('veraesarp_registered_users', JSON.stringify(updatedUsers));
       } else {
-        localStorage.setItem('veraesarp_registered_users', JSON.stringify(DEFAULT_REGISTERED_USERS));
+        localStorage.setItem('veraesarp_registered_users', JSON.stringify([OFFICIAL_ADMIN_ACCOUNT]));
+        setRegisteredUsers([OFFICIAL_ADMIN_ACCOUNT]);
       }
 
       const savedSession = localStorage.getItem('veraesarp_user_session');
       if (savedSession) {
-        setUser(JSON.parse(savedSession));
+        const sessionUser: UserProfile = JSON.parse(savedSession);
+        if (sessionUser.email === 'ayse.yilmaz@example.com' || sessionUser.email === 'demo@veraesarp.com') {
+          localStorage.removeItem('veraesarp_user_session');
+          setUser(null);
+        } else {
+          setUser(sessionUser);
+        }
       } else {
         setUser(null);
       }
@@ -181,6 +169,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const updatedUsers = [newUser, ...registeredUsers];
     saveRegisteredUsers(updatedUsers);
+
+    // Dispatch custom event to notify DataContext to sync Cari Account for new customer!
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('veraesarp_new_user_registered', { detail: newUser }));
+    }
 
     // Auto-login new user
     const { password, ...sessionData } = newUser;

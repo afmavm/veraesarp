@@ -113,7 +113,81 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadDatabase();
   }, []);
 
-  // 2. Persist Changes to Permanent Database API & LocalStorage Cache
+  // 2. Auto-sync Registered Customers into Gelişmiş Cari Hesaplar Database
+  useEffect(() => {
+    const handleNewUserSync = (event: Event) => {
+      const customEvt = event as CustomEvent;
+      const newUser = customEvt.detail;
+      if (!newUser || !newUser.name || !newUser.email) return;
+
+      setCariAccounts((prev) => {
+        const exists = prev.some((c) => c.email?.toLowerCase() === newUser.email.toLowerCase());
+        if (exists) return prev;
+
+        const newCari: CariAccount = {
+          id: `cari-usr-${Date.now()}`,
+          code: `CAR-MUS-${String(prev.length + 1).padStart(3, '0')}`,
+          title: newUser.name,
+          taxOffice: 'Bireysel Müşteri',
+          taxNumber: '-',
+          type: 'Müşteri',
+          balance: 0,
+          balanceType: 'Alacaklı',
+          phone: newUser.phone || '',
+          email: newUser.email,
+          address: 'Bireysel Üyelik Adresi',
+          city: 'İstanbul',
+          createdAt: new Date().toISOString().slice(0, 10),
+        };
+        return [newCari, ...prev];
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('veraesarp_new_user_registered', handleNewUserSync);
+
+      // Check registered users from localStorage to sync any existing accounts
+      try {
+        const storedUsers = localStorage.getItem('veraesarp_registered_users');
+        if (storedUsers) {
+          const parsedUsers = JSON.parse(storedUsers);
+          parsedUsers.forEach((u: any) => {
+            if (u.role !== 'admin' && u.email && u.name) {
+              setCariAccounts((prev) => {
+                const exists = prev.some((c) => c.email?.toLowerCase() === u.email.toLowerCase());
+                if (exists) return prev;
+
+                const newCari: CariAccount = {
+                  id: `cari-${u.id || Date.now()}`,
+                  code: `CAR-MUS-${String(prev.length + 1).padStart(3, '0')}`,
+                  title: u.name,
+                  taxOffice: 'Bireysel Müşteri',
+                  taxNumber: '-',
+                  type: 'Müşteri',
+                  balance: u.totalSpent || 0,
+                  balanceType: 'Alacaklı',
+                  phone: u.phone || '',
+                  email: u.email,
+                  address: 'Bireysel Üyelik Adresi',
+                  city: 'İstanbul',
+                  createdAt: new Date().toISOString().slice(0, 10),
+                };
+                return [newCari, ...prev];
+              });
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('veraesarp_new_user_registered', handleNewUserSync);
+      }
+    };
+  }, []);
+
+  // 3. Persist Changes to Permanent Database API & LocalStorage Cache
   useEffect(() => {
     if (isInitialized) {
       const payload = {
@@ -202,6 +276,71 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Order Actions
   const addOrder = (order: CustomerOrder) => {
     setOrders((prev) => [order, ...prev]);
+
+    // Automatically sync or update Cari Account for this customer
+    setCariAccounts((prev) => {
+      let existingCari = prev.find((c) => c.email?.toLowerCase() === order.email.toLowerCase());
+
+      if (!existingCari) {
+        const newCariId = `cari-${Date.now()}`;
+        const newCari: CariAccount = {
+          id: newCariId,
+          code: `CAR-MUS-${String(prev.length + 1).padStart(3, '0')}`,
+          title: order.customerName,
+          taxOffice: 'Bireysel Müşteri',
+          taxNumber: '-',
+          type: 'Müşteri',
+          balance: order.total,
+          balanceType: 'Alacaklı',
+          phone: order.phone || '',
+          email: order.email,
+          address: `${order.address.fullAddress}, ${order.address.district}`,
+          city: order.address.city,
+          createdAt: new Date().toISOString().slice(0, 10),
+        };
+
+        // Add Cari Transaction
+        const newTx: CariTransaction = {
+          id: `ctx-${Date.now()}`,
+          cariId: newCariId,
+          date: new Date().toISOString().slice(0, 10),
+          documentNo: order.orderNumber,
+          description: `E-Ticaret Sipariş Satış Faturası (${order.paymentMethod})`,
+          type: 'Satış Faturası',
+          amount: order.total,
+          isDebt: false,
+        };
+        setCariTransactions((txs) => [newTx, ...txs]);
+
+        return [newCari, ...prev];
+      } else {
+        // Update existing Cari balance
+        const updated = prev.map((c) => {
+          if (c.id === existingCari.id) {
+            return {
+              ...c,
+              balance: c.balance + order.total,
+            };
+          }
+          return c;
+        });
+
+        // Add Cari Transaction
+        const newTx: CariTransaction = {
+          id: `ctx-${Date.now()}`,
+          cariId: existingCari.id,
+          date: new Date().toISOString().slice(0, 10),
+          documentNo: order.orderNumber,
+          description: `E-Ticaret Sipariş Satış Faturası (${order.paymentMethod})`,
+          type: 'Satış Faturası',
+          amount: order.total,
+          isDebt: false,
+        };
+        setCariTransactions((txs) => [newTx, ...txs]);
+
+        return updated;
+      }
+    });
 
     const cargoEntry: CargoTrackingData = {
       orderNumber: order.orderNumber,
