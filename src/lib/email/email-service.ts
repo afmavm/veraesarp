@@ -87,6 +87,7 @@ async function dispatchRealServerEmail(log: SentEmailLog) {
 
 const EMAIL_HEADER_HTML = `
   <div style="background-color: #1C1B1A; border-bottom: 3px solid #B49A6A; padding: 25px; text-align: center;">
+    <img src="https://veraesarp.com/logo.png" alt="Vera Eşarp Logo" style="max-height: 75px; width: auto; margin-bottom: 12px; display: inline-block;" />
     <h1 style="font-family: 'Playfair Display', Georgia, serif; color: #B49A6A; font-size: 26px; font-weight: normal; margin: 0; letter-spacing: 3px; text-transform: uppercase;">
       VERA EŞARP
     </h1>

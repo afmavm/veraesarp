@@ -22,7 +22,12 @@ export default function OrderInvoiceModal({ order, onClose }: OrderInvoiceModalP
         {/* Printable Invoice Header */}
         <div className="flex justify-between items-start pb-6 border-b border-[#E6DFD5]">
           <div>
-            <span className="font-serif text-3xl tracking-[0.2em] font-semibold text-[#242321]">
+            <img
+              src="/logo.png"
+              alt="Vera Eşarp Logo"
+              className="h-16 w-auto object-contain mb-3"
+            />
+            <span className="font-serif text-3xl tracking-[0.2em] font-semibold text-[#242321] block">
               VERA EŞARP
             </span>
             <span className="block text-[9px] tracking-[0.3em] text-[#B49A6A] font-sans uppercase">
