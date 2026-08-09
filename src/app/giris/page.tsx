@@ -221,11 +221,13 @@ export default function AuthPage() {
                 <div className="relative">
                   <input
                     type="text"
+                    name="name"
+                    autoComplete="name"
                     required
                     placeholder="ör: Ayşe Yılmaz"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    className="w-full p-3 pl-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                    className="w-full p-3 pl-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
                   />
                   <User className="w-4 h-4 text-[#8C857B] absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -237,11 +239,13 @@ export default function AuthPage() {
                   <div className="relative">
                     <input
                       type="email"
+                      name="email"
+                      autoComplete="email"
                       required
                       placeholder="ör: ayse@example.com"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
-                      className="w-full p-3 pl-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                      className="w-full p-3 pl-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
                     />
                     <Mail className="w-4 h-4 text-[#8C857B] absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
@@ -251,11 +255,13 @@ export default function AuthPage() {
                   <label className="block text-[#8C857B] mb-1">Telefon Numarası</label>
                   <div className="relative">
                     <input
-                      type="text"
+                      type="tel"
+                      name="tel"
+                      autoComplete="tel"
                       placeholder="ör: 0532 123 45 67"
                       value={regPhone}
                       onChange={(e) => setRegPhone(e.target.value)}
-                      className="w-full p-3 pl-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                      className="w-full p-3 pl-10 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
                     />
                     <Phone className="w-4 h-4 text-[#8C857B] absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
@@ -267,11 +273,13 @@ export default function AuthPage() {
                   <label className="block text-[#8C857B] mb-1">Şifre *</label>
                   <input
                     type="password"
+                    name="new-password"
+                    autoComplete="new-password"
                     required
                     placeholder="••••••••"
                     value={regPass}
                     onChange={(e) => setRegPass(e.target.value)}
-                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
                   />
                 </div>
 
@@ -279,11 +287,13 @@ export default function AuthPage() {
                   <label className="block text-[#8C857B] mb-1">Şifre Tekrarı *</label>
                   <input
                     type="password"
+                    name="confirm-password"
+                    autoComplete="new-password"
                     required
                     placeholder="••••••••"
                     value={regPassConfirm}
                     onChange={(e) => setRegPassConfirm(e.target.value)}
-                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
                   />
                 </div>
               </div>

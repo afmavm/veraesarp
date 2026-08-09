@@ -28,6 +28,17 @@
   }
 }
 
+/* Browser Autofill Styling Override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #242321 inset !important;
+  -webkit-text-fill-color: #F8F5EF !important;
+  caret-color: #F8F5EF !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
