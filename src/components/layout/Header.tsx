@@ -7,11 +7,13 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 
 import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const { toggleCart, totalCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { campaigns } = useData();
+  const { user, isLoggedIn } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,8 +156,17 @@ export default function Header() {
               </Link>
 
               {/* Account Link */}
-              <Link href="/hesabim" className="hidden sm:block hover:text-[#B49A6A] transition-colors p-1" aria-label="Hesabım">
-                <User className="w-5 h-5" />
+              <Link
+                href={isLoggedIn ? '/hesabim' : '/giris'}
+                className="hidden sm:flex items-center gap-1.5 hover:text-[#B49A6A] transition-colors p-1"
+                aria-label="Hesabım"
+              >
+                <User className="w-5 h-5 text-[#242321]" />
+                {isLoggedIn && user && (
+                  <span className="text-[11px] font-semibold text-[#242321] max-w-[80px] truncate">
+                    {user.name.split(' ')[0]}
+                  </span>
+                )}
               </Link>
 
               {/* Cart Drawer Trigger */}

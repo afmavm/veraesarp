@@ -5,10 +5,12 @@ import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { DataProvider } from '@/context/DataContext';
+import { AuthProvider } from '@/context/AuthContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MobileNav from '@/components/layout/MobileNav';
 import CartDrawer from '@/components/cart/CartDrawer';
+import WhatsAppFloatingButton from '@/components/ui/WhatsAppFloatingButton';
 import { SITE_CONFIG } from '@/lib/data/mock-data';
 
 const cormorant = Cormorant_Garamond({
@@ -52,8 +54,6 @@ export const metadata: Metadata = {
   },
 };
 
-import WhatsAppFloatingButton from '@/components/ui/WhatsAppFloatingButton';
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -63,18 +63,20 @@ export default function RootLayout({
     <html lang="tr" className={`${cormorant.variable} ${manrope.variable}`}>
       <body className="bg-[#F8F5EF] text-[#242321] min-h-screen flex flex-col antialiased selection:bg-[#B49A6A] selection:text-[#F8F5EF]">
         <DataProvider>
-          <ToastProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-                <CartDrawer />
-                <MobileNav />
-                <WhatsAppFloatingButton />
-              </CartProvider>
-            </WishlistProvider>
-          </ToastProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                  <CartDrawer />
+                  <MobileNav />
+                  <WhatsAppFloatingButton />
+                </CartProvider>
+              </WishlistProvider>
+            </ToastProvider>
+          </AuthProvider>
         </DataProvider>
       </body>
     </html>
