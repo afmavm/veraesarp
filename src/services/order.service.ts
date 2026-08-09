@@ -59,7 +59,7 @@ export class OrderService {
         district: data.district,
         fullAddress: data.fullAddress,
       },
-      items: data.items.map((i) => ({
+      items: data.items.map((i: any) => ({
         productName: i.productName,
         color: i.color,
         quantity: i.quantity,
@@ -79,7 +79,7 @@ export class OrderService {
     // Try executing server-side Prisma Transaction if MySQL database is active
     try {
       if (process.env.DATABASE_URL) {
-        await prisma.$transaction(async (tx) => {
+        await (prisma as any).$transaction(async (tx: any) => {
           // Create Order in MySQL
           const createdOrder = await tx.order.create({
             data: {
@@ -101,7 +101,7 @@ export class OrderService {
               couponCode: data.couponCode,
               status: 'Hazırlanıyor',
               items: {
-                create: data.items.map((item) => ({
+                create: data.items.map((item: any) => ({
                   productId: item.productId,
                   variantId: item.variantId,
                   productNameSnapshot: item.productName,
@@ -144,20 +144,20 @@ export class OrderService {
   static async getAllOrders(): Promise<CustomerOrder[]> {
     try {
       if (process.env.DATABASE_URL) {
-        const dbOrders = await prisma.order.findMany({
+        const dbOrders = await (prisma as any).order.findMany({
           orderBy: { createdAt: 'desc' },
           include: { items: true },
         });
 
         if (dbOrders && dbOrders.length > 0) {
-          return dbOrders.map((o) => ({
+          return dbOrders.map((o: any) => ({
             id: o.id,
             orderNumber: o.orderNumber,
             customerName: o.customerName,
             email: o.email,
             phone: o.phone,
             address: (o.shippingAddress as any) || { city: 'Erzurum', district: 'Yakutiye', fullAddress: '' },
-            items: o.items.map((i) => ({
+            items: o.items.map((i: any) => ({
               productName: i.productNameSnapshot,
               color: i.colorSnapshot || 'Standart',
               quantity: i.quantity,

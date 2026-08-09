@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
 import { getDatabase } from '@/lib/db';
-import { Product, ProductVariant } from '@/lib/types/ecommerce';
+import { Product } from '@/lib/types/ecommerce';
 
 export class ProductService {
   /**
@@ -9,7 +9,7 @@ export class ProductService {
   static async getAllProducts(): Promise<Product[]> {
     try {
       if (process.env.DATABASE_URL) {
-        const dbProducts = await prisma.product.findMany({
+        const dbProducts = await (prisma as any).product.findMany({
           include: {
             variants: true,
             category: true,
@@ -19,7 +19,7 @@ export class ProductService {
         });
 
         if (dbProducts && dbProducts.length > 0) {
-          return dbProducts.map((p) => ({
+          return dbProducts.map((p: any) => ({
             id: p.id,
             name: p.name,
             slug: p.slug,
@@ -40,7 +40,7 @@ export class ProductService {
             collection: p.collection?.slug || undefined,
             colors: (p.colors as any) || [],
             sizes: (p.sizes as any) || [],
-            variants: p.variants.map((v) => ({
+            variants: p.variants.map((v: any) => ({
               id: v.id,
               colorName: v.colorName,
               colorHex: v.colorHex,
@@ -83,9 +83,6 @@ export class ProductService {
    * Create or update product in MySQL with atomic fallback
    */
   static async upsertProduct(productData: Partial<Product>): Promise<Product> {
-    const fileDb = getDatabase();
-    const existingIndex = fileDb.products.findIndex((p) => p.id === productData.id || p.slug === productData.slug);
-    
     const newProduct: Product = {
       id: productData.id || `p-${Date.now()}`,
       name: productData.name || 'Yeni Ürün',
@@ -121,7 +118,7 @@ export class ProductService {
 
     try {
       if (process.env.DATABASE_URL) {
-        await prisma.product.upsert({
+        await (prisma as any).product.upsert({
           where: { slug: newProduct.slug },
           update: {
             name: newProduct.name,

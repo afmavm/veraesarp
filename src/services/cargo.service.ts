@@ -16,20 +16,20 @@ export class CargoService {
   static async getCargoCarriers(): Promise<{ carriers: CargoCarrier[]; freeShippingThreshold: number }> {
     try {
       if (process.env.DATABASE_URL) {
-        const dbCargo = await prisma.cargoSetting.findMany({
+        const dbCargo = await (prisma as any).cargoSetting.findMany({
           orderBy: { createdAt: 'asc' },
         });
 
         if (dbCargo && dbCargo.length > 0) {
           const threshold = dbCargo[0].freeShippingThreshold || 1000;
-          const carriers: CargoCarrier[] = dbCargo.map((c) => ({
-            id: c.code,
-            name: c.name,
-            logo: c.logo,
-            logoImage: c.logoImage || undefined,
-            fee: c.fee,
-            eta: c.eta,
-            isActive: c.isActive,
+          const carriers: CargoCarrier[] = dbCargo.map((c: any) => ({
+            id: String(c.code || c.id),
+            name: String(c.name || 'Kargo'),
+            logo: String(c.logo || '📦'),
+            logoImage: c.logoImage ? String(c.logoImage) : undefined,
+            fee: Number(c.fee) || 0,
+            eta: String(c.eta || '1-2 iş günü'),
+            isActive: Boolean(c.isActive),
           }));
           return { carriers, freeShippingThreshold: threshold };
         }

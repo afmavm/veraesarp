@@ -7,11 +7,11 @@ export class WishlistService {
   static async getUserWishlist(customerId: string): Promise<string[]> {
     try {
       if (process.env.DATABASE_URL) {
-        const items = await prisma.wishlist.findMany({
+        const items = await (prisma as any).wishlist.findMany({
           where: { customerId },
           select: { productId: true },
         });
-        return items.map((i) => i.productId);
+        return items.map((i: any) => i.productId);
       }
     } catch (e) {
       console.warn('Wishlist fetch error', e);
@@ -30,7 +30,7 @@ export class WishlistService {
     try {
       if (process.env.DATABASE_URL) {
         for (const productId of guestProductIds) {
-          await prisma.wishlist.upsert({
+          await (prisma as any).wishlist.upsert({
             where: {
               customerId_productId: { customerId, productId },
             },

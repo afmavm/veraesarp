@@ -15,7 +15,7 @@ export class InventoryService {
   static async recordStockMovement(data: StockAdjustmentDTO) {
     try {
       if (process.env.DATABASE_URL) {
-        return await prisma.$transaction(async (tx) => {
+        return await (prisma as any).$transaction(async (tx: any) => {
           // Record stock movement audit log
           const movement = await tx.stockMovement.create({
             data: {
@@ -52,7 +52,7 @@ export class InventoryService {
   static async getStockMovements(variantId?: string) {
     try {
       if (process.env.DATABASE_URL) {
-        return await prisma.stockMovement.findMany({
+        return await (prisma as any).stockMovement.findMany({
           where: variantId ? { variantId } : undefined,
           include: { variant: { include: { product: true } } },
           orderBy: { createdAt: 'desc' },

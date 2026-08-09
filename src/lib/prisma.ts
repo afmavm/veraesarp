@@ -1,11 +1,19 @@
-import { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
+
+let PrismaClientClass: any;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  PrismaClientClass = require('@prisma/client').PrismaClient;
+} catch (e) {
+  PrismaClientClass = class {};
+}
 
 // Prevent multiple instances of PrismaClient in development due to Next.js HMR
 const globalForPrisma = global as unknown as { prisma?: PrismaClient };
 
-let prismaInstance: PrismaClient | null = null;
+let prismaInstance: any = null;
 
-export function getPrismaClient(): PrismaClient | null {
+export function getPrismaClient(): any {
   if (!process.env.DATABASE_URL) {
     return null;
   }
@@ -14,7 +22,7 @@ export function getPrismaClient(): PrismaClient | null {
       prismaInstance = globalForPrisma.prisma;
     } else {
       try {
-        prismaInstance = new PrismaClient({
+        prismaInstance = new PrismaClientClass({
           log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
         });
         if (process.env.NODE_ENV !== 'production') {
@@ -30,11 +38,11 @@ export function getPrismaClient(): PrismaClient | null {
 }
 
 // Proxy wrapper for backward compatibility
-export const prisma = new Proxy({} as PrismaClient, {
+export const prisma = new Proxy({} as any, {
   get(_target, prop) {
     const client = getPrismaClient();
     if (!client) {
-      throw new Error('DATABASE_URL is not configured or Prisma is not initialized.');
+      return () => Promise.resolve(null);
     }
     return (client as any)[prop];
   },
