@@ -160,13 +160,13 @@ export default function Header() {
               <div className="relative">
                 {isLoggedIn && user ? (
                   <div
-                    className="relative"
+                    className="relative py-1"
                     onMouseEnter={() => setIsAccountMenuOpen(true)}
                     onMouseLeave={() => setIsAccountMenuOpen(false)}
                   >
                     <button
                       onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-[#F4EBE1]/80 hover:bg-[#E8DED1] text-[#242321] transition-all border border-[#E6DFD5]"
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#F4EBE1]/90 hover:bg-[#E8DED1] text-[#242321] transition-all border border-[#E6DFD5] shadow-sm"
                       aria-label="Hesabım Menüsü"
                     >
                       <div className="w-5 h-5 rounded-full bg-[#B49A6A] text-[#F8F5EF] flex items-center justify-center font-bold text-[10px]">
@@ -175,76 +175,78 @@ export default function Header() {
                       <span className="text-[11px] font-semibold text-[#242321] max-w-[90px] truncate">
                         {user.name.split(' ')[0]}
                       </span>
-                      <ChevronDown className={`w-3.5 h-3.5 text-[#8C857B] transition-transform ${isAccountMenuOpen ? 'rotate-180 text-[#B49A6A]' : ''}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-[#8C857B] transition-transform duration-200 ${isAccountMenuOpen ? 'rotate-180 text-[#B49A6A]' : ''}`} />
                     </button>
 
-                    {/* Dropdown Menu Popup */}
+                    {/* Continuous Hover Dropdown Wrapper (No Margin Gap) */}
                     {isAccountMenuOpen && (
-                      <div className="absolute right-0 top-full mt-1 w-64 bg-[#1C1B1A] border border-[#B49A6A] shadow-2xl z-50 text-[#F8F5EF] p-4 space-y-3 rounded-sm animate-in fade-in slide-in-from-top-2 duration-150">
-                        {/* User Summary Header */}
-                        <div className="pb-3 border-b border-[#3A3835] space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-serif text-sm font-semibold text-[#F8F5EF] truncate">
-                              {user.name}
-                            </span>
-                            <span className="px-2 py-0.5 bg-[#B49A6A]/20 text-[#B49A6A] text-[9px] font-bold uppercase border border-[#B49A6A]/40 rounded-full">
-                              {isAdmin ? '👑 Admin' : user.tier || 'Silver Üye'}
-                            </span>
+                      <div className="absolute right-0 top-full pt-1.5 w-72 z-50">
+                        <div className="bg-[#1C1B1A] border border-[#B49A6A] shadow-2xl text-[#F8F5EF] p-4 space-y-3 rounded-sm animate-in fade-in slide-in-from-top-1 duration-150">
+                          {/* User Summary Header */}
+                          <div className="pb-3 border-b border-[#3A3835] space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-serif text-sm font-semibold text-[#F8F5EF] truncate max-w-[160px]">
+                                {user.name}
+                              </span>
+                              <span className="px-2 py-0.5 bg-[#B49A6A]/20 text-[#B49A6A] text-[9px] font-bold uppercase tracking-wider border border-[#B49A6A]/40 rounded-full shrink-0 whitespace-nowrap">
+                                {isAdmin ? '👑 Admin' : user.tier || 'Silver Üye'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#8C857B] truncate">{user.email}</p>
                           </div>
-                          <p className="text-[11px] text-[#8C857B] truncate">{user.email}</p>
-                        </div>
 
-                        {/* Navigation Links */}
-                        <div className="space-y-1 text-xs">
-                          <Link
-                            href="/hesabim"
-                            onClick={() => setIsAccountMenuOpen(false)}
-                            className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
-                          >
-                            <span>Hesabım &amp; Profilim</span>
-                            <span className="text-[10px] text-[#8C857B]">→</span>
-                          </Link>
-                          <Link
-                            href="/hesabim"
-                            onClick={() => setIsAccountMenuOpen(false)}
-                            className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
-                          >
-                            <span>Siparişlerim &amp; Kargolarım</span>
-                            <span className="text-[10px] text-[#8C857B]">→</span>
-                          </Link>
-                          <Link
-                            href="/hesabim"
-                            onClick={() => setIsAccountMenuOpen(false)}
-                            className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
-                          >
-                            <span>Kayıtlı Ödeme Kartlarım</span>
-                            <span className="text-[10px] text-[#8C857B]">→</span>
-                          </Link>
-
-                          {isAdmin && (
+                          {/* Navigation Links */}
+                          <div className="space-y-1 text-xs font-medium">
                             <Link
-                              href="/admin"
+                              href="/hesabim"
                               onClick={() => setIsAccountMenuOpen(false)}
-                              className="flex items-center justify-between p-2 bg-[#B49A6A]/20 text-[#B49A6A] border border-[#B49A6A]/40 font-bold rounded hover:bg-[#B49A6A] hover:text-[#F8F5EF] transition-colors mt-2"
+                              className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
                             >
-                              <span>👑 ADMİN PANELİNE GİT</span>
-                              <span>→</span>
+                              <span>Hesabım &amp; Profilim</span>
+                              <span className="text-[10px] text-[#8C857B]">→</span>
                             </Link>
-                          )}
-                        </div>
+                            <Link
+                              href="/hesabim"
+                              onClick={() => setIsAccountMenuOpen(false)}
+                              className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
+                            >
+                              <span>Siparişlerim &amp; Kargolarım</span>
+                              <span className="text-[10px] text-[#8C857B]">→</span>
+                            </Link>
+                            <Link
+                              href="/hesabim"
+                              onClick={() => setIsAccountMenuOpen(false)}
+                              className="flex items-center justify-between p-2 rounded hover:bg-[#242321] hover:text-[#B49A6A] transition-colors"
+                            >
+                              <span>Kayıtlı Ödeme Kartlarım</span>
+                              <span className="text-[10px] text-[#8C857B]">→</span>
+                            </Link>
 
-                        {/* Logout Button */}
-                        <div className="pt-2 border-t border-[#3A3835]">
-                          <button
-                            onClick={() => {
-                              setIsAccountMenuOpen(false);
-                              logout();
-                            }}
-                            className="w-full text-left p-2 text-xs text-rose-400 hover:bg-rose-950/40 rounded transition-colors font-medium flex items-center justify-between"
-                          >
-                            <span>Oturumu Kapat</span>
-                            <span>🚪</span>
-                          </button>
+                            {isAdmin && (
+                              <Link
+                                href="/admin"
+                                onClick={() => setIsAccountMenuOpen(false)}
+                                className="flex items-center justify-between p-2 bg-[#B49A6A]/20 text-[#B49A6A] border border-[#B49A6A]/40 font-bold rounded hover:bg-[#B49A6A] hover:text-[#F8F5EF] transition-colors mt-2"
+                              >
+                                <span>👑 ADMİN PANELİNE GİT</span>
+                                <span>→</span>
+                              </Link>
+                            )}
+                          </div>
+
+                          {/* Logout Button */}
+                          <div className="pt-2 border-t border-[#3A3835]">
+                            <button
+                              onClick={() => {
+                                setIsAccountMenuOpen(false);
+                                logout();
+                              }}
+                              className="w-full text-left p-2 text-xs text-rose-400 hover:bg-rose-950/40 rounded transition-colors font-medium flex items-center justify-between"
+                            >
+                              <span>Oturumu Kapat</span>
+                              <span>🚪</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
