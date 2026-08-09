@@ -31,6 +31,7 @@ interface DataContextType {
   campaigns: CampaignRule[];
   coupons: Coupon[];
   cargoData: Record<string, CargoTrackingData>;
+  isDbLoading: boolean;
   // Site settings action
   updateSiteSettings: (newSettings: Partial<SiteSettings>) => void;
   // Product actions
@@ -75,35 +76,57 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [coupons, setCoupons] = useState<Coupon[]>(MOCK_COUPONS);
   const [cargoData, setCargoData] = useState<Record<string, CargoTrackingData>>(MOCK_CARGO_DATA);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isDbLoading, setIsDbLoading] = useState(true);
 
-  // Persistence via localStorage
+  // 1. Initial Fetch from Permanent Database API
   useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('veraesarp_site_settings');
-      if (savedSettings) setSiteSettings(JSON.parse(savedSettings));
+    async function loadDatabase() {
+      try {
+        const res = await fetch('/api/db');
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.siteSettings) setSiteSettings(json.data.siteSettings);
+          if (json.data.products?.length) setProducts(json.data.products);
+          if (json.data.orders) setOrders(json.data.orders);
+          if (json.data.cariAccounts) setCariAccounts(json.data.cariAccounts);
+          if (json.data.cariTransactions) setCariTransactions(json.data.cariTransactions);
+          if (json.data.campaigns) setCampaigns(json.data.campaigns);
+          if (json.data.coupons) setCoupons(json.data.coupons);
+        }
+      } catch (e) {
+        console.error('Database fetch fallback to localStorage', e);
+        try {
+          const savedSettings = localStorage.getItem('veraesarp_site_settings');
+          if (savedSettings) setSiteSettings(JSON.parse(savedSettings));
 
-      const savedProducts = localStorage.getItem('veraesarp_products');
-      if (savedProducts) setProducts(JSON.parse(savedProducts));
-
-      const savedOrders = localStorage.getItem('veraesarp_orders');
-      if (savedOrders) setOrders(JSON.parse(savedOrders));
-
-      const savedCari = localStorage.getItem('veraesarp_cari');
-      if (savedCari) setCariAccounts(JSON.parse(savedCari));
-
-      const savedCampaigns = localStorage.getItem('veraesarp_campaigns');
-      if (savedCampaigns) setCampaigns(JSON.parse(savedCampaigns));
-
-      const savedCoupons = localStorage.getItem('veraesarp_coupons');
-      if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
-    } catch (e) {
-      console.error('Failed to load live data from localStorage', e);
+          const savedProducts = localStorage.getItem('veraesarp_products');
+          if (savedProducts) setProducts(JSON.parse(savedProducts));
+        } catch (err) {
+          console.error(err);
+        }
+      } finally {
+        setIsInitialized(true);
+        setIsDbLoading(false);
+      }
     }
-    setIsInitialized(true);
+
+    loadDatabase();
   }, []);
 
+  // 2. Persist Changes to Permanent Database API & LocalStorage Cache
   useEffect(() => {
     if (isInitialized) {
+      const payload = {
+        siteSettings,
+        products,
+        orders,
+        cariAccounts,
+        cariTransactions,
+        campaigns,
+        coupons,
+      };
+
+      // LocalStorage Cache
       try {
         localStorage.setItem('veraesarp_site_settings', JSON.stringify(siteSettings));
         localStorage.setItem('veraesarp_products', JSON.stringify(products));
@@ -112,10 +135,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('veraesarp_campaigns', JSON.stringify(campaigns));
         localStorage.setItem('veraesarp_coupons', JSON.stringify(coupons));
       } catch (e) {
-        console.error('Failed to persist live data to localStorage', e);
+        console.error(e);
       }
+
+      // Asynchronous API call to write to Permanent Server Database
+      fetch('/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch((err) => console.error('Database sync failed', err));
     }
-  }, [siteSettings, products, orders, cariAccounts, campaigns, coupons, isInitialized]);
+  }, [siteSettings, products, orders, cariAccounts, cariTransactions, campaigns, coupons, isInitialized]);
 
   // Site Settings Actions
   const updateSiteSettings = (newSettings: Partial<SiteSettings>) => {
@@ -146,6 +176,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sizes: productData.sizes || ['90x90 cm'],
       variants: productData.variants || [],
       images: productData.images || ['https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop'],
+      videoUrl: productData.videoUrl,
       badges: productData.badges || ['Yeni'],
       features: productData.features || ['✓ %100 Saf İpek'],
       careInstructions: productData.careInstructions || 'Kuru temizleme önerilir.',
@@ -352,6 +383,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         campaigns,
         coupons,
         cargoData,
+        isDbLoading,
         updateSiteSettings,
         addProduct,
         updateProduct,

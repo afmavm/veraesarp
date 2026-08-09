@@ -1,0 +1,465 @@
+{
+  "siteSettings": {
+    "name": "VERA EŞARP",
+    "tagline": "Modern kadının stilini tamamlayan premium eşarp ve aksesuar markası. Zarafeti ve zamansız moda anlayışını gardırobunuza taşıyoruz.",
+    "contactPhone": "+90 (212) 555 83 72",
+    "contactEmail": "destek@veraesarp.com",
+    "address": "Nişantaşı, Abdi İpekçi Caddesi No:42, Şişli / İstanbul",
+    "freeShippingThreshold": 1500,
+    "instagramUrl": "https://instagram.com/veraesarp",
+    "facebookUrl": "https://facebook.com/veraesarp",
+    "pinterestUrl": "https://pinterest.com/veraesarp",
+    "whatsappPhone": "+90 532 555 83 72",
+    "workingHours": "Hafta içi 09:00 - 18:00",
+    "taxOffice": "Şişli V.D.",
+    "taxNumber": "1948201948"
+  },
+  "products": [
+    {
+      "id": "p-1",
+      "name": "Vera Milano Twill İpek Eşarp — Krem & Altın",
+      "slug": "vera-milano-twill-ipek-esarp-krem-altin",
+      "sku": "VER-MIL-01-CRM",
+      "barcode": "8680001849201",
+      "description": "Vera Eşarp’ın ikonik Milano koleksiyonundan %100 saf twill ipek eşarp. İtalyan ipek dokuma ustalarının el işçiliği kenar dikişleri ve mat parıltısı ile gün boyu kayma yapmadan kusursuz duruş sağlar.",
+      "shortDescription": "%100 Saf Twill İpek, El Dikişli Kenarlar, 90x90 cm",
+      "price": 1890,
+      "compareAtPrice": 2250,
+      "costPrice": 850,
+      "currency": "₺",
+      "stock": 24,
+      "rating": 4.9,
+      "reviewCount": 38,
+      "category": "esarp",
+      "subcategory": "twill-ipek",
+      "fabric": "twill",
+      "styleCategory": "ofis",
+      "collection": "milano-romance",
+      "colors": [
+        {
+          "name": "Krem & Altın",
+          "hex": "#F4EBE1"
+        },
+        {
+          "name": "Gece Mavisi",
+          "hex": "#1B2A4A"
+        },
+        {
+          "name": "Gül Vizonu",
+          "hex": "#C8A9A5"
+        }
+      ],
+      "sizes": [
+        "90x90 cm"
+      ],
+      "variants": [
+        {
+          "id": "v-101",
+          "colorName": "Krem & Altın",
+          "colorHex": "#F4EBE1",
+          "size": "90x90 cm",
+          "sku": "VER-MIL-01-CRM-90",
+          "stock": 14,
+          "price": 1890
+        },
+        {
+          "id": "v-102",
+          "colorName": "Gece Mavisi",
+          "colorHex": "#1B2A4A",
+          "size": "90x90 cm",
+          "sku": "VER-MIL-01-NAV-90",
+          "stock": 10,
+          "price": 1890
+        }
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop"
+      ],
+      "badges": [
+        "Yeni",
+        "Çok Satan",
+        "Flaş İndirim"
+      ],
+      "features": [
+        "✓ %100 Saf Twill İpek Kumaş",
+        "✓ Özel İtalyan El İşçiliği İğne Kenar",
+        "✓ Tok Duruş, Şeklini Gün Boyu Koru",
+        "✓ Nefes Alan Doğal İpek Lifler"
+      ],
+      "careInstructions": "Kuru temizleme önerilir. Elde yıkamada ılık su ve ipek şampuanı tercih edilmelidir. Düşük ısıda tersten ütüleyiniz.",
+      "dimensions": "90 cm x 90 cm",
+      "isNew": true,
+      "isBestseller": true,
+      "isFeatured": true,
+      "createdAt": "2026-08-01"
+    },
+    {
+      "id": "p-2",
+      "name": "Minimalist Medine İpeği Şal — Ekru",
+      "slug": "minimalist-medine-ipegi-sal-ekru",
+      "sku": "VER-MED-02-EKR",
+      "barcode": "8680001849202",
+      "description": "Ağırlık yapmayan ekstra dökümlü yapısı ve tok duruşuyla günlük stilinizin vazgeçilmezi. Özel dokuması sayesinde iğnesiz de pratik kullanım olanağı sunar.",
+      "shortDescription": "Medine İpeği Dokuma, Nefes Alan Gözenekler, 75x190 cm",
+      "price": 890,
+      "compareAtPrice": 1100,
+      "costPrice": 380,
+      "currency": "₺",
+      "stock": 50,
+      "rating": 4.8,
+      "reviewCount": 64,
+      "category": "sal",
+      "subcategory": "medine-ipegi",
+      "fabric": "medine-ipegi",
+      "styleCategory": "gunluk",
+      "collection": "minimal-essence",
+      "colors": [
+        {
+          "name": "Ekru",
+          "hex": "#F9F6F0"
+        },
+        {
+          "name": "Koyu Bej",
+          "hex": "#D6C5B3"
+        },
+        {
+          "name": "Siyah",
+          "hex": "#1C1B1A"
+        },
+        {
+          "name": "Soft Zümrüt",
+          "hex": "#2A4B3C"
+        }
+      ],
+      "sizes": [
+        "75x190 cm"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1200&auto=format&fit=crop"
+      ],
+      "badges": [
+        "Çok Satan"
+      ],
+      "features": [
+        "✓ Birinci Sınıf Medine İpeği İplik",
+        "✓ Dökümlü ve Kayma Yapmayan Yapı",
+        "✓ Terletmeyen Dört Mevsim Dokuma",
+        "✓ Kırışmaya Dayanıklı Kumaş"
+      ],
+      "careInstructions": "30°C narin yıkama veya elde yıkama yapılabilir. Sıktırma yapılmadan asarak kurutulmalıdır.",
+      "dimensions": "75 cm x 190 cm",
+      "isNew": false,
+      "isBestseller": true,
+      "isFeatured": true,
+      "createdAt": "2026-07-20"
+    },
+    {
+      "id": "p-3",
+      "name": "Soirée Parlak Saten İpek Eşarp — Bordo & Vizon",
+      "slug": "soiree-parlak-saten-ipek-esarp-bordo-vizon",
+      "sku": "VER-SOI-03-BOR",
+      "barcode": "8680001849203",
+      "description": "Gece davetleri ve özel organizasyonlar için tasarlanan Soirée serisi, ışığı büyüleyici bir şekilde yansıtan yüksek lüks parlak saten dokusuyla öne çıkıyor.",
+      "shortDescription": "%100 Saten İpek, Lüks Işıltı, 90x90 cm",
+      "price": 2150,
+      "costPrice": 920,
+      "currency": "₺",
+      "stock": 12,
+      "rating": 5,
+      "reviewCount": 19,
+      "category": "esarp",
+      "subcategory": "saten-esarp",
+      "fabric": "saten",
+      "styleCategory": "ozel-gun",
+      "collection": "soiree-luxury",
+      "colors": [
+        {
+          "name": "Bordo & Vizon",
+          "hex": "#581825"
+        },
+        {
+          "name": "Gece Siyahı",
+          "hex": "#111111"
+        },
+        {
+          "name": "Şampanya",
+          "hex": "#E6D3B1"
+        }
+      ],
+      "sizes": [
+        "90x90 cm"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1200&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop"
+      ],
+      "badges": [
+        "Limited"
+      ],
+      "features": [
+        "✓ %100 Parlak Saten İpek",
+        "✓ Akşam ve Özel Davetler İçin Gösterişli Dokuma",
+        "✓ Hassas Kenar Kıvrımı"
+      ],
+      "careInstructions": "Hassas kumaş. Yalnızca profesyonel kuru temizleme.",
+      "dimensions": "90 cm x 90 cm",
+      "isNew": true,
+      "isBestseller": false,
+      "isFeatured": true,
+      "createdAt": "2026-08-04"
+    },
+    {
+      "id": "p-4",
+      "name": "Vera Gold Kaplama İpek Eşarp Broşu",
+      "slug": "vera-gold-kaplama-ipek-esarp-brosu",
+      "sku": "VER-ACC-04-GLD",
+      "barcode": "8680001849204",
+      "description": "24K Mikron Altın kaplama, ipek kumaşa asla zarar vermeyen özel korumalı kıskaca sahip el yapımı lüks broş.",
+      "shortDescription": "24K Mikron Altın Kaplama, Kumaşa Zarar Vermez Kıskaç",
+      "price": 650,
+      "costPrice": 220,
+      "currency": "₺",
+      "stock": 40,
+      "rating": 4.9,
+      "reviewCount": 22,
+      "category": "aksesuar",
+      "subcategory": "ipek-bros",
+      "fabric": "diger",
+      "styleCategory": "davet",
+      "colors": [
+        {
+          "name": "Altın",
+          "hex": "#D4AF37"
+        },
+        {
+          "name": "Gümüş",
+          "hex": "#C0C0C0"
+        }
+      ],
+      "sizes": [
+        "Standart"
+      ],
+      "images": [
+        "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1200&auto=format&fit=crop"
+      ],
+      "badges": [
+        "Yeni"
+      ],
+      "features": [
+        "✓ 24K Mikron Gerçek Altın Kaplama",
+        "✓ İpek Kumaş Telini Çekmeyen Yuvarlatılmış İğne Ucu",
+        "✓ Özel Mat Kadife Hediye Kutusu"
+      ],
+      "careInstructions": "Parfüm ve kimyasallardan uzak tutunuz. Kuru bez ile temizleyiniz.",
+      "dimensions": "4 cm x 3 cm",
+      "isNew": true,
+      "isBestseller": false,
+      "isFeatured": false,
+      "createdAt": "2026-08-02"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-1001",
+      "orderNumber": "VER-849201",
+      "customerName": "Ayşe Yılmaz",
+      "email": "ayse.yilmaz@example.com",
+      "phone": "0532 123 45 67",
+      "address": {
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "fullAddress": "Bağdat Caddesi No:142 D:8",
+        "postalCode": "34740"
+      },
+      "items": [
+        {
+          "productName": "Vera Milano Twill İpek Eşarp — Krem & Altın",
+          "color": "Krem & Altın",
+          "quantity": 1,
+          "price": 1890,
+          "image": "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop"
+        },
+        {
+          "productName": "Vera Gold Kaplama İpek Broşu",
+          "color": "Altın",
+          "quantity": 1,
+          "price": 650,
+          "image": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=1200&auto=format&fit=crop"
+        }
+      ],
+      "subtotal": 2540,
+      "shipping": 0,
+      "discount": 0,
+      "total": 2540,
+      "status": "Kargoda",
+      "trackingCode": "YURT-94820194",
+      "carrier": "Yurtiçi Kargo",
+      "paymentMethod": "Kredi Kartı (İyzico)",
+      "createdAt": "2026-08-08 14:32"
+    },
+    {
+      "id": "ord-1002",
+      "orderNumber": "VER-849198",
+      "customerName": "Zeynep Kaya",
+      "email": "zeynep.kaya@example.com",
+      "phone": "0544 987 65 43",
+      "address": {
+        "city": "Ankara",
+        "district": "Çankaya",
+        "fullAddress": "Arjantin Caddesi No:15 D:3",
+        "postalCode": "06680"
+      },
+      "items": [
+        {
+          "productName": "Minimalist Medine İpeği Şal — Ekru",
+          "color": "Ekru",
+          "quantity": 2,
+          "price": 890,
+          "image": "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop"
+        }
+      ],
+      "subtotal": 1780,
+      "shipping": 0,
+      "discount": 100,
+      "total": 1680,
+      "status": "Teslim Edildi",
+      "trackingCode": "ARAS-88492019",
+      "carrier": "Aras Kargo",
+      "paymentMethod": "Kredi Kartı (PayTR)",
+      "createdAt": "2026-08-07 10:15"
+    }
+  ],
+  "cariAccounts": [
+    {
+      "id": "cari-101",
+      "code": "CAR-TED-01",
+      "title": "Milano S.p.A İpek Dokuma Fabrikası",
+      "taxOffice": "Büyük Mükellefler",
+      "taxNumber": "6201948201",
+      "type": "Tedarikçi",
+      "balance": 145000,
+      "balanceType": "Borçlu",
+      "phone": "+39 02 849201",
+      "email": "export@milanosilk.it",
+      "address": "Via Montenapoleone 18, Milano / İtalya",
+      "city": "Milano",
+      "createdAt": "2025-10-15"
+    },
+    {
+      "id": "cari-102",
+      "code": "CAR-TOP-02",
+      "title": "Nişantaşı Butik A.Ş.",
+      "taxOffice": "Şişli V.D.",
+      "taxNumber": "1948201948",
+      "type": "Toptancı",
+      "balance": 68500,
+      "balanceType": "Alacaklı",
+      "phone": "0212 240 50 60",
+      "email": "siparis@nisantasibutik.com",
+      "address": "Abdi İpekçi Cad. No:88, Şişli / İstanbul",
+      "city": "İstanbul",
+      "createdAt": "2026-01-10"
+    },
+    {
+      "id": "cari-103",
+      "code": "CAR-TED-03",
+      "title": "Bursa Saf İpek İplik Tekstil Ltd.",
+      "taxOffice": "Osmangazi V.D.",
+      "taxNumber": "8849201941",
+      "type": "Tedarikçi",
+      "balance": 32000,
+      "balanceType": "Borçlu",
+      "phone": "0224 220 30 40",
+      "email": "muhasebe@bursaipek.com.tr",
+      "address": "Kozahan Sk. No:14, Osmangazi / Bursa",
+      "city": "Bursa",
+      "createdAt": "2026-02-01"
+    }
+  ],
+  "cariTransactions": [
+    {
+      "id": "ctx-1",
+      "cariId": "cari-101",
+      "date": "2026-08-01",
+      "documentNo": "FAT-2026-00481",
+      "description": "Milano Twill İpek Kumaş İthalat Alım Faturası",
+      "type": "Fatura",
+      "amount": 145000,
+      "isDebt": true
+    },
+    {
+      "id": "ctx-2",
+      "cariId": "cari-102",
+      "date": "2026-08-05",
+      "documentNo": "TAH-2026-00124",
+      "description": "Toptan Eşarp Satış Tahsilatı (Banka Havalesi)",
+      "type": "Tahsilat",
+      "amount": 68500,
+      "isDebt": false
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "cmp-1",
+      "title": "⚡ Flaş İndirim (Flash Sale)",
+      "subtitle": "Milano Romance %100 Twill İpek serisinde 24 Saat Geçerli Fırsat!",
+      "type": "flash_sale",
+      "isEnabled": true,
+      "discountPercentage": 15,
+      "endTime": "2026-08-10T23:59:59Z"
+    },
+    {
+      "id": "cmp-2",
+      "title": "🎁 ₺2.500 Üzeri Alışverişe İpek Broş Hediye!",
+      "subtitle": "Sepet tutarınız ₺2.500 üzerine ulaştığında 24K Altın Kaplama Eşarp Broşu otomatik hediyeniz olur.",
+      "type": "free_gift",
+      "isEnabled": true,
+      "minCartAmount": 2500,
+      "giftProductName": "Vera Gold Kaplama İpek Eşarp Broşu",
+      "giftProductImage": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "cmp-3",
+      "title": "🛍️ Çok Al Az Öde (Kademeli İndirim)",
+      "subtitle": "2 Ürüne %10, 3 Ürüne Anında %20 İndirim Fırsatı!",
+      "type": "tiered_discount",
+      "isEnabled": true
+    }
+  ],
+  "coupons": [
+    {
+      "id": "coup-1",
+      "code": "VERA10",
+      "discountText": "%10 İndirim",
+      "discountType": "percentage",
+      "discountValue": 10,
+      "minSpend": 1000,
+      "usageCount": 48,
+      "status": "Aktif"
+    },
+    {
+      "id": "coup-2",
+      "code": "HOŞGELDİN",
+      "discountText": "%15 İndirim",
+      "discountType": "percentage",
+      "discountValue": 15,
+      "minSpend": 1500,
+      "usageCount": 112,
+      "status": "Aktif"
+    },
+    {
+      "id": "coup-3",
+      "code": "MILANO2026",
+      "discountText": "₺250 Sabit İndirim",
+      "discountType": "fixed",
+      "discountValue": 250,
+      "minSpend": 2000,
+      "usageCount": 29,
+      "status": "Aktif"
+    }
+  ],
+  "updatedAt": "2026-08-09T14:47:37.712Z"
+}

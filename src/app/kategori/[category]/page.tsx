@@ -76,8 +76,24 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     return 'Tüm Vera Eşarp Koleksiyonları';
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Ana Sayfa', item: 'https://veraesarp.com' },
+      { '@type': 'ListItem', position: 2, name: 'Koleksiyonlar', item: 'https://veraesarp.com/kategori' },
+      { '@type': 'ListItem', position: 3, name: getCategoryTitle(), item: `https://veraesarp.com/kategori/${categorySlug}` },
+    ],
+  };
+
   return (
     <div className="bg-[#F8F5EF] min-h-screen py-12">
+      {/* SEO Breadcrumb Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center space-x-2 text-xs text-[#8C857B] uppercase tracking-wider">
