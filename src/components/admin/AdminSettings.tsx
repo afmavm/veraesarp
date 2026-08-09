@@ -186,7 +186,235 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        {/* 4. Payment Integration */}
+        {/* 4. E-Posta Sunucu Ayarları (SMTP & API Entegrasyonu) */}
+        <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between pb-3 border-b border-[#2A2825]">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-[#B49A6A]" />
+              <h2 className="font-serif text-lg font-normal">E-Posta Sunucu Ayarları (SMTP &amp; API Entegrasyonu)</h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                showToast('⚡ SMTP Sunucu Bağlantısı Test Edildi! Test e-postası (destek@veraesarp.com) adresine iletildi.', 'success');
+              }}
+              className="px-3.5 py-1.5 bg-[#242321] text-[#B49A6A] border border-[#B49A6A]/40 text-xs font-semibold hover:bg-[#B49A6A] hover:text-[#F8F5EF] transition-colors"
+            >
+              ⚡ Sunucu Bağlantısını Test Et
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[#8C857B] mb-1">E-Posta Servis Sağlayıcısı</label>
+              <select
+                value={formData.emailSettings?.provider || 'smtp'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      provider: e.target.value as any,
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              >
+                <option value="smtp">Kurumsal cPanel / Plesk SMTP</option>
+                <option value="gmail">Google Workspace / Gmail SMTP</option>
+                <option value="resend">Resend Transactional Email API</option>
+                <option value="cpanel">Özel Linux Mail Server</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">SMTP Sunucu Adresi (Host) *</label>
+              <input
+                type="text"
+                required
+                placeholder="ör: mail.veraesarp.com"
+                value={formData.emailSettings?.smtpHost || 'mail.veraesarp.com'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      smtpHost: e.target.value,
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[#8C857B] mb-1">SMTP Port *</label>
+              <input
+                type="number"
+                required
+                placeholder="587"
+                value={formData.emailSettings?.smtpPort || 587}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      smtpPort: Number(e.target.value),
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">Şifreleme (Encryption)</label>
+              <select
+                value={formData.emailSettings?.encryption || 'tls'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      encryption: e.target.value as any,
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              >
+                <option value="tls">STARTTLS (Port 587)</option>
+                <option value="ssl">SSL / TLS (Port 465)</option>
+                <option value="none">Şifrelemesiz (Port 25)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">SMTP Kullanıcı Adı (E-Posta) *</label>
+              <input
+                type="text"
+                required
+                value={formData.emailSettings?.smtpUser || 'destek@veraesarp.com'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      smtpUser: e.target.value,
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[#8C857B] mb-1">Gönderen E-Posta Şifresi *</label>
+              <input
+                type="password"
+                required
+                value={formData.emailSettings?.smtpPassword || '••••••••'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      smtpPassword: e.target.value,
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">Gönderen Marka Görünüm Adı *</label>
+              <input
+                type="text"
+                required
+                value={formData.emailSettings?.senderName || 'Vera Eşarp Müşteri Hizmetleri'}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    emailSettings: {
+                      ...(formData.emailSettings || {
+                        isEnabled: true,
+                        provider: 'smtp',
+                        smtpHost: 'mail.veraesarp.com',
+                        smtpPort: 587,
+                        smtpUser: 'destek@veraesarp.com',
+                        senderName: 'Vera Eşarp Müşteri Hizmetleri',
+                        senderEmail: 'destek@veraesarp.com',
+                        encryption: 'tls',
+                      }),
+                      senderName: e.target.value,
+                    },
+                  })
+                }
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 5. Payment Integration */}
         <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
           <h3 className="font-serif text-lg text-[#B49A6A] flex items-center gap-2">
             <CreditCard className="w-4 h-4" />

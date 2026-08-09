@@ -264,6 +264,19 @@ export interface FooterColumn {
   links: FooterLink[];
 }
 
+export interface EmailServerSettings {
+  isEnabled: boolean;
+  provider: 'smtp' | 'resend' | 'gmail' | 'cpanel';
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPassword?: string;
+  senderName: string;
+  senderEmail: string;
+  encryption: 'tls' | 'ssl' | 'none';
+  apiKey?: string;
+}
+
 // SİTE & MARKA AYARLARI (Footer, İletişim & Kurumsal Bilgiler)
 export interface SiteSettings {
   name: string;
@@ -280,4 +293,5 @@ export interface SiteSettings {
   taxOffice?: string;
   taxNumber?: string;
   footerColumns?: FooterColumn[];
+  emailSettings?: EmailServerSettings;
 }

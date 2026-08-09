@@ -14,6 +14,17 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   workingHours: 'Hafta içi 09:00 - 18:00',
   taxOffice: 'Şişli V.D.',
   taxNumber: '1948201948',
+  emailSettings: {
+    isEnabled: true,
+    provider: 'smtp',
+    smtpHost: 'mail.veraesarp.com',
+    smtpPort: 587,
+    smtpUser: 'destek@veraesarp.com',
+    smtpPassword: '••••••••',
+    senderName: 'Vera Eşarp Müşteri Hizmetleri',
+    senderEmail: 'destek@veraesarp.com',
+    encryption: 'tls',
+  },
   footerColumns: [
     {
       title: 'Alışveriş',
