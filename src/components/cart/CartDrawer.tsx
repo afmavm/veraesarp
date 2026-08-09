@@ -7,10 +7,16 @@ import { X, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Truck } from 'lucide-r
 import { useCart } from '@/context/CartContext';
 import { SITE_CONFIG } from '@/lib/data/mock-data';
 
+import { useData } from '@/context/DataContext';
+
 export default function CartDrawer() {
   const { cart, isOpen, closeCart, removeFromCart, updateQuantity, totalPrice, totalCount, freeShippingRemaining } = useCart();
+  const { campaigns } = useData();
 
   if (!isOpen) return null;
+
+  const freeGiftCampaign = campaigns.find((c) => c.type === 'free_gift' && c.isEnabled);
+  const isGiftQualified = freeGiftCampaign && totalPrice >= (freeGiftCampaign.minCartAmount || 2500);
 
   const progressPercent = Math.min(
     100,
@@ -43,6 +49,22 @@ export default function CartDrawer() {
               <X className="w-5 h-5" />
             </button>
           </div>
+
+          {/* Active Free Gift Reward Banner */}
+          {freeGiftCampaign && (
+            <div className={`p-3 text-xs border-b ${isGiftQualified ? 'bg-amber-900/90 text-amber-100 border-amber-700' : 'bg-[#E8DED1] text-[#242321] border-[#E6DFD5]'}`}>
+              {isGiftQualified ? (
+                <div className="flex items-center gap-2 font-semibold">
+                  <span>🎁 Tebrikler! {freeGiftCampaign.giftProductName || 'İpek Broş'} Hediyeniz Sepetinize Eklendi!</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span>🎁 ₺{freeGiftCampaign.minCartAmount} Üzeri Alışverişe {freeGiftCampaign.giftProductName || 'İpek Broş'} Hediye!</span>
+                  <span className="font-bold text-[#B49A6A]">Kalan: ₺{Math.max(0, (freeGiftCampaign.minCartAmount || 2500) - totalPrice)}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Free Shipping Progress */}
           <div className="bg-[#E8DED1]/60 p-4 border-b border-[#E6DFD5]">

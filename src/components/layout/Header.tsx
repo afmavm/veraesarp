@@ -6,13 +6,18 @@ import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, Sparkles } from
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 
+import { useData } from '@/context/DataContext';
+
 export default function Header() {
   const { toggleCart, totalCount } = useCart();
   const { wishlistCount } = useWishlist();
+  const { campaigns } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const activeCampaign = campaigns.find((c) => c.isEnabled);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +31,12 @@ export default function Header() {
     <>
       {/* Top Announcement Bar */}
       <div className="bg-[#242321] text-[#F8F5EF] text-[11px] font-medium py-2 px-4 text-center tracking-widest uppercase flex items-center justify-center gap-3 border-b border-[#B49A6A]/20">
-        <Sparkles className="w-3 h-3 text-[#B49A6A]" />
-        <span>Tüm Türkiye'ye ₺1.500 Üzeri Ücretsiz Kargo &amp; Özel Hediye Kutusu</span>
+        <Sparkles className="w-3.5 h-3.5 text-[#B49A6A] animate-pulse" />
+        <span>
+          {activeCampaign
+            ? `${activeCampaign.title} — ${activeCampaign.subtitle}`
+            : "Tüm Türkiye'ye ₺1.500 Üzeri Ücretsiz Kargo & Özel Hediye Kutusu"}
+        </span>
         <span className="hidden md:inline-block text-[#B49A6A]">|</span>
         <span className="hidden md:inline-block">%100 Saf İpek &amp; El İşçiliği Kenar Garantisi</span>
       </div>
