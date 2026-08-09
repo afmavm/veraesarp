@@ -1,9 +1,15 @@
-# VERA EŞARP cPanel Apache Configuration (Port 38472)
+# VERA EŞARP cPanel Apache Proxy Configuration (Port 38472)
+DirectoryIndex disabled
+DirectorySlash Off
 RewriteEngine On
 
 # Redirect HTTP to HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
 
-# Proxy to unique dedicated port 38472
+# Catch Apache automatic index.php rewrites and direct to Next.js root homepage
+RewriteRule ^index\.php$ http://127.0.0.1:38472/ [P,L]
+RewriteRule ^index\.html$ http://127.0.0.1:38472/ [P,L]
+
+# Proxy all other requests cleanly to Port 38472
 RewriteRule ^(.*)$ http://127.0.0.1:38472/$1 [P,L]
