@@ -69,7 +69,7 @@ export default function ProductModal({
 
   const [variantsList, setVariantsList] = useState<ProductVariant[]>([]);
 
-  // Local New Feature / New Color inputs
+  // Local inputs
   const [newFeatureText, setNewFeatureText] = useState('');
   const [newColorName, setNewColorName] = useState('');
   const [newColorHex, setNewColorHex] = useState('#B49A6A');
@@ -252,27 +252,31 @@ export default function ProductModal({
   const marginPercent = formData.price > 0 ? Math.round((marginAmount / formData.price) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-      <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 sm:p-8 max-w-4xl w-full text-[#F8F5EF] space-y-6 shadow-2xl my-8">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#2A2825]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-hidden">
+      <div className="bg-[#1C1B1A] border border-[#B49A6A] max-w-4xl w-full max-h-[92vh] text-[#F8F5EF] flex flex-col shadow-2xl rounded-sm overflow-hidden">
+        {/* Fixed Header */}
+        <div className="p-5 sm:p-6 border-b border-[#2A2825] flex items-center justify-between shrink-0 bg-[#1C1B1A]">
           <div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#F8F5EF]">
+            <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#F8F5EF]">
               {productToEdit ? 'Ürün & Detay Kartı Yönetimi' : 'Yeni Ürün & Tam Detay Ekle'}
             </h2>
-            <p className="text-xs text-[#8C857B] mt-0.5">
-              Ürün kartlarında ve Ürün Detay sayfasında görüntülenen tüm görselleri, açıklamaları ve özellikleri buradan yönetin.
+            <p className="text-[11px] text-[#8C857B] mt-0.5">
+              Ürün kartlarında ve detay sayfasında görünen tüm alanları yönetin.
             </p>
           </div>
-          <button onClick={onClose} className="p-2 text-[#8C857B] hover:text-[#F8F5EF]">
-            <X className="w-6 h-6" />
+          <button
+            onClick={onClose}
+            className="p-2 text-[#8C857B] hover:text-[#F8F5EF] hover:bg-[#242321] transition-colors"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8 text-xs">
+        {/* Scrollable Form Body */}
+        <form id="productForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6 text-xs">
           {/* TAB 1: TEMEL BİLGİLER */}
           <div className="space-y-4">
-            <h3 className="font-serif text-lg text-[#B49A6A] border-b border-[#2A2825] pb-2 flex items-center gap-2">
+            <h3 className="font-serif text-base text-[#B49A6A] border-b border-[#2A2825] pb-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
               <span>1. Ürün Kimlik &amp; Başlık Bilgileri</span>
             </h3>
@@ -286,7 +290,7 @@ export default function ProductModal({
                   placeholder="ör: Vera Milano Twill İpek Eşarp — Krem & Altın"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-serif text-sm focus:border-[#B49A6A] focus:outline-none"
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-serif text-sm focus:border-[#B49A6A] focus:outline-none"
                 />
               </div>
 
@@ -297,7 +301,7 @@ export default function ProductModal({
                   placeholder="ör: vera-milano-twill-ipek-esarp"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
                 />
               </div>
             </div>
@@ -416,7 +420,6 @@ export default function ProductModal({
               </label>
             </div>
 
-            {/* URL input */}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -434,7 +437,6 @@ export default function ProductModal({
               </button>
             </div>
 
-            {/* Images Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 pt-2">
               {imagesList.map((img, idx) => (
                 <div key={idx} className="relative aspect-[3/4] bg-[#171615] border border-[#3A3835] group overflow-hidden">
@@ -524,7 +526,7 @@ export default function ProductModal({
 
           {/* TAB 6: ÖZELLİKLER & AÇIKLAMALAR */}
           <div className="space-y-4">
-            <h3 className="font-serif text-lg text-[#B49A6A] border-b border-[#2A2825] pb-2">
+            <h3 className="font-serif text-base text-[#B49A6A] border-b border-[#2A2825] pb-2">
               6. Ürün Detay Sayfası Açıklama &amp; Maddeler
             </h3>
 
@@ -601,24 +603,25 @@ export default function ProductModal({
               </div>
             </div>
           </div>
-
-          {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#2A2825]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-3 bg-transparent text-[#8C857B] hover:text-[#F8F5EF] text-xs uppercase font-semibold"
-            >
-              İptal
-            </button>
-            <button
-              type="submit"
-              className="px-8 py-3.5 bg-[#B49A6A] text-[#F8F5EF] font-semibold uppercase tracking-widest hover:bg-[#988052] transition-colors shadow-lg"
-            >
-              {productToEdit ? 'Değişiklikleri Yayınla & Kaydet' : 'Ürünü Mağazada Yayınla'}
-            </button>
-          </div>
         </form>
+
+        {/* Fixed Footer Buttons */}
+        <div className="p-4 sm:p-5 border-t border-[#2A2825] flex items-center justify-end gap-3 shrink-0 bg-[#1C1B1A]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2.5 bg-transparent text-[#8C857B] hover:text-[#F8F5EF] text-xs uppercase font-semibold"
+          >
+            İptal
+          </button>
+          <button
+            type="submit"
+            form="productForm"
+            className="px-8 py-3 bg-[#B49A6A] text-[#F8F5EF] font-semibold text-xs uppercase tracking-widest hover:bg-[#988052] transition-colors shadow-lg"
+          >
+            {productToEdit ? 'Değişiklikleri Yayınla & Kaydet' : 'Ürünü Mağazada Yayınla'}
+          </button>
+        </div>
       </div>
     </div>
   );
