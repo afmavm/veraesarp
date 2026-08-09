@@ -493,6 +493,8 @@ export const MOCK_COUPONS: Coupon[] = [
     discountValue: 10,
     minSpend: 1000,
     usageCount: 48,
+    maxUsesPerCustomer: 1,
+    usedByEmails: [],
     status: 'Aktif',
   },
   {
@@ -503,6 +505,8 @@ export const MOCK_COUPONS: Coupon[] = [
     discountValue: 15,
     minSpend: 1500,
     usageCount: 112,
+    maxUsesPerCustomer: 1,
+    usedByEmails: [],
     status: 'Aktif',
   },
   {
@@ -513,6 +517,8 @@ export const MOCK_COUPONS: Coupon[] = [
     discountValue: 250,
     minSpend: 2000,
     usageCount: 29,
+    maxUsesPerCustomer: 1,
+    usedByEmails: [],
     status: 'Aktif',
   },
 ];

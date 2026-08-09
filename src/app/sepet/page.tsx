@@ -9,9 +9,12 @@ import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { SITE_CONFIG } from '@/lib/data/mock-data';
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, totalPrice, totalCount, freeShippingRemaining, clearCart } = useCart();
-  const { coupons, campaigns } = useData();
+  const { coupons, campaigns, validateCoupon } = useData();
+  const { user } = useAuth();
   const { showToast } = useToast();
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; text: string; amount: number } | null>(null);
@@ -38,25 +41,14 @@ export default function CartPage() {
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanCode = couponCode.trim().toUpperCase();
+    const result = validateCoupon(couponCode, totalPrice, user?.email);
 
-    const foundCoupon = coupons.find((c) => c.code.toUpperCase() === cleanCode);
-
-    if (!foundCoupon) {
-      showToast('Geçersiz veya bulunamayan kupon kodu.', 'error');
+    if (!result.success || !result.coupon) {
+      showToast(result.message, 'error');
       return;
     }
 
-    if (foundCoupon.status !== 'Aktif') {
-      showToast('Bu kupon kodu şu anda pasif durumdadır.', 'error');
-      return;
-    }
-
-    if (totalPrice < foundCoupon.minSpend) {
-      showToast(`Bu kupon için minimum sepet tutarı ₺${foundCoupon.minSpend.toLocaleString('tr-TR')} olmalıdır.`, 'error');
-      return;
-    }
-
+    const foundCoupon = result.coupon;
     let calculatedDiscount = 0;
     if (foundCoupon.discountType === 'percentage') {
       calculatedDiscount = (totalPrice * foundCoupon.discountValue) / 100;
@@ -70,7 +62,7 @@ export default function CartPage() {
       amount: calculatedDiscount,
     });
 
-    showToast(`${foundCoupon.code} kuponu uygulandı! (${foundCoupon.discountText})`, 'success');
+    showToast(result.message, 'success');
   };
 
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.amount : 0;

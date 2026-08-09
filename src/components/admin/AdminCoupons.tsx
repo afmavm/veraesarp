@@ -19,6 +19,7 @@ export default function AdminCoupons() {
     discountType: 'percentage' as 'percentage' | 'fixed',
     discountValue: 10,
     minSpend: 1000,
+    maxUsesPerCustomer: 1,
   });
 
   const handleOpenModal = (couponToEdit?: Coupon) => {
@@ -29,6 +30,7 @@ export default function AdminCoupons() {
         discountType: couponToEdit.discountType,
         discountValue: couponToEdit.discountValue,
         minSpend: couponToEdit.minSpend,
+        maxUsesPerCustomer: couponToEdit.maxUsesPerCustomer || 1,
       });
     } else {
       setEditingCoupon(null);
@@ -37,6 +39,7 @@ export default function AdminCoupons() {
         discountType: 'percentage',
         discountValue: 10,
         minSpend: 1000,
+        maxUsesPerCustomer: 1,
       });
     }
     setIsModalOpen(true);
@@ -61,6 +64,7 @@ export default function AdminCoupons() {
         discountType: formData.discountType,
         discountValue: Number(formData.discountValue),
         minSpend: Number(formData.minSpend),
+        maxUsesPerCustomer: Number(formData.maxUsesPerCustomer || 1),
       });
       showToast(`${formData.code.toUpperCase()} kuponu güncellendi!`, 'success');
     } else {
@@ -70,6 +74,8 @@ export default function AdminCoupons() {
         discountType: formData.discountType,
         discountValue: Number(formData.discountValue),
         minSpend: Number(formData.minSpend),
+        maxUsesPerCustomer: Number(formData.maxUsesPerCustomer || 1),
+        usedByEmails: [],
       });
       showToast(`${formData.code.toUpperCase()} kuponu başarıyla tanımlandı!`, 'success');
     }
@@ -117,7 +123,10 @@ export default function AdminCoupons() {
                   <span className="text-sm font-semibold text-[#F8F5EF]">{c.discountText}</span>
                 </div>
                 <p className="text-xs text-[#8C857B]">
-                  Min. Sepet Şartı: <strong className="text-[#E8DED1]">₺{c.minSpend.toLocaleString('tr-TR')}</strong> • Toplam Kullanım: <strong>{c.usageCount} kez</strong>
+                  Min. Sepet Şartı: <strong className="text-[#E8DED1]">₺{c.minSpend.toLocaleString('tr-TR')}</strong> • Toplam Kullanım: <strong>{c.usageCount} kez</strong> • 
+                  <span className="text-[#B49A6A] font-medium ml-1">
+                    Müşteri Başı Hak: <strong>{c.maxUsesPerCustomer || 1} Defa</strong> ({c.usedByEmails?.length || 0} Müşteri Kullandı)
+                  </span>
                 </p>
               </div>
 
@@ -209,15 +218,29 @@ export default function AdminCoupons() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[#8C857B] mb-1">Minimum Sepet Tutarı Şartı (₺) *</label>
-                <input
-                  type="number"
-                  required
-                  value={formData.minSpend}
-                  onChange={(e) => setFormData({ ...formData, minSpend: Number(e.target.value) })}
-                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[#8C857B] mb-1">Min. Sepet Tutarı (₺) *</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.minSpend}
+                    onChange={(e) => setFormData({ ...formData, minSpend: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#8C857B] mb-1">Kullanım Sınırı (Kişi Başı Hak) *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={formData.maxUsesPerCustomer}
+                    onChange={(e) => setFormData({ ...formData, maxUsesPerCustomer: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-[#2A2825]">

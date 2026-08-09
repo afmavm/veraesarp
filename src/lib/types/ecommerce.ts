@@ -163,6 +163,7 @@ export interface CustomerOrder {
   trackingCode?: string;
   carrier?: 'Yurtiçi Kargo' | 'Aras Kargo' | 'MNG Kargo' | 'Trendyol Express';
   paymentMethod: string;
+  couponCode?: string;
   createdAt: string;
 }
 
@@ -250,6 +251,8 @@ export interface Coupon {
   discountValue: number;
   minSpend: number;
   usageCount: number;
+  maxUsesPerCustomer?: number; // Müşteri başına kullanım hakkı (ör: 1 defa)
+  usedByEmails?: string[]; // Kuponu daha önce kullanan e-postalar
   status: 'Aktif' | 'Pasif';
   expiryDate?: string;
 }

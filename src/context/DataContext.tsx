@@ -56,11 +56,16 @@ interface DataContextType {
   updateCampaign: (id: string, updates: Partial<CampaignRule>) => void;
   deleteCampaign: (id: string) => void;
   toggleCampaign: (id: string) => void;
-  // Coupon CRUD
-  addCoupon: (couponData: { code: string; discountText: string; discountType: 'percentage' | 'fixed'; discountValue: number; minSpend: number }) => void;
+  // Coupon CRUD & Validation
+  addCoupon: (couponData: { code: string; discountText: string; discountType: 'percentage' | 'fixed'; discountValue: number; minSpend: number; maxUsesPerCustomer?: number; usedByEmails?: string[] }) => void;
   updateCoupon: (id: string, updates: Partial<Coupon>) => void;
   deleteCoupon: (id: string) => void;
   toggleCouponStatus: (id: string) => void;
+  validateCoupon: (
+    code: string,
+    cartTotal: number,
+    customerEmail?: string
+  ) => { success: boolean; message: string; coupon?: Coupon };
   // Cargo helper
   getCargoStatus: (query: string) => CargoTrackingData | null;
 }
@@ -278,6 +283,24 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addOrder = (order: CustomerOrder) => {
     setOrders((prev) => [order, ...prev]);
 
+    // Record coupon usage by customer email to prevent reuse
+    if (order.couponCode) {
+      const codeClean = order.couponCode.trim().toUpperCase();
+      setCoupons((prev) =>
+        prev.map((c) => {
+          if (c.code.toUpperCase() === codeClean) {
+            const currentUsed = c.usedByEmails || [];
+            return {
+              ...c,
+              usageCount: c.usageCount + 1,
+              usedByEmails: [...currentUsed, order.email.toLowerCase()],
+            };
+          }
+          return c;
+        })
+      );
+    }
+
     // Automatically sync or update Cari Account for this customer
     setCariAccounts((prev) => {
       let existingCari = prev.find((c) => c.email?.toLowerCase() === order.email.toLowerCase());
@@ -491,7 +514,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Coupon Actions
-  const addCoupon = (data: { code: string; discountText: string; discountType: 'percentage' | 'fixed'; discountValue: number; minSpend: number }) => {
+  const addCoupon = (data: {
+    code: string;
+    discountText: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    minSpend: number;
+    maxUsesPerCustomer?: number;
+  }) => {
     const newCoup: Coupon = {
       id: `coup-${Date.now()}`,
       code: data.code.toUpperCase(),
@@ -500,6 +530,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       discountValue: Number(data.discountValue),
       minSpend: Number(data.minSpend),
       usageCount: 0,
+      maxUsesPerCustomer: Number(data.maxUsesPerCustomer || 1),
+      usedByEmails: [],
       status: 'Aktif',
     };
     setCoupons((prev) => [newCoup, ...prev]);
@@ -519,6 +551,46 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCoupons((prev) =>
       prev.map((c) => (c.id === id ? { ...c, status: c.status === 'Aktif' ? 'Pasif' : 'Aktif' } : c))
     );
+  };
+
+  const validateCoupon = (code: string, cartTotal: number, customerEmail?: string) => {
+    const cleanCode = code.trim().toUpperCase();
+    const coupon = coupons.find((c) => c.code.toUpperCase() === cleanCode);
+
+    if (!coupon) {
+      return { success: false, message: `⚠️ '${cleanCode}' kodlu indirim kuponu bulunamadı.` };
+    }
+
+    if (coupon.status !== 'Aktif') {
+      return { success: false, message: `⚠️ '${cleanCode}' indirim kuponu şu anda pasiftir.` };
+    }
+
+    if (cartTotal < coupon.minSpend) {
+      return {
+        success: false,
+        message: `⚠️ Bu kuponu kullanabilmek için minimum sepet tutarı ₺${coupon.minSpend.toLocaleString('tr-TR')} olmalıdır.`,
+      };
+    }
+
+    // Customer reuse prevention validation check
+    if (customerEmail && customerEmail.trim()) {
+      const emailClean = customerEmail.trim().toLowerCase();
+      const usageByThisCustomer = (coupon.usedByEmails || []).filter((e) => e.toLowerCase() === emailClean).length;
+      const maxAllowed = coupon.maxUsesPerCustomer || 1;
+
+      if (usageByThisCustomer >= maxAllowed) {
+        return {
+          success: false,
+          message: `⚠️ '${cleanCode}' indirim kuponu (${emailClean}) e-posta adresiniz ile daha önce ${usageByThisCustomer} kez kullanılmıştır. Suistimal kısıtlaması gereği 2. kez kullanılamaz!`,
+        };
+      }
+    }
+
+    return {
+      success: true,
+      coupon,
+      message: `🎉 '${cleanCode}' kuponu uygulandı! (${coupon.discountText})`,
+    };
   };
 
   // Cargo helper
@@ -570,6 +642,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateCoupon,
         deleteCoupon,
         toggleCouponStatus,
+        validateCoupon,
         getCargoStatus,
       }}
     >

@@ -5,10 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ShieldCheck, CheckCircle2, Lock, CreditCard, Truck } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
+import { CustomerOrder } from '@/lib/types/ecommerce';
 
 export default function CheckoutPage() {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, totalPrice, freeShippingRemaining, clearCart } = useCart();
+  const { addOrder } = useData();
   const { showToast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Delivery, 2: Payment, 3: Completed
@@ -44,6 +47,35 @@ export default function CheckoutPage() {
     e.preventDefault();
     const orderNo = `VER-${Math.floor(100000 + Math.random() * 900000)}`;
     setPlacedOrderNumber(orderNo);
+
+    const newOrder: CustomerOrder = {
+      id: `ord-${Date.now()}`,
+      orderNumber: orderNo,
+      customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+      email: formData.email,
+      phone: formData.phone,
+      address: {
+        fullAddress: formData.address,
+        district: formData.district,
+        city: formData.city,
+      },
+      items: cart.map((item) => ({
+        productName: item.product.name,
+        color: typeof item.selectedColor === 'string' ? item.selectedColor : (item.selectedColor as any)?.name || 'Standart',
+        quantity: item.quantity,
+        price: item.product.price,
+        image: item.product.images[0] || '',
+      })),
+      subtotal: totalPrice,
+      shipping: freeShippingRemaining === 0 ? 0 : 50,
+      discount: 0,
+      total: totalPrice + (freeShippingRemaining === 0 ? 0 : 50),
+      status: 'Hazırlanıyor',
+      paymentMethod: formData.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Kapıda Ödeme',
+      createdAt: new Date().toISOString().slice(0, 10),
+    };
+
+    addOrder(newOrder);
     clearCart();
     setStep(3);
     showToast(`Siparişiniz alındı! Sipariş No: ${orderNo}`, 'success');
