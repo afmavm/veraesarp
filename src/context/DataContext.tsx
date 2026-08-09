@@ -581,7 +581,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (usageByThisCustomer >= maxAllowed) {
         return {
           success: false,
-          message: `⚠️ '${cleanCode}' indirim kuponu (${emailClean}) e-posta adresiniz ile daha önce ${usageByThisCustomer} kez kullanılmıştır. Suistimal kısıtlaması gereği 2. kez kullanılamaz!`,
+          message: `ℹ️ '${cleanCode}' indirim kuponu e-posta adresiniz (${emailClean}) için tanımlanan kullanım limitine (${maxAllowed} kullanım) ulaşmıştır. İlginiz ve alışverişiniz için teşekkür ederiz.`,
         };
       }
     }
