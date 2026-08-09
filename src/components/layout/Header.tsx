@@ -115,6 +115,9 @@ export default function Header() {
               <Link href="/stil-rehberi" className="hover:text-[#B49A6A] transition-colors py-1">
                 Stil Rehberi
               </Link>
+              <Link href="/kargo-takip" className="hover:text-[#B49A6A] transition-colors py-1">
+                Kargo Takip
+              </Link>
               <Link href="/kategori/kampanyalar" className="hover:text-[#B49A6A] transition-colors py-1 text-[#B49A6A]">
                 Kampanyalar
               </Link>

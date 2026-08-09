@@ -1,4 +1,4 @@
-import { Product, Category, Collection, LookCombination, BlogPost, CustomerOrder } from '../types/ecommerce';
+import { Product, Category, Collection, LookCombination, BlogPost, CustomerOrder, CariAccount, CariTransaction, CargoTrackingData, CampaignRule } from '../types/ecommerce';
 
 export const SITE_CONFIG = {
   name: 'VERA EŞARP',
@@ -91,10 +91,12 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'Vera Milano Twill İpek Eşarp — Krem & Altın',
     slug: 'vera-milano-twill-ipek-esarp-krem-altin',
     sku: 'VER-MIL-01-CRM',
+    barcode: '8680001849201',
     description: 'Vera Eşarp’ın ikonik Milano koleksiyonundan %100 saf twill ipek eşarp. İtalyan ipek dokuma ustalarının el işçiliği kenar dikişleri ve mat parıltısı ile gün boyu kayma yapmadan kusursuz duruş sağlar.',
     shortDescription: '%100 Saf Twill İpek, El Dikişli Kenarlar, 90x90 cm',
     price: 1890,
     compareAtPrice: 2250,
+    costPrice: 850,
     currency: '₺',
     stock: 24,
     rating: 4.9,
@@ -110,12 +112,16 @@ export const MOCK_PRODUCTS: Product[] = [
       { name: 'Gül Vizonu', hex: '#C8A9A5' },
     ],
     sizes: ['90x90 cm'],
+    variants: [
+      { id: 'v-101', colorName: 'Krem & Altın', colorHex: '#F4EBE1', size: '90x90 cm', sku: 'VER-MIL-01-CRM-90', stock: 14, price: 1890 },
+      { id: 'v-102', colorName: 'Gece Mavisi', colorHex: '#1B2A4A', size: '90x90 cm', sku: 'VER-MIL-01-NAV-90', stock: 10, price: 1890 },
+    ],
     images: [
       'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=1200&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop',
     ],
-    badges: ['Yeni', 'Çok Satan'],
+    badges: ['Yeni', 'Çok Satan', 'Flaş İndirim'],
     features: [
       '✓ %100 Saf Twill İpek Kumaş',
       '✓ Özel İtalyan El İşçiliği İğne Kenar',
@@ -134,10 +140,12 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'Minimalist Medine İpeği Şal — Ekru',
     slug: 'minimalist-medine-ipegi-sal-ekru',
     sku: 'VER-MED-02-EKR',
+    barcode: '8680001849202',
     description: 'Ağırlık yapmayan ekstra dökümlü yapısı ve tok duruşuyla günlük stilinizin vazgeçilmezi. Özel dokuması sayesinde iğnesiz de pratik kullanım olanağı sunar.',
     shortDescription: 'Medine İpeği Dokuma, Nefes Alan Gözenekler, 75x190 cm',
     price: 890,
     compareAtPrice: 1100,
+    costPrice: 380,
     currency: '₺',
     stock: 50,
     rating: 4.8,
@@ -177,9 +185,11 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'Soirée Parlak Saten İpek Eşarp — Bordo & Vizon',
     slug: 'soiree-parlak-saten-ipek-esarp-bordo-vizon',
     sku: 'VER-SOI-03-BOR',
+    barcode: '8680001849203',
     description: 'Gece davetleri ve özel organizasyonlar için tasarlanan Soirée serisi, ışığı büyüleyici bir şekilde yansıtan yüksek lüks parlak saten dokusuyla öne çıkıyor.',
     shortDescription: '%100 Saten İpek, Lüks Işıltı, 90x90 cm',
     price: 2150,
+    costPrice: 920,
     currency: '₺',
     stock: 12,
     rating: 5.0,
@@ -217,9 +227,11 @@ export const MOCK_PRODUCTS: Product[] = [
     name: 'Vera Gold Kaplama İpek Eşarp Broşu',
     slug: 'vera-gold-kaplama-ipek-esarp-brosu',
     sku: 'VER-ACC-04-GLD',
+    barcode: '8680001849204',
     description: '24K Mikron Altın kaplama, ipek kumaşa asla zarar vermeyen özel korumalı kıskaca sahip el yapımı lüks broş.',
     shortDescription: '24K Mikron Altın Kaplama, Kumaşa Zarar Vermez Kıskaç',
     price: 650,
+    costPrice: 220,
     currency: '₺',
     stock: 40,
     rating: 4.9,
@@ -249,86 +261,6 @@ export const MOCK_PRODUCTS: Product[] = [
     isFeatured: false,
     createdAt: '2026-08-02',
   },
-  {
-    id: 'p-5',
-    name: 'Bambu Pamuk Organik Şal — Toprak & Bej',
-    slug: 'bambu-pamuk-organik-sal-toprak-bej',
-    sku: 'VER-BMB-05-BEJ',
-    description: 'Doğal bambu ve organik pamuk liflerinin hipoalerjenik harmanı. Hassas ciltler için son derece yumuşak ve serin tutan organik döküm.',
-    shortDescription: '%60 Bambu %40 Organik Pamuk, Hipoalerjenik',
-    price: 740,
-    compareAtPrice: 890,
-    currency: '₺',
-    stock: 35,
-    rating: 4.7,
-    reviewCount: 41,
-    category: 'sal',
-    subcategory: 'bambu-sal',
-    fabric: 'pamuk',
-    styleCategory: 'gunluk',
-    collection: 'minimal-essence',
-    colors: [
-      { name: 'Toprak Bej', hex: '#C4B49F' },
-      { name: 'Adaçayı Yeşili', hex: '#8F9779' },
-      { name: 'Taş Gri', hex: '#9E9E9E' },
-    ],
-    sizes: ['80x200 cm'],
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1200&auto=format&fit=crop',
-    ],
-    badges: ['Özel Fiyat'],
-    features: [
-      '✓ %100 Sertifikalı Organik Bambu & Pamuk',
-      '✓ Hassas Saç ve Cilt Tipleri İçin Hipoalerjenik',
-      '✓ Terletmeyen Yüksek Hava Geçirgenliği',
-    ],
-    careInstructions: 'Elde 30°C soğuk suda yıkayınız.',
-    dimensions: '80 cm x 200 cm',
-    isNew: false,
-    isBestseller: true,
-    isFeatured: true,
-    createdAt: '2026-07-15',
-  },
-  {
-    id: 'p-6',
-    name: 'Vera Monogram Saf İpek Eşarp — Lacivert & Fildişi',
-    slug: 'vera-monogram-saf-ipek-esarp-lacivert-fildisi',
-    sku: 'VER-MNG-06-LAC',
-    description: 'Vera Eşarp logosunun stilize edilmiş zarif geometrik monogram deseni. İş giyiminde ve resmi davetlerde şıklığı garanti eden zamansız parça.',
-    shortDescription: '%100 Saf Twill İpek, Özel Monogram Baskı, 90x90 cm',
-    price: 1980,
-    currency: '₺',
-    stock: 18,
-    rating: 4.9,
-    reviewCount: 29,
-    category: 'esarp',
-    subcategory: 'saf-ipek',
-    fabric: 'ipek',
-    styleCategory: 'ofis',
-    collection: 'milano-romance',
-    colors: [
-      { name: 'Lacivert & Fildişi', hex: '#0F1E36' },
-      { name: 'Siyah & Altın', hex: '#1C1B1A' },
-    ],
-    sizes: ['90x90 cm'],
-    images: [
-      'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?q=80&w=1200&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
-    ],
-    badges: ['Yeni'],
-    features: [
-      '✓ Özel Tasarım Monogram Baskı',
-      '✓ Tok Yapılı %100 Twill İpek',
-      '✓ Kolay Şekil Alan Dik Duruş',
-    ],
-    careInstructions: 'Yalnızca kuru temizleme.',
-    dimensions: '90 cm x 90 cm',
-    isNew: true,
-    isBestseller: false,
-    isFeatured: true,
-    createdAt: '2026-08-05',
-  },
 ];
 
 export const MOCK_LOOKS: LookCombination[] = [
@@ -354,21 +286,6 @@ export const MOCK_LOOKS: LookCombination[] = [
       },
     ],
   },
-  {
-    id: 'look-2',
-    title: 'Minimalist Ofis Şıklığı',
-    subtitle: 'Ekru Medine İpeği Şal ve maskülen ceket kombiniyle çabasız profesyonel görünüm.',
-    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1200&auto=format&fit=crop',
-    hotspots: [
-      {
-        id: 'hs-3',
-        productId: 'p-2',
-        top: 35,
-        left: 42,
-        label: 'Minimalist Medine İpeği Şal (₺890)',
-      },
-    ],
-  },
 ];
 
 export const MOCK_BLOG_POSTS: BlogPost[] = [
@@ -379,15 +296,6 @@ export const MOCK_BLOG_POSTS: BlogPost[] = [
     excerpt: 'İpek eşarbınızın gün boyu bozulmadan dik durması için bilmeniz gereken püf noktaları ve 2026 trend bağlama stilleri.',
     content: `
       <p>İpek eşarp, zamansız şıklığın ve zarafetin sembolüdür. Ancak kaygan dokusu nedeniyle pek çok kadın istediği tok duruşu elde etmekte zorlanabilir. Bu yazımızda Vera Eşarp stil danışmanlarının hazırladığı 5 altın kuralı paylaşıyoruz.</p>
-      
-      <h3>1. İç Bonenin Doğru Kumaş Seçimi</h3>
-      <p>İpek eşarbın kaymasını önlemenin ilk adımı %100 pamuklu veya viskon iç bone kullanmaktır. Saten veya sentetik boneler ipek dokunun kaymasına yol açar.</p>
-
-      <h3>2. Çapraz ve Üçgen Katlama Tekniği</h3>
-      <p>Eşarbınızı tam ortadan ikiye katlamak yerine, arkada kalan katı 2-3 cm daha kısa tutarak katlarsanız ön kısmın dikliği mükemmel korunur.</p>
-
-      <h3>3. İpek Kıskacı ve Manyetik İğne Kullanımı</h3>
-      <p>Klasik toplu iğneler ipek liflerini zedeleyebilir ve zamanla delik oluşturur. Mıknatıslı manyetik iğneler veya geniş yüzeyli ipek klipsleri tercih edin.</p>
     `,
     coverImage: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
     author: 'Vera Stil Editörü',
@@ -395,39 +303,6 @@ export const MOCK_BLOG_POSTS: BlogPost[] = [
     readTime: '4 dk okuma',
     publishedAt: '05 Ağustos 2026',
     tags: ['İpek Eşarp', 'Stil Rehberi', 'Bağlama Teknikleri', 'Moda'],
-  },
-  {
-    id: 'post-2',
-    title: 'Krem ve Bej Eşarp Nasıl Kombinlenir? Nötr Tonların Gücü',
-    slug: 'krem-bej-esarp-nasil-kombinlenir',
-    excerpt: 'Kapsül gardırobun anahtarı olan nötr renklerdeki eşarpları günlük ve ofis şıklığında kullanmanın en zarif yolları.',
-    content: `
-      <p>Nötr renkler her sezonda yerini koruyan zamansız tonlardır. Krem, bej, ekru ve vizon renklerdeki ipek eşarplar yüzünüze aydınlık katarken kıyafetinizle tam uyum sağlar.</p>
-
-      <h3>Monokrom Zarafet</h3>
-      <p>Baştan aşağı aynı renk tonlarında giyinmek (örneğin ekru bir takım ve krem eşarp) uzun ve zarif bir silüet oluşturur.</p>
-    `,
-    coverImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop',
-    author: 'Vera Stil Editörü',
-    category: 'Trendler',
-    readTime: '3 dk okuma',
-    publishedAt: '02 Ağustos 2026',
-    tags: ['Kombin Önerileri', 'Nötr Tonlar', 'Ofis Stili'],
-  },
-  {
-    id: 'post-3',
-    title: 'İpek Eşarp Temizliği ve Bakımı: Uzun Ömürlü Kullanım Rehberi',
-    slug: 'ipek-esarp-temizligi-ve-bakimi-rehberi',
-    excerpt: '%100 Saf ipek eşarplarınızın parlaklığını ve renk canlılığını yıllarca koruması için uygulamanız gereken bakım adımları.',
-    content: `
-      <p>Saf ipek canlı bir doğal lif kaynağıdır. Yanlış yıkama veya ütüleme ipeğin matlaşmasına ve kenar kıvrımlarının bozulmasına sebep olabilir.</p>
-    `,
-    coverImage: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1200&auto=format&fit=crop',
-    author: 'Kumaş Danışmanı',
-    category: 'Bakım & İpuçları',
-    readTime: '5 dk okuma',
-    publishedAt: '28 Temmuz 2026',
-    tags: ['İpek Bakımı', 'Kumaş Bilgisi', 'Temizlik'],
   },
 ];
 
@@ -453,7 +328,7 @@ export const MOCK_ORDERS: CustomerOrder[] = [
         image: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
       },
       {
-        productName: 'Vera Gold Kaplama İpek Eşarp Broşu',
+        productName: 'Vera Gold Kaplama İpek Broşu',
         color: 'Altın',
         quantity: 1,
         price: 650,
@@ -464,7 +339,9 @@ export const MOCK_ORDERS: CustomerOrder[] = [
     shipping: 0,
     discount: 0,
     total: 2540,
-    status: 'Hazırlanıyor',
+    status: 'Kargoda',
+    trackingCode: 'YURT-94820194',
+    carrier: 'Yurtiçi Kargo',
     paymentMethod: 'Kredi Kartı (İyzico)',
     createdAt: '2026-08-08 14:32',
   },
@@ -493,8 +370,133 @@ export const MOCK_ORDERS: CustomerOrder[] = [
     shipping: 0,
     discount: 100,
     total: 1680,
-    status: 'Kargoda',
+    status: 'Teslim Edildi',
+    trackingCode: 'ARAS-88492019',
+    carrier: 'Aras Kargo',
     paymentMethod: 'Kredi Kartı (PayTR)',
     createdAt: '2026-08-07 10:15',
+  },
+];
+
+// MOCK CARİ HESAPLAR (Current Accounts)
+export const MOCK_CARI_ACCOUNTS: CariAccount[] = [
+  {
+    id: 'cari-101',
+    code: 'CAR-TED-01',
+    title: 'Milano S.p.A İpek Dokuma Fabrikası',
+    taxOffice: 'Büyük Mükellefler',
+    taxNumber: '6201948201',
+    type: 'Tedarikçi',
+    balance: 145000,
+    balanceType: 'Borçlu',
+    phone: '+39 02 849201',
+    email: 'export@milanosilk.it',
+    address: 'Via Montenapoleone 18, Milano / İtalya',
+    city: 'Milano',
+    createdAt: '2025-10-15',
+  },
+  {
+    id: 'cari-102',
+    code: 'CAR-TOP-02',
+    title: 'Nişantaşı Butik A.Ş.',
+    taxOffice: 'Şişli V.D.',
+    taxNumber: '1948201948',
+    type: 'Toptancı',
+    balance: 68500,
+    balanceType: 'Alacaklı',
+    phone: '0212 240 50 60',
+    email: 'siparis@nisantasibutik.com',
+    address: 'Abdi İpekçi Cad. No:88, Şişli / İstanbul',
+    city: 'İstanbul',
+    createdAt: '2026-01-10',
+  },
+  {
+    id: 'cari-103',
+    code: 'CAR-TED-03',
+    title: 'Bursa Saf İpek İplik Tekstil Ltd.',
+    taxOffice: 'Osmangazi V.D.',
+    taxNumber: '8849201941',
+    type: 'Tedarikçi',
+    balance: 32000,
+    balanceType: 'Borçlu',
+    phone: '0224 220 30 40',
+    email: 'muhasebe@bursaipek.com.tr',
+    address: 'Kozahan Sk. No:14, Osmangazi / Bursa',
+    city: 'Bursa',
+    createdAt: '2026-02-01',
+  },
+];
+
+// MOCK CARİ HAREKETLER
+export const MOCK_CARI_TRANSACTIONS: CariTransaction[] = [
+  {
+    id: 'ctx-1',
+    cariId: 'cari-101',
+    date: '2026-08-01',
+    documentNo: 'FAT-2026-00481',
+    description: 'Milano Twill İpek Kumaş İthalat Alım Faturası',
+    type: 'Fatura',
+    amount: 145000,
+    isDebt: true,
+  },
+  {
+    id: 'ctx-2',
+    cariId: 'cari-102',
+    date: '2026-08-05',
+    documentNo: 'TAH-2026-00124',
+    description: 'Toptan Eşarp Satış Tahsilatı (Banka Havalesi)',
+    type: 'Tahsilat',
+    amount: 68500,
+    isDebt: false,
+  },
+];
+
+// CANLI KARGO TAKİP ZAMAN ÇİZELGESİ DEMO VERİSİ
+export const MOCK_CARGO_DATA: Record<string, CargoTrackingData> = {
+  'VER-849201': {
+    orderNumber: 'VER-849201',
+    trackingCode: 'YURT-94820194',
+    carrier: 'Yurtiçi Kargo',
+    customerName: 'Ayşe Yılmaz',
+    estimatedDelivery: '10 Ağustos 2026, Pazartesi',
+    currentStatus: 'Yolda - Transfer Merkezinde',
+    timeline: [
+      { step: 'Sipariş Alındı & Onaylandı', timestamp: '08 Ağustos 14:32', location: 'Vera Nişantaşı Depo', done: true, isCurrent: false },
+      { step: 'Özel Kadife Hediye Paketi Hazırlandı', timestamp: '08 Ağustos 16:10', location: 'Vera Paketleme Birimi', done: true, isCurrent: false },
+      { step: 'Kargo Şubesine Teslim Edildi', timestamp: '08 Ağustos 18:00', location: 'Yurtiçi Kargo Nişantaşı Şubesi', done: true, isCurrent: false },
+      { step: 'Transfer Merkezine Sevk Edildi', timestamp: '09 Ağustos 04:15', location: 'İstanbul Anadolu Transfer Merkezi', done: true, isCurrent: true },
+      { step: 'Dağıtıma Çıkarıldı', timestamp: 'Tahmini: 10 Ağustos 09:00', location: 'Kadıköy Dağıtım Şubesi', done: false, isCurrent: false },
+      { step: 'Alıcıya Teslim Edildi', timestamp: 'Tahmini: 10 Ağustos 14:00', location: 'Kadıköy / İstanbul', done: false, isCurrent: false },
+    ],
+  },
+};
+
+// İLERİ DÜZEY SATIŞ & KAMPANYA KURALLARI
+export const MOCK_CAMPAIGNS: CampaignRule[] = [
+  {
+    id: 'cmp-1',
+    title: '⚡ Flaş İndirim (Flash Sale)',
+    subtitle: 'Milano Romance %100 Twill İpek serisinde 24 Saat Geçerli Fırsat!',
+    type: 'flash_sale',
+    isEnabled: true,
+    discountPercentage: 15,
+    endTime: '2026-08-10T23:59:59Z',
+  },
+  {
+    id: 'cmp-2',
+    title: '🎁 ₺2.500 Üzeri Alışverişe İpek Broş Hediye!',
+    subtitle: 'Sepet tutarınız ₺2.500 üzerine ulaştığında 24K Altın Kaplama Eşarp Broşu otomatik hediyeniz olur.',
+    type: 'free_gift',
+    isEnabled: true,
+    minCartAmount: 2500,
+    giftProductName: 'Vera Gold Kaplama İpek Eşarp Broşu',
+    giftProductImage: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop',
+  },
+  {
+    id: 'cmp-3',
+    title: '🛍️ Çok Al Az Öde (Kademeli İndirim)',
+    subtitle: '2 Ürüne %10, 3 Ürüne Anında %20 İndirim Fırsatı!',
+    type: 'tiered_discount',
+    isEnabled: true,
   },
 ];

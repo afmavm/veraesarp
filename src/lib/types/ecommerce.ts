@@ -1,7 +1,7 @@
 export interface ColorOption {
   name: string;
   hex: string;
-  image?: string;
+  image?: string; // base64 or URL
 }
 
 export interface ProductDetailItem {
@@ -9,15 +9,28 @@ export interface ProductDetailItem {
   content: string;
 }
 
+export interface ProductVariant {
+  id: string;
+  colorName: string;
+  colorHex: string;
+  size: string;
+  sku: string;
+  stock: number;
+  price: number;
+  imageUrl?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   slug: string;
   sku: string;
+  barcode?: string;
   description: string;
   shortDescription: string;
   price: number;
   compareAtPrice?: number;
+  costPrice?: number; // Maliyet fiyatı (Kar marjı takibi için)
   currency: string;
   stock: number;
   rating: number;
@@ -29,9 +42,10 @@ export interface Product {
   collection?: string;
   colors: ColorOption[];
   sizes: string[];
-  images: string[];
-  badges?: ('Yeni' | 'Özel Fiyat' | 'Çok Satan' | 'Limited')[];
-  features: string[]; // e.g. ["✓ %100 Saf İpek", "✓ Özel El İşçiliği Kenar", "✓ Gün Boyu Şekil Alır"]
+  variants?: ProductVariant[];
+  images: string[]; // Base64 or HTTPS URLs
+  badges?: ('Yeni' | 'Özel Fiyat' | 'Çok Satan' | 'Limited' | 'Flaş İndirim')[];
+  features: string[];
   careInstructions: string;
   dimensions: string;
   isNew?: boolean;
@@ -97,8 +111,8 @@ export interface BlogPost {
 export interface HotspotItem {
   id: string;
   productId: string;
-  top: number; // percentage
-  left: number; // percentage
+  top: number;
+  left: number;
   label: string;
 }
 
@@ -145,6 +159,69 @@ export interface CustomerOrder {
   discount: number;
   total: number;
   status: 'Hazırlanıyor' | 'Kargoda' | 'Teslim Edildi' | 'İptal Edildi';
+  trackingCode?: string;
+  carrier?: 'Yurtiçi Kargo' | 'Aras Kargo' | 'MNG Kargo' | 'Trendyol Express';
   paymentMethod: string;
   createdAt: string;
+}
+
+// CARİ İŞLEMLER (Current Account / Ledger)
+export interface CariTransaction {
+  id: string;
+  cariId: string;
+  date: string;
+  documentNo: string;
+  description: string;
+  type: 'Fatura' | 'Tahsilat' | 'Ödeme' | 'İrsaliye' | 'Devir';
+  amount: number;
+  isDebt: boolean; // true: Borç (Alacaklı taraf), false: Alacak
+}
+
+export interface CariAccount {
+  id: string;
+  code: string;
+  title: string;
+  taxOffice?: string;
+  taxNumber?: string;
+  type: 'Tedarikçi' | 'Toptancı' | 'Kurumsal Müşteri' | 'Perakende Müşteri';
+  balance: number;
+  balanceType: 'Borçlu' | 'Alacaklı' | 'Dengede';
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  createdAt: string;
+}
+
+// CANLI KARGO TAKİP ZAMAN ÇİZELGESİ
+export interface CargoTimelineStep {
+  step: string;
+  timestamp: string;
+  location: string;
+  done: boolean;
+  isCurrent: boolean;
+}
+
+export interface CargoTrackingData {
+  orderNumber: string;
+  trackingCode: string;
+  carrier: 'Yurtiçi Kargo' | 'Aras Kargo' | 'MNG Kargo' | 'Trendyol Express';
+  customerName: string;
+  estimatedDelivery: string;
+  currentStatus: string;
+  timeline: CargoTimelineStep[];
+}
+
+// İLERİ DÜZEY SATIŞ VE KAMPANYA YÖNETİMİ
+export interface CampaignRule {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: 'flash_sale' | 'free_gift' | 'tiered_discount';
+  isEnabled: boolean;
+  discountPercentage?: number;
+  minCartAmount?: number;
+  giftProductName?: string;
+  giftProductImage?: string;
+  endTime?: string;
 }

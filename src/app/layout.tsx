@@ -4,6 +4,7 @@ import './globals.css';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { DataProvider } from '@/context/DataContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import MobileNav from '@/components/layout/MobileNav';
@@ -59,17 +60,19 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${cormorant.variable} ${manrope.variable}`}>
       <body className="bg-[#F8F5EF] text-[#242321] min-h-screen flex flex-col antialiased selection:bg-[#B49A6A] selection:text-[#F8F5EF]">
-        <ToastProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <CartDrawer />
-              <MobileNav />
-            </CartProvider>
-          </WishlistProvider>
-        </ToastProvider>
+        <DataProvider>
+          <ToastProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+                <CartDrawer />
+                <MobileNav />
+              </CartProvider>
+            </WishlistProvider>
+          </ToastProvider>
+        </DataProvider>
       </body>
     </html>
   );

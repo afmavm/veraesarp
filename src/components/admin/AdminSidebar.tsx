@@ -12,10 +12,11 @@ import {
   Settings,
   ArrowLeft,
   Store,
-  ShieldAlert,
+  CreditCard,
+  TrendingUp,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'products' | 'orders' | 'customers' | 'coupons' | 'cms' | 'settings';
+export type AdminTab = 'overview' | 'products' | 'orders' | 'cari' | 'customers' | 'coupons' | 'growth' | 'cms' | 'settings';
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -34,9 +35,11 @@ export default function AdminSidebar({
     { id: 'overview', label: 'Genel Bakış & Analiz', icon: LayoutDashboard },
     { id: 'products', label: 'Ürün & Stok Yönetimi', icon: Package, badge: lowStockCount, badgeColor: 'bg-amber-500/20 text-amber-300' },
     { id: 'orders', label: 'Siparişler & Lojistik', icon: ShoppingBag, badge: pendingOrdersCount, badgeColor: 'bg-emerald-500/20 text-emerald-300' },
+    { id: 'cari', label: 'Gelişmiş Cari İşlemler', icon: CreditCard },
+    { id: 'growth', label: 'Satış Stratejileri & Kampanya', icon: TrendingUp },
     { id: 'customers', label: 'Müşteri İlişkileri (CRM)', icon: Users },
-    { id: 'coupons', label: 'Kupon & Kampanyalar', icon: Tag },
-    { id: 'cms', label: 'CMS & Banner Yönetimi', icon: Sparkles },
+    { id: 'coupons', label: 'Kupon Kodları', icon: Tag },
+    { id: 'cms', label: 'CMS & Banner', icon: Sparkles },
     { id: 'settings', label: 'Sistem & API Ayarları', icon: Settings },
   ];
 
@@ -74,7 +77,7 @@ export default function AdminSidebar({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3.5 text-left transition-all ${
+                className={`w-full flex items-center justify-between px-4 py-3 text-left transition-all ${
                   isActive
                     ? 'bg-[#B49A6A] text-[#F8F5EF] font-bold shadow-lg'
                     : 'text-[#8C857B] hover:text-[#F8F5EF] hover:bg-[#242321]'
@@ -106,7 +109,7 @@ export default function AdminSidebar({
         </Link>
         <div className="text-[10px] text-[#8C857B] text-center">
           <p>© 2026 VERA EŞARP Executive Suite</p>
-          <p className="text-emerald-400 font-medium">SSL 256-Bit Secure Environment</p>
+          <p className="text-emerald-400 font-medium">SSL 256-Bit Live Data Sync</p>
         </div>
       </div>
     </aside>

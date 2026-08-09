@@ -6,27 +6,27 @@ import AdminHeader from '@/components/admin/AdminHeader';
 import AdminOverview from '@/components/admin/AdminOverview';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminOrders from '@/components/admin/AdminOrders';
+import AdminCari from '@/components/admin/AdminCari';
+import AdminGrowthEngine from '@/components/admin/AdminGrowthEngine';
 import AdminCustomers from '@/components/admin/AdminCustomers';
 import AdminCoupons from '@/components/admin/AdminCoupons';
 import AdminCMS from '@/components/admin/AdminCMS';
 import AdminSettings from '@/components/admin/AdminSettings';
 import ProductModal from '@/components/admin/ProductModal';
 import OrderInvoiceModal from '@/components/admin/OrderInvoiceModal';
-import { MOCK_PRODUCTS, MOCK_ORDERS } from '@/lib/data/mock-data';
 import { Product, CustomerOrder } from '@/lib/types/ecommerce';
+import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 
 export default function ExecutiveAdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
-  const [productsList, setProductsList] = useState<Product[]>(MOCK_PRODUCTS);
-  const [ordersList, setOrdersList] = useState<CustomerOrder[]>(MOCK_ORDERS);
+  const { products, orders, addProduct, updateProduct, deleteProduct, updateOrderStatus } = useData();
+  const { showToast } = useToast();
 
   // Modals state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<CustomerOrder | null>(null);
-
-  const { showToast } = useToast();
 
   // Handlers
   const handleOpenProductModal = (productToEdit?: Product) => {
@@ -36,59 +36,27 @@ export default function ExecutiveAdminDashboard() {
 
   const handleSaveProduct = (productData: Partial<Product>) => {
     if (editingProduct) {
-      // Update existing
-      setProductsList((prev) =>
-        prev.map((p) => (p.id === editingProduct.id ? ({ ...p, ...productData } as Product) : p))
-      );
-      showToast(`${productData.name} ürünü güncellendi!`, 'success');
+      updateProduct(editingProduct.id, productData);
+      showToast(`${productData.name || editingProduct.name} ürünü güncellendi!`, 'success');
     } else {
-      // Add new
-      const created: Product = {
-        id: `p-${Date.now()}`,
-        name: productData.name || 'Yeni Ürün',
-        slug: productData.slug || `yeni-urun-${Date.now()}`,
-        sku: productData.sku || `VER-${Math.floor(1000 + Math.random() * 9000)}`,
-        description: productData.description || 'Özel Vera Eşarp ürünü.',
-        shortDescription: productData.shortDescription || '%100 Saf İpek',
-        price: productData.price || 1500,
-        compareAtPrice: productData.compareAtPrice,
-        currency: '₺',
-        stock: productData.stock || 20,
-        rating: 5.0,
-        reviewCount: 0,
-        category: productData.category || 'esarp',
-        fabric: productData.fabric || 'ipek',
-        styleCategory: productData.styleCategory || 'ofis',
-        colors: productData.colors || [{ name: 'Krem', hex: '#F4EBE1' }],
-        sizes: productData.sizes || ['90x90 cm'],
-        images: productData.images || ['https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop'],
-        badges: productData.badges || ['Yeni'],
-        features: productData.features || ['✓ %100 Saf İpek'],
-        careInstructions: productData.careInstructions || 'Kuru temizleme önerilir.',
-        dimensions: productData.dimensions || '90x90 cm',
-        isNew: true,
-        createdAt: new Date().toISOString(),
-      };
-      setProductsList([created, ...productsList]);
-      showToast(`${created.name} kataloğa eklendi!`, 'success');
+      const created = addProduct(productData);
+      showToast(`${created.name} mağaza kataloğuna eklendi!`, 'success');
     }
     setIsProductModalOpen(false);
   };
 
   const handleDeleteProduct = (id: string) => {
-    setProductsList((prev) => prev.filter((p) => p.id !== id));
+    deleteProduct(id);
     showToast('Ürün katalogdan kaldırıldı.', 'info');
   };
 
   const handleUpdateOrderStatus = (orderId: string, status: CustomerOrder['status']) => {
-    setOrdersList((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
+    updateOrderStatus(orderId, status);
     showToast(`Sipariş durumu "${status}" olarak güncellendi.`, 'success');
   };
 
-  const pendingOrdersCount = ordersList.filter((o) => o.status === 'Hazırlanıyor').length;
-  const lowStockCount = productsList.filter((p) => p.stock <= 15).length;
+  const pendingOrdersCount = orders.filter((o) => o.status === 'Hazırlanıyor').length;
+  const lowStockCount = products.filter((p) => p.stock <= 15).length;
 
   return (
     <div className="min-h-screen bg-[#171615] text-[#F8F5EF] flex flex-col lg:flex-row antialiased selection:bg-[#B49A6A] selection:text-[#F8F5EF]">
@@ -114,15 +82,15 @@ export default function ExecutiveAdminDashboard() {
         <main className="flex-1 p-6 sm:p-10 bg-[#242321]">
           {activeTab === 'overview' && (
             <AdminOverview
-              products={productsList}
-              orders={ordersList}
+              products={products}
+              orders={orders}
               onNavigateTab={(tab) => setActiveTab(tab)}
             />
           )}
 
           {activeTab === 'products' && (
             <AdminProducts
-              products={productsList}
+              products={products}
               onDeleteProduct={handleDeleteProduct}
               onOpenProductModal={handleOpenProductModal}
             />
@@ -130,11 +98,15 @@ export default function ExecutiveAdminDashboard() {
 
           {activeTab === 'orders' && (
             <AdminOrders
-              orders={ordersList}
+              orders={orders}
               onUpdateOrderStatus={handleUpdateOrderStatus}
               onOpenInvoiceModal={(order) => setSelectedInvoiceOrder(order)}
             />
           )}
+
+          {activeTab === 'cari' && <AdminCari />}
+
+          {activeTab === 'growth' && <AdminGrowthEngine />}
 
           {activeTab === 'customers' && <AdminCustomers />}
 
