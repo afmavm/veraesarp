@@ -212,18 +212,32 @@ export interface CargoTrackingData {
   timeline: CargoTimelineStep[];
 }
 
-// İLERİ DÜZEY SATIŞ VE KAMPANYA YÖNETİMİ
+// İLERİ DÜZEY SATIŞ VE KAMPANYA YÖNETİMİ (SENARYO BAZLI)
 export interface CampaignRule {
   id: string;
   title: string;
   subtitle: string;
-  type: 'flash_sale' | 'free_gift' | 'tiered_discount';
+  type: 'flash_sale' | 'free_gift' | 'tiered_discount' | 'bundle_save' | 'vip_discount';
   isEnabled: boolean;
+  // Flash Sale Senaryo Alanları
   discountPercentage?: number;
+  endTime?: string;
+  showCountdown?: boolean;
+  applicableCategory?: string;
+  // Free Gift Senaryo Alanları
   minCartAmount?: number;
   giftProductName?: string;
   giftProductImage?: string;
-  endTime?: string;
+  giftStock?: number;
+  // Tiered Discount Senaryo Alanları (Kademeli Çok Al Az Öde)
+  tier1Count?: number;
+  tier1Discount?: number; // %10
+  tier2Count?: number;
+  tier2Discount?: number; // %20
+  // Bundle / VIP Senaryo Alanları
+  bundleTitle?: string;
+  vipTierOnly?: boolean;
+  createdAt?: string;
 }
 
 // KUPON KODLARI YÖNETİMİ

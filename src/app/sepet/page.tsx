@@ -3,18 +3,38 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, ArrowRight, ShoppingBag, ShieldCheck, Truck, Tag } from 'lucide-react';
+import { Trash2, ArrowRight, ShoppingBag, ShieldCheck, Truck, Tag, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { SITE_CONFIG } from '@/lib/data/mock-data';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, totalPrice, freeShippingRemaining, clearCart } = useCart();
-  const { coupons } = useData();
+  const { cart, removeFromCart, updateQuantity, totalPrice, totalCount, freeShippingRemaining, clearCart } = useCart();
+  const { coupons, campaigns } = useData();
   const { showToast } = useToast();
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; text: string; amount: number } | null>(null);
+
+  // Check for active Tiered Discount Campaign (Çok Al Az Öde)
+  const tieredCampaign = campaigns.find((c) => c.type === 'tiered_discount' && c.isEnabled);
+  let tieredDiscountPercent = 0;
+  let tieredDiscountName = '';
+
+  if (tieredCampaign) {
+    const tier1Count = tieredCampaign.tier1Count || 2;
+    const tier1Disc = tieredCampaign.tier1Discount || 10;
+    const tier2Count = tieredCampaign.tier2Count || 3;
+    const tier2Disc = tieredCampaign.tier2Discount || 20;
+
+    if (totalCount >= tier2Count) {
+      tieredDiscountPercent = tier2Disc;
+      tieredDiscountName = `${tier2Count}+ Ürün Alımına %${tier2Disc} Kademeli İndirim`;
+    } else if (totalCount >= tier1Count) {
+      tieredDiscountPercent = tier1Disc;
+      tieredDiscountName = `${tier1Count} Ürün Alımına %${tier1Disc} Kademeli İndirim`;
+    }
+  }
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,8 +73,11 @@ export default function CartPage() {
     showToast(`${foundCoupon.code} kuponu uygulandı! (${foundCoupon.discountText})`, 'success');
   };
 
-  const discountAmount = appliedCoupon ? appliedCoupon.amount : 0;
-  const finalPrice = Math.max(0, totalPrice - discountAmount);
+  const couponDiscountAmount = appliedCoupon ? appliedCoupon.amount : 0;
+  const tieredDiscountAmount = (totalPrice * tieredDiscountPercent) / 100;
+
+  const totalDiscount = couponDiscountAmount + tieredDiscountAmount;
+  const finalPrice = Math.max(0, totalPrice - totalDiscount);
 
   const progressPercent = Math.min(
     100,
@@ -107,6 +130,17 @@ export default function CartPage() {
                   />
                 </div>
               </div>
+
+              {/* Tiered Discount Callout Banner */}
+              {tieredDiscountPercent > 0 && (
+                <div className="p-4 bg-emerald-950/80 border border-emerald-700/50 text-emerald-100 flex items-center gap-3 shadow-md">
+                  <Sparkles className="w-5 h-5 text-emerald-300 shrink-0 animate-bounce" />
+                  <div className="text-xs">
+                    <p className="font-bold text-emerald-200">🎉 Çok Al Az Öde İndirimi Aktif!</p>
+                    <p>{tieredDiscountName} — Sepetinize anında <strong className="text-emerald-300">₺{tieredDiscountAmount.toLocaleString('tr-TR')}</strong> indirim olarak uygulandı.</p>
+                  </div>
+                </div>
+              )}
 
               {/* Items List */}
               <div className="bg-[#FFFFFF] border border-[#E6DFD5] divide-y divide-[#E6DFD5]">
@@ -215,6 +249,12 @@ export default function CartPage() {
                   <span>Ara Toplam</span>
                   <span className="text-[#242321] font-medium">₺{totalPrice.toLocaleString('tr-TR')}</span>
                 </div>
+                {tieredDiscountPercent > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <span className="flex items-center gap-1"><Sparkles className="w-3.5 h-3.5" /> Çok Al Az Öde (%{tieredDiscountPercent})</span>
+                    <span>-₺{tieredDiscountAmount.toLocaleString('tr-TR')}</span>
+                  </div>
+                )}
                 {appliedCoupon && (
                   <div className="flex justify-between text-emerald-700 font-medium">
                     <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Kupon ({appliedCoupon.code})</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, Gift, Tag, Clock, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, X } from 'lucide-react';
+import { Sparkles, Gift, Tag, Clock, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, X, Percent, Layers, Crown, PackageCheck } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { CampaignRule } from '@/lib/types/ecommerce';
 import { useToast } from '@/context/ToastContext';
@@ -17,9 +17,24 @@ export default function AdminGrowthEngine() {
     title: '',
     subtitle: '',
     type: 'flash_sale' as CampaignRule['type'],
+    // Flash Sale fields
     discountPercentage: 15,
-    minCartAmount: 2000,
+    endTime: '2026-08-15T23:59',
+    showCountdown: true,
+    applicableCategory: 'tum-urunler',
+    // Free Gift fields
+    minCartAmount: 2500,
     giftProductName: 'Vera Gold Kaplama İpek Eşarp Broşu',
+    giftProductImage: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop',
+    giftStock: 50,
+    // Tiered Discount fields
+    tier1Count: 2,
+    tier1Discount: 10,
+    tier2Count: 3,
+    tier2Discount: 20,
+    // Bundle & VIP fields
+    bundleTitle: 'Eşarp + Altın Broş İkili Kombin Seti',
+    vipTierOnly: false,
   });
 
   const handleOpenModal = (cmpToEdit?: CampaignRule) => {
@@ -30,8 +45,19 @@ export default function AdminGrowthEngine() {
         subtitle: cmpToEdit.subtitle,
         type: cmpToEdit.type,
         discountPercentage: cmpToEdit.discountPercentage || 15,
-        minCartAmount: cmpToEdit.minCartAmount || 2000,
+        endTime: cmpToEdit.endTime || '2026-08-15T23:59',
+        showCountdown: cmpToEdit.showCountdown ?? true,
+        applicableCategory: cmpToEdit.applicableCategory || 'tum-urunler',
+        minCartAmount: cmpToEdit.minCartAmount || 2500,
         giftProductName: cmpToEdit.giftProductName || 'Vera Gold Kaplama İpek Eşarp Broşu',
+        giftProductImage: cmpToEdit.giftProductImage || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop',
+        giftStock: cmpToEdit.giftStock || 50,
+        tier1Count: cmpToEdit.tier1Count || 2,
+        tier1Discount: cmpToEdit.tier1Discount || 10,
+        tier2Count: cmpToEdit.tier2Count || 3,
+        tier2Discount: cmpToEdit.tier2Discount || 20,
+        bundleTitle: cmpToEdit.bundleTitle || 'Eşarp + Altın Broş İkili Kombin Seti',
+        vipTierOnly: cmpToEdit.vipTierOnly || false,
       });
     } else {
       setEditingCampaign(null);
@@ -40,8 +66,19 @@ export default function AdminGrowthEngine() {
         subtitle: '',
         type: 'flash_sale',
         discountPercentage: 15,
-        minCartAmount: 2000,
+        endTime: '2026-08-15T23:59',
+        showCountdown: true,
+        applicableCategory: 'tum-urunler',
+        minCartAmount: 2500,
         giftProductName: 'Vera Gold Kaplama İpek Eşarp Broşu',
+        giftProductImage: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop',
+        giftStock: 50,
+        tier1Count: 2,
+        tier1Discount: 10,
+        tier2Count: 3,
+        tier2Discount: 20,
+        bundleTitle: 'Eşarp + Altın Broş İkili Kombin Seti',
+        vipTierOnly: false,
       });
     }
     setIsModalOpen(true);
@@ -54,27 +91,33 @@ export default function AdminGrowthEngine() {
       return;
     }
 
+    const payload: Omit<CampaignRule, 'id'> = {
+      title: formData.title,
+      subtitle: formData.subtitle,
+      type: formData.type,
+      isEnabled: true,
+      discountPercentage: Number(formData.discountPercentage),
+      endTime: formData.endTime,
+      showCountdown: formData.showCountdown,
+      applicableCategory: formData.applicableCategory,
+      minCartAmount: Number(formData.minCartAmount),
+      giftProductName: formData.giftProductName,
+      giftProductImage: formData.giftProductImage,
+      giftStock: Number(formData.giftStock),
+      tier1Count: Number(formData.tier1Count),
+      tier1Discount: Number(formData.tier1Discount),
+      tier2Count: Number(formData.tier2Count),
+      tier2Discount: Number(formData.tier2Discount),
+      bundleTitle: formData.bundleTitle,
+      vipTierOnly: formData.vipTierOnly,
+    };
+
     if (editingCampaign) {
-      updateCampaign(editingCampaign.id, {
-        title: formData.title,
-        subtitle: formData.subtitle,
-        type: formData.type,
-        discountPercentage: Number(formData.discountPercentage),
-        minCartAmount: Number(formData.minCartAmount),
-        giftProductName: formData.giftProductName,
-      });
-      showToast('Kampanya stratejisi başarıyla güncellendi!', 'success');
+      updateCampaign(editingCampaign.id, payload);
+      showToast('Kampanya stratejisi senaryo detaylarıyla güncellendi!', 'success');
     } else {
-      addCampaign({
-        title: formData.title,
-        subtitle: formData.subtitle,
-        type: formData.type,
-        isEnabled: true,
-        discountPercentage: Number(formData.discountPercentage),
-        minCartAmount: Number(formData.minCartAmount),
-        giftProductName: formData.giftProductName,
-      });
-      showToast('Yeni kampanya stratejisi oluşturuldu ve yayına alındı!', 'success');
+      addCampaign(payload);
+      showToast('Yeni kampanya stratejisi oluşturuldu ve vitrine yansıtıldı!', 'success');
     }
 
     setIsModalOpen(false);
@@ -91,7 +134,7 @@ export default function AdminGrowthEngine() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-[#2A2825]">
         <div>
           <h1 className="font-serif text-3xl font-normal text-[#F8F5EF]">Satış Stratejileri &amp; Büyüme Motoru</h1>
-          <p className="text-xs text-[#8C857B]">Kampanya kurallarınızı ekleyin, düzenleyin, silin ve canlı vitrinde aktif/pasif durumlarını yönetin.</p>
+          <p className="text-xs text-[#8C857B]">5 farklı ticari indirim senaryosu tanımlayın, geri sayım sayaçlarını ve sepet kurallarını yönetin.</p>
         </div>
 
         <button
@@ -114,41 +157,57 @@ export default function AdminGrowthEngine() {
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#B49A6A]">
-                  {cmp.type === 'flash_sale' ? 'Flaş İndirim' : cmp.type === 'free_gift' ? 'Sepet Hediyesi' : 'Kademeli İndirim'}
+                <span className="text-[10px] uppercase font-bold tracking-widest text-[#B49A6A] px-2 py-0.5 bg-[#242321] border border-[#3A3835]">
+                  {cmp.type === 'flash_sale'
+                    ? '⚡ Flaş İndirim'
+                    : cmp.type === 'free_gift'
+                    ? '🎁 Sepet Hediyesi'
+                    : cmp.type === 'tiered_discount'
+                    ? '🛍️ Çok Al Az Öde'
+                    : cmp.type === 'bundle_save'
+                    ? '📦 Kombin Set'
+                    : '👑 VIP İndirim'}
                 </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      toggleCampaign(cmp.id);
-                      showToast(`Kampanya ${!cmp.isEnabled ? 'etkinleştirildi' : 'devre dışı bırakıldı'}.`, 'info');
-                    }}
-                    className="text-[#B49A6A]"
-                  >
-                    {cmp.isEnabled ? <ToggleRight className="w-7 h-7 text-[#B49A6A]" /> : <ToggleLeft className="w-7 h-7 text-[#8C857B]" />}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleCampaign(cmp.id);
+                    showToast(`Kampanya ${!cmp.isEnabled ? 'etkinleştirildi' : 'devre dışı bırakıldı'}.`, 'info');
+                  }}
+                  className="text-[#B49A6A]"
+                >
+                  {cmp.isEnabled ? <ToggleRight className="w-7 h-7 text-[#B49A6A]" /> : <ToggleLeft className="w-7 h-7 text-[#8C857B]" />}
+                </button>
               </div>
 
               <h3 className="font-serif text-lg font-normal text-[#F8F5EF] leading-snug">{cmp.title}</h3>
               <p className="text-xs text-[#8C857B] leading-relaxed">{cmp.subtitle}</p>
             </div>
 
+            {/* Dynamic Scenario Metrics */}
             <div className="pt-4 border-t border-[#2A2825] text-xs text-[#E8DED1] flex items-center justify-between">
-              <div>
+              <div className="space-y-0.5">
                 {cmp.type === 'flash_sale' && (
-                  <p>İndirim: <strong className="text-emerald-400">%{cmp.discountPercentage}</strong></p>
+                  <p>İndirim: <strong className="text-emerald-400">%{cmp.discountPercentage}</strong> • Geri Sayım: <strong className="text-[#B49A6A]">Aktif</strong></p>
                 )}
                 {cmp.type === 'free_gift' && (
-                  <p>Min. Sepet: <strong className="text-[#B49A6A]">₺{cmp.minCartAmount}</strong></p>
+                  <p>Min. Sepet: <strong className="text-[#B49A6A]">₺{cmp.minCartAmount}</strong> • Hediye: <strong className="text-white">{cmp.giftProductName}</strong></p>
+                )}
+                {cmp.type === 'tiered_discount' && (
+                  <p>Kademeler: <strong className="text-emerald-400">2 Ürüne %{cmp.tier1Discount || 10}, 3+ Ürüne %{cmp.tier2Discount || 20}</strong></p>
+                )}
+                {cmp.type === 'bundle_save' && (
+                  <p>Paket: <strong className="text-[#B49A6A]">{cmp.bundleTitle}</strong></p>
+                )}
+                {cmp.type === 'vip_discount' && (
+                  <p>VIP İndirimi: <strong className="text-amber-300">%{cmp.discountPercentage} Özel</strong></p>
                 )}
                 <span className={`inline-block text-[10px] uppercase font-bold px-2 py-0.5 mt-1 rounded ${cmp.isEnabled ? 'bg-emerald-900/40 text-emerald-300' : 'bg-rose-900/40 text-rose-300'}`}>
                   {cmp.isEnabled ? 'Vitrinde Yayında' : 'Pasif'}
                 </span>
               </div>
 
-              {/* Action Buttons */}
+              {/* Actions */}
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleOpenModal(cmp)}
@@ -170,26 +229,28 @@ export default function AdminGrowthEngine() {
         ))}
       </div>
 
-      {/* CRUD MODAL: KAMPANYA EKLE / DÜZENLE */}
+      {/* DYNAMIC SCENARIO MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 sm:p-8 max-w-lg w-full text-[#F8F5EF] space-y-4 shadow-2xl">
-            <div className="flex justify-between items-center pb-3 border-b border-[#2A2825]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-hidden">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] max-w-lg w-full max-h-[92vh] text-[#F8F5EF] flex flex-col shadow-2xl rounded-sm overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-[#2A2825] flex justify-between items-center bg-[#1C1B1A] shrink-0">
               <h2 className="font-serif text-xl font-normal">
-                {editingCampaign ? 'Kampanya Stratejisini Düzenle' : 'Yeni Kampanya Stratejisi Ekle'}
+                {editingCampaign ? 'Kampanya Stratejisini Düzenle' : 'Yeni Kampanya Stratejisi Tanımla'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-[#8C857B] hover:text-[#F8F5EF]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {/* Modal Scroll Body */}
+            <form id="campaignForm" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
               <div>
                 <label className="block text-[#8C857B] mb-1">Kampanya Başlığı *</label>
                 <input
                   type="text"
                   required
-                  placeholder="ör: ⚡ Sonbahar Flaş Fırsatı"
+                  placeholder="ör: ⚡ Milano Sonbahar Flaş Fırsatı"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
@@ -208,69 +269,179 @@ export default function AdminGrowthEngine() {
               </div>
 
               <div>
-                <label className="block text-[#8C857B] mb-1">Kampanya Tipi *</label>
+                <label className="block text-[#8C857B] mb-1">Kampanya Tipi / Senaryosu *</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                  className="w-full p-2.5 bg-[#242321] border border-[#B49A6A] text-[#F8F5EF] font-semibold"
                 >
-                  <option value="flash_sale">Flaş İndirim (Flash Sale)</option>
-                  <option value="free_gift">Sepet Hediyesi (Free Gift)</option>
-                  <option value="tiered_discount">Kademeli İndirim (Tiered Discount)</option>
+                  <option value="flash_sale">⚡ Flaş İndirim (Flash Sale + Geri Sayım Sayacı)</option>
+                  <option value="free_gift">🎁 Sepet Hediyesi (Free Gift + İlerleme Çubuğu)</option>
+                  <option value="tiered_discount">🛍️ Kademeli İndirim (Çok Al Az Öde: 2 Ürüne %10, 3+ Ürüne %20)</option>
+                  <option value="bundle_save">📦 Kombin Paket İndirimi (Bundle Deal)</option>
+                  <option value="vip_discount">👑 VIP Müşteri İndirimi (VIP Tiered Access)</option>
                 </select>
               </div>
 
+              {/* SENARYO 1: FLAŞ İNDİRİM ALANLARI */}
               {formData.type === 'flash_sale' && (
-                <div>
-                  <label className="block text-[#8C857B] mb-1">İndirim Yüzdesi (%)</label>
-                  <input
-                    type="number"
-                    value={formData.discountPercentage}
-                    onChange={(e) => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
-                  />
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                  <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
+                    ⚡ Flaş İndirim Senaryo Ayarları
+                  </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[#8C857B] mb-1">İndirim Yüzdesi (%) *</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.discountPercentage}
+                        onChange={(e) => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
+                        className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[#8C857B] mb-1">Geçerli Kategori</label>
+                      <select
+                        value={formData.applicableCategory}
+                        onChange={(e) => setFormData({ ...formData, applicableCategory: e.target.value })}
+                        className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                      >
+                        <option value="tum-urunler">Tüm Ürünler</option>
+                        <option value="esarp">Yalnızca Eşarplar</option>
+                        <option value="sal">Yalnızca Şallar</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[#8C857B] mb-1">Son Geçerlilik Tarihi &amp; Saati (Geri Sayım Sayacı)</label>
+                    <input
+                      type="datetime-local"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF] font-mono"
+                    />
+                  </div>
                 </div>
               )}
 
+              {/* SENARYO 2: SEPET HEDİYESİ ALANLARI */}
               {formData.type === 'free_gift' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[#8C857B] mb-1">Min. Sepet Tutarı (₺)</label>
-                    <input
-                      type="number"
-                      value={formData.minCartAmount}
-                      onChange={(e) => setFormData({ ...formData, minCartAmount: Number(e.target.value) })}
-                      className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
-                    />
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                  <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
+                    🎁 Sepet Hediyesi Senaryo Ayarları
+                  </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[#8C857B] mb-1">Min. Sepet Eşiği (₺) *</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.minCartAmount}
+                        onChange={(e) => setFormData({ ...formData, minCartAmount: Number(e.target.value) })}
+                        className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[#8C857B] mb-1">Hediye Stok Adedi</label>
+                      <input
+                        type="number"
+                        value={formData.giftStock}
+                        onChange={(e) => setFormData({ ...formData, giftStock: Number(e.target.value) })}
+                        className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                      />
+                    </div>
                   </div>
+
                   <div>
-                    <label className="block text-[#8C857B] mb-1">Hediye Ürün Adı</label>
+                    <label className="block text-[#8C857B] mb-1">Hediye Edilecek Ürün Adı *</label>
                     <input
                       type="text"
+                      required
                       value={formData.giftProductName}
                       onChange={(e) => setFormData({ ...formData, giftProductName: e.target.value })}
-                      className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                      className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#2A2825]">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-[#8C857B]"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-[#B49A6A] text-[#F8F5EF] font-semibold uppercase tracking-wider hover:bg-[#988052]"
-                >
-                  {editingCampaign ? 'Güncelle' : 'Kaydet'}
-                </button>
-              </div>
+              {/* SENARYO 3: KADEMELİ İNDİRİM ALANLARI */}
+              {formData.type === 'tiered_discount' && (
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                  <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
+                    🛍️ Kademeli İndirim (Çok Al Az Öde) Senaryo Ayarları
+                  </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[#8C857B] mb-1">1. Aşama (2 Ürün) İndirimi (%)</label>
+                      <input
+                        type="number"
+                        value={formData.tier1Discount}
+                        onChange={(e) => setFormData({ ...formData, tier1Discount: Number(e.target.value) })}
+                        className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[#8C857B] mb-1">2. Aşama (3+ Ürün) İndirimi (%)</label>
+                      <input
+                        type="number"
+                        value={formData.tier2Discount}
+                        onChange={(e) => setFormData({ ...formData, tier2Discount: Number(e.target.value) })}
+                        className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SENARYO 4: KOMBİN PAKET ALANLARI */}
+              {formData.type === 'bundle_save' && (
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                  <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
+                    📦 Kombin Paket Senaryo Ayarları
+                  </span>
+                  <div>
+                    <label className="block text-[#8C857B] mb-1">Paket Adı *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.bundleTitle}
+                      onChange={(e) => setFormData({ ...formData, bundleTitle: e.target.value })}
+                      className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#8C857B] mb-1">Paket İndirim Oranı (%)</label>
+                    <input
+                      type="number"
+                      value={formData.discountPercentage}
+                      onChange={(e) => setFormData({ ...formData, discountPercentage: Number(e.target.value) })}
+                      className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
+                    />
+                  </div>
+                </div>
+              )}
             </form>
+
+            {/* Modal Actions */}
+            <div className="p-4 border-t border-[#2A2825] flex items-center justify-end gap-3 shrink-0 bg-[#1C1B1A]">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-[#8C857B] hover:text-[#F8F5EF]"
+              >
+                İptal
+              </button>
+              <button
+                type="submit"
+                form="campaignForm"
+                className="px-6 py-2.5 bg-[#B49A6A] text-[#F8F5EF] font-semibold uppercase tracking-wider hover:bg-[#988052]"
+              >
+                {editingCampaign ? 'Stratejiyi Güncelle' : 'Stratejiyi Kaydet & Yayınla'}
+              </button>
+            </div>
           </div>
         </div>
       )}
