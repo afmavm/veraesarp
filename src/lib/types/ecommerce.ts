@@ -286,6 +286,13 @@ export interface FilterOption {
   label: string; // Ziyaretçiye gösterilen yazı (ör: Twill İpek)
 }
 
+export interface ValuePropositionItem {
+  id: string;
+  title: string;
+  description: string;
+  iconName?: string; // 'Award' | 'Truck' | 'RotateCcw' | 'ShieldCheck'
+}
+
 // SİTE & MARKA AYARLARI (Footer, İletişim & Kurumsal Bilgiler)
 export interface SiteSettings {
   name: string;
@@ -302,6 +309,7 @@ export interface SiteSettings {
   taxOffice?: string;
   taxNumber?: string;
   footerColumns?: FooterColumn[];
+  valuePropositions?: ValuePropositionItem[];
   emailSettings?: EmailServerSettings;
   // Kategori sayfası filtre yönetimi
   fabricFilters?: FilterOption[];   // Kumaş Türü filtre seçenekleri

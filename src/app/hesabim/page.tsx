@@ -55,7 +55,7 @@ export interface SavedCard {
 }
 
 export default function AccountPage() {
-  const { user, isLoggedIn, isAdmin, logout, updateUser } = useAuth();
+  const { user, isLoggedIn, isAdmin, logout, updateUser, updatePassword } = useAuth();
   const { orders, coupons } = useData();
   const { wishlist, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -375,8 +375,13 @@ export default function AccountPage() {
       showToast('Yeni şifreler uyuşmuyor.', 'error');
       return;
     }
-    setSecForm({ currentPass: '', newPass: '', confirmPass: '' });
-    showToast('Şifreniz güvenlik önlemiyle güncellendi.', 'success');
+    const res = updatePassword(secForm.currentPass, secForm.newPass);
+    if (res.success) {
+      setSecForm({ currentPass: '', newPass: '', confirmPass: '' });
+      showToast(res.message || 'Şifreniz başarıyla değiştirildi!', 'success');
+    } else {
+      showToast(res.message || 'Mevcut şifreniz yanlış.', 'error');
+    }
   };
 
   return (

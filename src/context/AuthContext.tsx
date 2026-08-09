@@ -32,9 +32,10 @@ interface AuthContextType {
   register: (name: string, email: string, phone: string, pass: string) => AuthResult;
   logout: () => void;
   updateUser: (updates: Partial<UserProfile>) => void;
+  updatePassword: (currentPass: string, newPass: string) => AuthResult;
 }
 
-// Store Official Admin Account (Demo customer accounts removed completely)
+// Store Official Admin Account
 const OFFICIAL_ADMIN_ACCOUNT: UserProfile = {
   id: 'usr-admin',
   name: 'Vera Mağaza Yöneticisi',
@@ -60,7 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUsers = localStorage.getItem('veraesarp_registered_users');
       if (savedUsers) {
         const parsed: UserProfile[] = JSON.parse(savedUsers);
-        // Ensure official admin is always present and clean out old demo accounts if desired
         const hasAdmin = parsed.some((u) => u.email === OFFICIAL_ADMIN_ACCOUNT.email);
         const filtered = parsed.filter(
           (u) => u.email !== 'ayse.yilmaz@example.com' && u.email !== 'demo@veraesarp.com'
@@ -146,7 +146,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, message: 'Lütfen tüm zorunlu alanları doldurunuz.' };
     }
 
-    // Check if email already registered
     const existing = registeredUsers.find((u) => u.email.toLowerCase() === cleanEmail);
     if (existing) {
       return {
@@ -171,12 +170,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updatedUsers = [newUser, ...registeredUsers];
     saveRegisteredUsers(updatedUsers);
 
-    // Dispatch custom event to notify DataContext to sync Cari Account for new customer!
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('veraesarp_new_user_registered', { detail: newUser }));
     }
 
-    // Auto-login new user
     const { password, ...sessionData } = newUser;
     setUser(sessionData);
     try {
@@ -185,7 +182,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error(e);
     }
 
-    // Send Welcome Email & Discount Coupon to new user
     try {
       sendWelcomeEmail(newUser);
     } catch (e) {
@@ -206,12 +202,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updated = { ...prev, ...updates };
       localStorage.setItem('veraesarp_user_session', JSON.stringify(updated));
 
-      // Also update in registeredUsers list
       const updatedList = registeredUsers.map((u) => (u.id === prev.id ? { ...u, ...updates } : u));
       saveRegisteredUsers(updatedList);
 
       return updated;
     });
+  };
+
+  // 3. User Password Update
+  const updatePassword = (currentPass: string, newPass: string): AuthResult => {
+    if (!user) {
+      return { success: false, message: 'Lütfen önce hesabınıza giriş yapınız.' };
+    }
+
+    const cleanCurrent = (currentPass || '').trim();
+    const cleanNew = (newPass || '').trim();
+
+    if (!cleanCurrent || !cleanNew) {
+      return { success: false, message: 'Lütfen tüm şifre alanlarını doldurunuz.' };
+    }
+
+    if (cleanNew.length < 6) {
+      return { success: false, message: 'Yeni şifreniz en az 6 karakter olmalıdır.' };
+    }
+
+    // Check if current password is correct
+    const targetUser = registeredUsers.find(
+      (u) => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase()
+    );
+
+    if (!targetUser || targetUser.password !== cleanCurrent) {
+      return { success: false, message: '⚠️ Mevcut şifrenizi yanlış girdiniz!' };
+    }
+
+    // Update password in user registry
+    const updatedUsers = registeredUsers.map((u) =>
+      u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase()
+        ? { ...u, password: cleanNew }
+        : u
+    );
+    saveRegisteredUsers(updatedUsers);
+
+    return { success: true, message: '🔒 Şifreniz başarıyla değiştirildi ve kaydedildi!' };
   };
 
   const isAdmin = !!user && (user.role === 'admin' || user.isAdmin === true || user.email === 'destek@veraesarp.com');
@@ -227,6 +259,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         updateUser,
+        updatePassword,
       }}
     >
       {children}

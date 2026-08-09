@@ -14,6 +14,12 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   workingHours: 'Hafta içi 09:00 - 18:00',
   taxOffice: 'Aziziye V.D.',
   taxNumber: '1948201948',
+  valuePropositions: [
+    { id: '1', title: '%100 Saf İpek', description: 'Özel dokuma İtalyan twill ve saten kumaş garantisi.', iconName: 'Award' },
+    { id: '2', title: 'Hızlı & Ücretsiz Kargo', description: '₺1.500 ve üzeri tüm siparişlerde aynı gün kargo.', iconName: 'Truck' },
+    { id: '3', title: 'Kolay İade & Değişim', description: '14 gün içerisinde koşulsuz ve ücretsiz iade imkanı.', iconName: 'RotateCcw' },
+    { id: '4', title: 'Güvenli Alışveriş', description: '256-bit SSL korumalı İyzico & PayTR altyapısı.', iconName: 'ShieldCheck' },
+  ],
   emailSettings: {
     isEnabled: true,
     provider: 'smtp',

@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Save, Building2, Phone, Mail, MapPin, Globe, ShieldCheck, Clock, ListPlus, Trash2, Plus } from 'lucide-react';
+import { Save, Building2, Phone, Mail, MapPin, Globe, ShieldCheck, Clock, ListPlus, Trash2, Plus, Award, Truck, RotateCcw } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
-import { FooterColumn } from '@/lib/types/ecommerce';
+import { FooterColumn, ValuePropositionItem } from '@/lib/types/ecommerce';
 
 export default function AdminSiteSettings() {
   const { siteSettings, updateSiteSettings } = useData();
@@ -49,6 +49,17 @@ export default function AdminSiteSettings() {
         ]
   );
 
+  const [valueProps, setValueProps] = useState<ValuePropositionItem[]>(
+    siteSettings.valuePropositions && siteSettings.valuePropositions.length > 0
+      ? siteSettings.valuePropositions
+      : [
+          { id: '1', title: '%100 Saf İpek', description: 'Özel dokuma İtalyan twill ve saten kumaş garantisi.', iconName: 'Award' },
+          { id: '2', title: 'Hızlı & Ücretsiz Kargo', description: '₺1.500 ve üzeri tüm siparişlerde aynı gün kargo.', iconName: 'Truck' },
+          { id: '3', title: 'Kolay İade & Değişim', description: '14 gün içerisinde koşulsuz ve ücretsiz iade imkanı.', iconName: 'RotateCcw' },
+          { id: '4', title: 'Güvenli Alışveriş', description: '256-bit SSL korumalı İyzico & PayTR altyapısı.', iconName: 'ShieldCheck' },
+        ]
+  );
+
   // New link input state per column
   const [newLinkLabel, setNewLinkLabel] = useState<Record<number, string>>({});
   const [newLinkUrl, setNewLinkUrl] = useState<Record<number, string>>({});
@@ -86,10 +97,16 @@ export default function AdminSiteSettings() {
     showToast('Sütun kaldırıldı.', 'info');
   };
 
+  const handleValuePropChange = (index: number, field: keyof ValuePropositionItem, value: string) => {
+    const updated = [...valueProps];
+    updated[index] = { ...updated[index], [field]: value };
+    setValueProps(updated);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateSiteSettings({ ...formData, footerColumns: columns });
-    showToast('Site ve Footer menü ayarları başarıyla veritabanına kaydedildi ve yayına alındı!', 'success');
+    updateSiteSettings({ ...formData, footerColumns: columns, valuePropositions: valueProps });
+    showToast('Site, Alt Bilgi Rozetleri ve Footer menü ayarları başarıyla kaydedildi!', 'success');
   };
 
   return (
@@ -98,7 +115,7 @@ export default function AdminSiteSettings() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-[#2A2825]">
         <div>
           <h1 className="font-serif text-3xl font-normal text-[#F8F5EF]">Site, Marka &amp; Footer Menü Ayarları</h1>
-          <p className="text-xs text-[#8C857B]">Footer başlıklarını, sayfa bağlantılarını, iletişim ve müşteri hizmetleri bilgilerini düzenleyin.</p>
+          <p className="text-xs text-[#8C857B]">Footer başlıklarını, sayfa bağlantılarını, alt bilgi avantaj rozetlerini ve iletişim bilgilerini düzenleyin.</p>
         </div>
 
         <button
@@ -154,7 +171,60 @@ export default function AdminSiteSettings() {
           </div>
         </div>
 
-        {/* 2. Footer Menü & Sayfa Bağlantıları Yönetimi */}
+        {/* 2. DİNAMİK ALT BİLGİ ROZETLERİ (VALUE PROPOSITIONS) */}
+        <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
+          <div className="flex items-center gap-2 pb-3 border-b border-[#2A2825]">
+            <Award className="w-4 h-4 text-[#B49A6A]" />
+            <h2 className="font-serif text-lg font-normal">Alt Bilgi Avantaj Rozetleri (Footer Badges)</h2>
+          </div>
+          <p className="text-xs text-[#8C857B]">
+            Sayfanın en altındaki 4 adet avantaj rozetinin başlığını ve açıklama metnini buradan canlı olarak düzenleyebilirsiniz.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {valueProps.map((vp, idx) => (
+              <div key={vp.id || idx} className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[#B49A6A] font-semibold uppercase">Rozet #{idx + 1}</span>
+                  <select
+                    value={vp.iconName || 'Award'}
+                    onChange={(e) => handleValuePropChange(idx, 'iconName', e.target.value)}
+                    className="p-1 bg-[#1C1B1A] border border-[#3A3835] text-[10px] text-[#F8F5EF]"
+                  >
+                    <option value="Award">Kalite (Award)</option>
+                    <option value="Truck">Kargo (Truck)</option>
+                    <option value="RotateCcw">İade (RotateCcw)</option>
+                    <option value="ShieldCheck">Güvenlik (ShieldCheck)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-[#8C857B] mb-1">Rozet Başlığı *</label>
+                  <input
+                    type="text"
+                    required
+                    value={vp.title}
+                    onChange={(e) => handleValuePropChange(idx, 'title', e.target.value)}
+                    className="w-full p-2 bg-[#1C1B1A] border border-[#3A3835] text-xs font-semibold text-[#F8F5EF]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-[#8C857B] mb-1">Açıklama Metni *</label>
+                  <textarea
+                    rows={2}
+                    required
+                    value={vp.description}
+                    onChange={(e) => handleValuePropChange(idx, 'description', e.target.value)}
+                    className="w-full p-2 bg-[#1C1B1A] border border-[#3A3835] text-[11px] text-[#8C857B] leading-normal"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Footer Menü & Sayfa Bağlantıları Yönetimi */}
         <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-6 shadow-xl">
           <div className="flex justify-between items-center pb-3 border-b border-[#2A2825]">
             <div className="flex items-center gap-2">
@@ -253,16 +323,16 @@ export default function AdminSiteSettings() {
           </div>
         </div>
 
-        {/* 3. Müşteri Destek & İletişim */}
+        {/* 4. İletişim Bilgileri */}
         <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2A2825]">
             <Phone className="w-4 h-4 text-[#B49A6A]" />
-            <h2 className="font-serif text-lg font-normal">Müşteri Hizmetleri &amp; Açık Adres</h2>
+            <h2 className="font-serif text-lg font-normal">İletişim &amp; Müşteri Hizmetleri Bilgileri</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[#8C857B] mb-1">Müşteri Destek Telefonu *</label>
+              <label className="block text-[#8C857B] mb-1">Müşteri Hizmetleri Telefonu *</label>
               <input
                 type="text"
                 required
@@ -273,7 +343,18 @@ export default function AdminSiteSettings() {
             </div>
 
             <div>
-              <label className="block text-[#8C857B] mb-1">Destek E-Posta Adresi *</label>
+              <label className="block text-[#8C857B] mb-1">WhatsApp Destek Numarası *</label>
+              <input
+                type="text"
+                required
+                value={formData.whatsappPhone}
+                onChange={(e) => setFormData({ ...formData, whatsappPhone: e.target.value })}
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">E-Posta Adresi *</label>
               <input
                 type="email"
                 required
@@ -282,10 +363,21 @@ export default function AdminSiteSettings() {
                 className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
               />
             </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">Çalışma Saatleri *</label>
+              <input
+                type="text"
+                required
+                value={formData.workingHours}
+                onChange={(e) => setFormData({ ...formData, workingHours: e.target.value })}
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-[#8C857B] mb-1">Mağaza Açık Adresi *</label>
+            <label className="block text-[#8C857B] mb-1">Fiziksel Mağaza / Şirket Adresi *</label>
             <input
               type="text"
               required
@@ -294,42 +386,20 @@ export default function AdminSiteSettings() {
               className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
             />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[#8C857B] mb-1">Çalışma Saatleri</label>
-              <input
-                type="text"
-                value={formData.workingHours}
-                onChange={(e) => setFormData({ ...formData, workingHours: e.target.value })}
-                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[#8C857B] mb-1">WhatsApp Danışma Hattı</label>
-              <input
-                type="text"
-                value={formData.whatsappPhone}
-                onChange={(e) => setFormData({ ...formData, whatsappPhone: e.target.value })}
-                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
-              />
-            </div>
-          </div>
         </div>
 
-        {/* 4. Sosyal Medya Bağlantıları */}
+        {/* 5. Sosyal Medya Bağlantıları */}
         <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
           <div className="flex items-center gap-2 pb-3 border-b border-[#2A2825]">
             <Globe className="w-4 h-4 text-[#B49A6A]" />
-            <h2 className="font-serif text-lg font-normal">Sosyal Medya Bağlantıları</h2>
+            <h2 className="font-serif text-lg font-normal">Sosyal Medya Hesapları</h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-[#8C857B] mb-1">Instagram URL</label>
               <input
-                type="text"
+                type="url"
                 value={formData.instagramUrl}
                 onChange={(e) => setFormData({ ...formData, instagramUrl: e.target.value })}
                 className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
@@ -339,7 +409,7 @@ export default function AdminSiteSettings() {
             <div>
               <label className="block text-[#8C857B] mb-1">Facebook URL</label>
               <input
-                type="text"
+                type="url"
                 value={formData.facebookUrl}
                 onChange={(e) => setFormData({ ...formData, facebookUrl: e.target.value })}
                 className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
@@ -349,7 +419,7 @@ export default function AdminSiteSettings() {
             <div>
               <label className="block text-[#8C857B] mb-1">Pinterest URL</label>
               <input
-                type="text"
+                type="url"
                 value={formData.pinterestUrl}
                 onChange={(e) => setFormData({ ...formData, pinterestUrl: e.target.value })}
                 className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
@@ -358,15 +428,43 @@ export default function AdminSiteSettings() {
           </div>
         </div>
 
+        {/* 6. Fatura / Yasal Şirket Bilgileri */}
+        <div className="bg-[#1C1B1A] border border-[#2A2825] p-6 space-y-4 shadow-xl">
+          <div className="flex items-center gap-2 pb-3 border-b border-[#2A2825]">
+            <ShieldCheck className="w-4 h-4 text-[#B49A6A]" />
+            <h2 className="font-serif text-lg font-normal">Yasal Şirket &amp; Vergi Dairesi Bilgileri</h2>
+          </div>
 
-        {/* Save Button */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[#8C857B] mb-1">Vergi Dairesi</label>
+              <input
+                type="text"
+                value={formData.taxOffice || ''}
+                onChange={(e) => setFormData({ ...formData, taxOffice: e.target.value })}
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[#8C857B] mb-1">Vergi Numarası / T.C. No</label>
+              <input
+                type="text"
+                value={formData.taxNumber || ''}
+                onChange={(e) => setFormData({ ...formData, taxNumber: e.target.value })}
+                className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end pt-4">
           <button
             type="submit"
-            className="px-8 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors flex items-center gap-2 shadow-xl"
+            className="px-8 py-4 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors flex items-center gap-2 shadow-xl"
           >
             <Save className="w-4 h-4" />
-            <span>Değişiklikleri Yayınla &amp; Kaydet</span>
+            <span>Tüm Ayarları Kaydet ve Yayına Al</span>
           </button>
         </div>
       </form>

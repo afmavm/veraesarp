@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Truck, RotateCcw, Award, Mail, Phone, MapPin, Copy, Check, ExternalLink } from 'lucide-react';
-import { InstagramIcon, TikTokIcon, PinterestIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/Icons';
+import { ShieldCheck, Truck, RotateCcw, Award, Mail, Phone, MapPin, Copy, Check } from 'lucide-react';
+import { InstagramIcon, PinterestIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/Icons';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { sendNewsletterConfirmationEmail } from '@/lib/email/email-service';
@@ -40,42 +40,41 @@ export default function Footer() {
     }
   };
 
+  const defaultBadges = [
+    { id: '1', title: '%100 Saf İpek', description: 'Özel dokuma İtalyan twill ve saten kumaş garantisi.', iconName: 'Award' },
+    { id: '2', title: 'Hızlı & Ücretsiz Kargo', description: `₺${siteSettings.freeShippingThreshold.toLocaleString('tr-TR')} ve üzeri tüm siparişlerde aynı gün kargo.`, iconName: 'Truck' },
+    { id: '3', title: 'Kolay İade & Değişim', description: '14 gün içerisinde koşulsuz ve ücretsiz iade imkanı.', iconName: 'RotateCcw' },
+    { id: '4', title: 'Güvenli Alışveriş', description: '256-bit SSL korumalı İyzico & PayTR altyapısı.', iconName: 'ShieldCheck' },
+  ];
+
+  const valueProps = siteSettings.valuePropositions && siteSettings.valuePropositions.length > 0
+    ? siteSettings.valuePropositions
+    : defaultBadges;
+
+  const renderBadgeIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'Award': return <Award className="w-6 h-6" />;
+      case 'Truck': return <Truck className="w-6 h-6" />;
+      case 'RotateCcw': return <RotateCcw className="w-6 h-6" />;
+      case 'ShieldCheck': return <ShieldCheck className="w-6 h-6" />;
+      default: return <Award className="w-6 h-6" />;
+    }
+  };
+
   return (
     <footer className="bg-[#242321] text-[#F8F5EF] pt-16 pb-24 lg:pb-12 border-t border-[#B49A6A]/20">
-      {/* Brand Trust Badges */}
+      {/* Brand Trust Badges - Dynamic Value Propositions */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 border-b border-[#3A3835]">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#B49A6A]/10 flex items-center justify-center text-[#B49A6A]">
-              <Award className="w-6 h-6" />
+          {valueProps.map((item, idx) => (
+            <div key={item.id || idx} className="flex flex-col items-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-[#B49A6A]/10 flex items-center justify-center text-[#B49A6A]">
+                {renderBadgeIcon(item.iconName)}
+              </div>
+              <h4 className="font-serif text-lg font-normal text-[#F8F5EF]">{item.title}</h4>
+              <p className="text-xs text-[#8C857B] leading-relaxed">{item.description}</p>
             </div>
-            <h4 className="font-serif text-lg font-normal text-[#F8F5EF]">%100 Saf İpek</h4>
-            <p className="text-xs text-[#8C857B] leading-relaxed">Özel dokuma İtalyan twill ve saten kumaş garantisi.</p>
-          </div>
-
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#B49A6A]/10 flex items-center justify-center text-[#B49A6A]">
-              <Truck className="w-6 h-6" />
-            </div>
-            <h4 className="font-serif text-lg font-normal text-[#F8F5EF]">Hızlı &amp; Ücretsiz Kargo</h4>
-            <p className="text-xs text-[#8C857B] leading-relaxed">₺{siteSettings.freeShippingThreshold.toLocaleString('tr-TR')} ve üzeri tüm siparişlerde aynı gün kargo.</p>
-          </div>
-
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#B49A6A]/10 flex items-center justify-center text-[#B49A6A]">
-              <RotateCcw className="w-6 h-6" />
-            </div>
-            <h4 className="font-serif text-lg font-normal text-[#F8F5EF]">Kolay İade &amp; Değişim</h4>
-            <p className="text-xs text-[#8C857B] leading-relaxed">14 gün içerisinde koşulsuz ve ücretsiz iade imkanı.</p>
-          </div>
-
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#B49A6A]/10 flex items-center justify-center text-[#B49A6A]">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <h4 className="font-serif text-lg font-normal text-[#F8F5EF]">Güvenli Alışveriş</h4>
-            <p className="text-xs text-[#8C857B] leading-relaxed">256-bit SSL korumalı İyzico &amp; PayTR altyapısı.</p>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -169,7 +168,6 @@ export default function Footer() {
               </div>
 
             </div>
-
 
             {/* Newsletter Subscription Box */}
             <form onSubmit={handleNewsletterSubscribe} className="pt-2 space-y-2 max-w-sm">
