@@ -17,9 +17,11 @@ import {
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { CariAccount, CariTransaction } from '@/lib/types/ecommerce';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 
 export default function AdminCari() {
+  const { registeredUsers } = useAuth();
   const { cariAccounts, cariTransactions, addCariAccount, deleteCariAccount, addCariTransaction } = useData();
   const { showToast } = useToast();
 
@@ -52,12 +54,38 @@ export default function AdminCari() {
     isDebt: true,
   });
 
+  // Combine cariAccounts with real registeredUsers from AuthContext
+  const combinedCariAccounts: CariAccount[] = [...cariAccounts];
+
+  registeredUsers.forEach((u) => {
+    if (u.role !== 'admin' && !u.isAdmin && u.email !== 'destek@veraesarp.com') {
+      const exists = combinedCariAccounts.some((c) => c.email?.toLowerCase() === u.email.toLowerCase());
+      if (!exists) {
+        combinedCariAccounts.push({
+          id: `cari-${u.id}`,
+          code: `CAR-MUS-${String(combinedCariAccounts.length + 1).padStart(3, '0')}`,
+          title: u.name,
+          taxOffice: 'Bireysel Müşteri',
+          taxNumber: '-',
+          type: 'Müşteri',
+          balance: u.totalSpent || 0,
+          balanceType: 'Alacaklı',
+          phone: u.phone || '',
+          email: u.email,
+          address: 'Bireysel Üyelik Adresi',
+          city: 'İstanbul',
+          createdAt: new Date().toISOString().slice(0, 10),
+        });
+      }
+    }
+  });
+
   // Totals
-  const totalReceivables = cariAccounts
+  const totalReceivables = combinedCariAccounts
     .filter((c) => c.balanceType === 'Borçlu')
     .reduce((sum, c) => sum + c.balance, 0);
 
-  const totalPayables = cariAccounts
+  const totalPayables = combinedCariAccounts
     .filter((c) => c.balanceType === 'Alacaklı')
     .reduce((sum, c) => sum + c.balance, 0);
 
@@ -83,7 +111,7 @@ export default function AdminCari() {
       cariId: selectedCariForTransaction.id,
       date: new Date().toISOString().split('T')[0],
       documentNo: newTx.documentNo,
-      description: newTx.description || 'Cari hesap işlemi',
+      description: newTx.description || 'Cari hesap hareketi',
       type: newTx.type,
       amount: Number(newTx.amount),
       isDebt: newTx.isDebt,
@@ -93,10 +121,15 @@ export default function AdminCari() {
     showToast('Cari hesap hareketi başarıyla işlendi.', 'success');
   };
 
-  const filteredAccounts = cariAccounts.filter((c) => {
+  const filteredAccounts = combinedCariAccounts.filter((c) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    return c.title.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.taxNumber && c.taxNumber.includes(q));
+    return (
+      c.title.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      (c.email && c.email.toLowerCase().includes(q)) ||
+      (c.taxNumber && c.taxNumber.includes(q))
+    );
   });
 
   return (
