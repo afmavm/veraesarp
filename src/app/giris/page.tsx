@@ -210,12 +210,6 @@ export default function AuthPage() {
                 <span>Giriş Yap</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-
-              <div className="p-3 bg-[#242321] border border-[#3A3835] text-[11px] text-[#8C857B] rounded-sm space-y-1">
-                <span className="font-semibold text-[#B49A6A] block">💡 Doğrulama Testi İçin Kayıtlı Üye Hesabı:</span>
-                <p>E-Posta: <code className="text-[#F8F5EF]">ayse.yilmaz@example.com</code></p>
-                <p>Şifre: <code className="text-[#F8F5EF]">123456</code> (veya sekmeden Yeni Üye Kaydı oluşturabilirsiniz)</p>
-              </div>
             </form>
           )}
 
