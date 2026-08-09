@@ -16,7 +16,7 @@ import {
   Sparkles,
   Check,
 } from 'lucide-react';
-import { MOCK_PRODUCTS } from '@/lib/data/mock-data';
+import { useData } from '@/context/DataContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useToast } from '@/context/ToastContext';
@@ -30,7 +30,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
 
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug);
+  const { products } = useData();
+
+  // Match by slug or id
+  const product = products.find((p) => p.slug === slug || p.id === slug);
 
   if (!product) {
     notFound();
@@ -47,7 +50,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [activeAccordion, setActiveAccordion] = useState<string | null>('ozellikler');
 
   const isFavorite = isInWishlist(product.id);
-  const selectedColor = product.colors[selectedColorIndex] || product.colors[0];
+  const selectedColor = product.colors[selectedColorIndex] || product.colors[0] || { name: 'Standart', hex: '#242321' };
 
   const handleAddToCart = () => {
     addToCart(product, selectedColor, selectedSize, quantity);
@@ -68,7 +71,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   };
 
   // Cross-sell & Recommendation products
-  const relatedProducts = MOCK_PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+  const relatedProducts = products.filter((p) => p.id !== product.id).slice(0, 4);
 
   // JSON-LD Structured Data for SEO
   const jsonLd = {
@@ -161,7 +164,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
             <div>
               <span className="text-xs uppercase tracking-[0.3em] text-[#B49A6A] font-semibold block mb-1">
-                SKU: {product.sku}
+                SKU: {product.sku} {product.barcode && `• GTIN: ${product.barcode}`}
               </span>
               <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#242321] leading-tight">
                 {product.name}
@@ -174,22 +177,29 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     <Star key={i} className="w-4 h-4 fill-[#B49A6A]" />
                   ))}
                 </div>
-                <span className="text-xs font-semibold text-[#242321]">{product.rating}</span>
-                <span className="text-xs text-[#8C857B]">({product.reviewCount} Değerlendirme)</span>
+                <span className="text-xs font-semibold text-[#242321]">{product.rating || 5.0}</span>
+                <span className="text-xs text-[#8C857B]">({product.reviewCount || 12} Değerlendirme)</span>
               </div>
             </div>
+
+            {/* Short Description */}
+            {product.shortDescription && (
+              <p className="text-xs text-[#5A5652] leading-relaxed border-l-2 border-[#B49A6A] pl-3 py-1 italic">
+                {product.shortDescription}
+              </p>
+            )}
 
             {/* Price Box */}
             <div className="flex items-baseline gap-3 pb-4 border-b border-[#E6DFD5]">
               <span className="font-serif text-3xl font-normal text-[#242321]">
                 ₺{product.price.toLocaleString('tr-TR')}
               </span>
-              {product.compareAtPrice && (
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
                 <span className="text-base text-[#8C857B] line-through font-light">
                   ₺{product.compareAtPrice.toLocaleString('tr-TR')}
                 </span>
               )}
-              {product.compareAtPrice && (
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
                 <span className="text-xs bg-[#C8A9A5]/30 text-rose-800 font-semibold px-2 py-0.5 rounded-full">
                   %
                   {Math.round(
@@ -201,27 +211,29 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             </div>
 
             {/* Color Swatch Selection */}
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-wider font-medium text-[#242321] flex justify-between">
-                <span>Renk: <strong className="font-semibold text-[#B49A6A]">{selectedColor.name}</strong></span>
-              </label>
-              <div className="flex items-center gap-2.5">
-                {product.colors.map((c, idx) => (
-                  <button
-                    key={c.name}
-                    onClick={() => setSelectedColorIndex(idx)}
-                    title={c.name}
-                    className={`w-7 h-7 rounded-full border-2 transition-all ${
-                      selectedColorIndex === idx ? 'border-[#242321] scale-110 shadow-sm' : 'border-[#E6DFD5]'
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
+            {product.colors && product.colors.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-xs uppercase tracking-wider font-medium text-[#242321] flex justify-between">
+                  <span>Renk: <strong className="font-semibold text-[#B49A6A]">{selectedColor.name}</strong></span>
+                </label>
+                <div className="flex items-center gap-2.5">
+                  {product.colors.map((c, idx) => (
+                    <button
+                      key={c.name}
+                      onClick={() => setSelectedColorIndex(idx)}
+                      title={c.name}
+                      className={`w-7 h-7 rounded-full border-2 transition-all ${
+                        selectedColorIndex === idx ? 'border-[#242321] scale-110 shadow-sm' : 'border-[#E6DFD5]'
+                      }`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Size Selector */}
-            {product.sizes.length > 0 && (
+            {product.sizes && product.sizes.length > 0 && (
               <div className="space-y-2 pt-2">
                 <label className="text-xs uppercase tracking-wider font-medium text-[#242321] block">
                   Ölçü: <strong className="font-semibold">{selectedSize}</strong>
@@ -267,10 +279,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 {/* Add to Cart CTA */}
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 bg-[#242321] text-[#F8F5EF] text-xs font-semibold uppercase tracking-[0.2em] hover:bg-[#B49A6A] transition-colors shadow-lg flex items-center justify-center gap-2"
+                  disabled={product.stock <= 0}
+                  className={`flex-1 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-colors shadow-lg flex items-center justify-center gap-2 ${
+                    product.stock > 0
+                      ? 'bg-[#242321] text-[#F8F5EF] hover:bg-[#B49A6A]'
+                      : 'bg-[#8C857B] text-[#F8F5EF] cursor-not-allowed'
+                  }`}
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Sepete Ekle</span>
+                  <span>{product.stock > 0 ? 'Sepete Ekle' : 'Tükendi'}</span>
                 </button>
 
                 {/* Wishlist Heart */}
@@ -288,9 +305,18 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               </div>
 
               {/* Stock status indicator */}
-              <div className="flex items-center gap-2 text-xs text-emerald-700 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                <span>Stokta Var (Stok Adedi: {product.stock}) — Aynı Gün Kargo</span>
+              <div className="flex items-center gap-2 text-xs font-medium">
+                {product.stock > 0 ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                    <span className="text-emerald-700">Stokta Var (Stok Adedi: {product.stock}) — Aynı Gün Kargo</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-rose-600" />
+                    <span className="text-rose-700 font-bold">Stok Tükendi</span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -310,7 +336,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
               </div>
             </div>
 
-            {/* Section 17: Product Accordions */}
+            {/* Product Accordions */}
             <div className="border-t border-[#E6DFD5] pt-4 space-y-2">
               {/* Accordion 1: Özellikler */}
               <div className="border-b border-[#E6DFD5] pb-2">
@@ -323,7 +349,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 </button>
                 {activeAccordion === 'ozellikler' && (
                   <div className="pt-2 pb-4 text-xs text-[#5A5652] space-y-1.5 leading-relaxed">
-                    {product.features.map((feat, idx) => (
+                    {product.features?.map((feat, idx) => (
                       <p key={idx}>{feat}</p>
                     ))}
                     <p className="pt-2 text-[#242321]">{product.description}</p>
@@ -342,7 +368,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 </button>
                 {activeAccordion === 'bakim' && (
                   <div className="pt-2 pb-4 text-xs text-[#5A5652] leading-relaxed">
-                    <p>{product.careInstructions}</p>
+                    <p>{product.careInstructions || 'Kuru temizleme önerilir.'}</p>
+                    {product.dimensions && <p className="mt-1 font-semibold text-[#242321]">Ölçüler: {product.dimensions}</p>}
                   </div>
                 )}
               </div>
@@ -367,7 +394,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
         </div>
 
-        {/* Section 18: NEDEN VERA? */}
+        {/* NEDEN VERA? */}
         <section className="my-20 p-8 sm:p-12 bg-[#242321] text-[#F8F5EF]">
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-10">
             <span className="text-xs uppercase tracking-[0.3em] text-[#B49A6A] font-semibold flex items-center justify-center gap-2">
@@ -397,7 +424,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           </div>
         </section>
 
-        {/* Section 20: SENİN İÇİN SEÇTİK */}
+        {/* SENİN İÇİN SEÇTİK */}
         <section className="my-20">
           <div className="mb-10 text-center">
             <span className="text-xs uppercase tracking-[0.3em] text-[#B49A6A] font-semibold">
