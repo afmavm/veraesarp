@@ -1,18 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, Truck, RotateCcw, Award } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, Award, Mail } from 'lucide-react';
 import { InstagramIcon, TikTokIcon, PinterestIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/Icons';
 import { useData } from '@/context/DataContext';
+import { useToast } from '@/context/ToastContext';
+import { sendNewsletterConfirmationEmail } from '@/lib/email/email-service';
 
 export default function Footer() {
   const { siteSettings } = useData();
+  const { showToast } = useToast();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
 
-  const cleanPhone = (siteSettings.whatsappPhone || '+905325558372').replace(/[^0-9]/g, '');
+  const cleanPhone = (siteSettings.whatsappPhone || '+905344902557').replace(/[^0-9]/g, '');
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
     'Merhaba Vera Eşarp, ürünleriniz ve yeni sezon koleksiyonunuz hakkında bilgi almak istiyorum.'
   )}`;
+
+  const handleNewsletterSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    try {
+      sendNewsletterConfirmationEmail(newsletterEmail);
+      showToast(`📩 Teşekkürler! ${newsletterEmail} e-bülten grubumuza eklendi ve onay e-postası gönderildi.`, 'success');
+      setNewsletterEmail('');
+    } catch (err) {
+      showToast('Bülten aboneliği sırasında bir hata oluştu.', 'error');
+    }
+  };
 
   return (
     <footer className="bg-[#242321] text-[#F8F5EF] pt-16 pb-24 lg:pb-12 border-t border-[#B49A6A]/20">
@@ -74,6 +90,30 @@ export default function Footer() {
               <p><strong className="text-[#E8DED1]">E-Posta:</strong> {siteSettings.contactEmail}</p>
               <p><strong className="text-[#E8DED1]">Adres:</strong> {siteSettings.address}</p>
             </div>
+
+            {/* Newsletter Subscription Box */}
+            <form onSubmit={handleNewsletterSubscribe} className="pt-2 space-y-2 max-w-sm">
+              <label className="block text-[11px] uppercase tracking-wider text-[#B49A6A] font-semibold flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5" />
+                <span>E-Bültene Abone Olun (Ayrıcalıkları Kaçırmayın)</span>
+              </label>
+              <div className="flex">
+                <input
+                  type="email"
+                  required
+                  placeholder="E-posta adresiniz..."
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  className="flex-1 p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-xs text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shrink-0"
+                >
+                  Abone Ol
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Dynamic Footer Columns */}

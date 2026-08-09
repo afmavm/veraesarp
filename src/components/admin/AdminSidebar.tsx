@@ -14,9 +14,10 @@ import {
   Store,
   CreditCard,
   TrendingUp,
+  Mail,
 } from 'lucide-react';
 
-export type AdminTab = 'overview' | 'products' | 'orders' | 'cari' | 'customers' | 'coupons' | 'growth' | 'cms' | 'settings';
+export type AdminTab = 'overview' | 'products' | 'orders' | 'cari' | 'customers' | 'coupons' | 'growth' | 'emails' | 'cms' | 'settings';
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -38,6 +39,7 @@ export default function AdminSidebar({
     { id: 'cari', label: 'Gelişmiş Cari İşlemler', icon: CreditCard },
     { id: 'growth', label: 'Satış Stratejileri & Kampanya', icon: TrendingUp },
     { id: 'customers', label: 'Müşteri İlişkileri (CRM)', icon: Users },
+    { id: 'emails', label: 'E-Posta Bildirim Yönetimi', icon: Mail },
     { id: 'coupons', label: 'Kupon Kodları', icon: Tag },
     { id: 'cms', label: 'CMS & Banner', icon: Sparkles },
     { id: 'settings', label: 'Sistem & API Ayarları', icon: Settings },

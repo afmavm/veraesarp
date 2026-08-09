@@ -9,6 +9,7 @@ import AdminOrders from '@/components/admin/AdminOrders';
 import AdminCari from '@/components/admin/AdminCari';
 import AdminGrowthEngine from '@/components/admin/AdminGrowthEngine';
 import AdminCustomers from '@/components/admin/AdminCustomers';
+import AdminEmails from '@/components/admin/AdminEmails';
 import AdminCoupons from '@/components/admin/AdminCoupons';
 import AdminCMS from '@/components/admin/AdminCMS';
 import AdminSettings from '@/components/admin/AdminSettings';
@@ -109,6 +110,8 @@ export default function ExecutiveAdminDashboard() {
           {activeTab === 'growth' && <AdminGrowthEngine />}
 
           {activeTab === 'customers' && <AdminCustomers />}
+
+          {activeTab === 'emails' && <AdminEmails />}
 
           {activeTab === 'coupons' && <AdminCoupons />}
 

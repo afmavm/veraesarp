@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { sendWelcomeEmail } from '@/lib/email/email-service';
 
 export interface UserProfile {
   id: string;
@@ -182,6 +183,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('veraesarp_user_session', JSON.stringify(sessionData));
     } catch (e) {
       console.error(e);
+    }
+
+    // Send Welcome Email & Discount Coupon to new user
+    try {
+      sendWelcomeEmail(newUser);
+    } catch (e) {
+      console.error('Welcome email error', e);
     }
 
     return { success: true, user: sessionData };

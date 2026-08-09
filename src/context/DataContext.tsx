@@ -21,6 +21,7 @@ import {
   MOCK_COUPONS,
   DEFAULT_SITE_SETTINGS,
 } from '@/lib/data/mock-data';
+import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from '@/lib/email/email-service';
 
 interface DataContextType {
   siteSettings: SiteSettings;
@@ -359,6 +360,20 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setCargoData((prev) => ({ ...prev, [order.orderNumber]: cargoEntry }));
+
+    // Send Order Confirmation & Invoice Email to Customer
+    try {
+      sendOrderConfirmationEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        email: order.email,
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+        items: order.items,
+      });
+    } catch (e) {
+      console.error('Order confirmation email error', e);
+    }
   };
 
   const updateOrderStatus = (
@@ -390,6 +405,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
               },
             }));
           }
+
+          // Send Order Status Update Email to Customer
+          try {
+            sendOrderStatusUpdateEmail({
+              orderNumber: updated.orderNumber,
+              customerName: updated.customerName,
+              email: updated.email,
+              status: updated.status,
+              carrier: updated.carrier,
+              trackingCode: updated.trackingCode,
+            });
+          } catch (e) {
+            console.error('Order status email error', e);
+          }
+
           return updated;
         }
         return o;

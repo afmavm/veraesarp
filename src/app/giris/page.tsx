@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { sendPasswordResetEmail } from '@/lib/email/email-service';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -131,8 +132,15 @@ export default function AuthPage() {
   const handleForgotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail) return;
+
+    const resetCode = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+      sendPasswordResetEmail(forgotEmail, resetCode);
+      showToast(`🔒 Şifre sıfırlama doğrulama kodunuz (${resetCode}) ${forgotEmail} adresine e-posta olarak gönderildi!`, 'success');
+    } catch (err) {
+      showToast('E-posta gönderilirken bir hata oluştu.', 'error');
+    }
     setIsForgotOpen(false);
-    showToast(`Şifre sıfırlama bağlantısı ${forgotEmail} adresine gönderildi.`, 'success');
   };
 
   return (
