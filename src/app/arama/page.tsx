@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useMemo, use } from 'react';
-import { Search as SearchIcon, Sparkles } from 'lucide-react';
+import { Search as SearchIcon, Sparkles, Zap } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
 import { useData } from '@/context/DataContext';
+import { Product } from '@/lib/types/ecommerce';
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
@@ -32,21 +33,51 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   const { products } = useData();
 
   const searchResults = useMemo(() => {
-    if (!query.trim()) return [];
-    const qNormalized = normalizeTr(query);
+    const rawQuery = query.trim();
+    if (!rawQuery) return [];
+    const qNormalized = normalizeTr(rawQuery);
 
-    return products.filter((product) => {
-      const nameMatch = normalizeTr(product.name).includes(qNormalized);
-      const skuMatch = normalizeTr(product.sku).includes(qNormalized);
-      const descMatch = normalizeTr(product.description || '').includes(qNormalized);
-      const catMatch = normalizeTr(product.category || '').includes(qNormalized);
-      const fabricMatch = normalizeTr(product.fabric || '').includes(qNormalized);
-      const styleMatch = normalizeTr(product.styleCategory || '').includes(qNormalized);
-      const collectionMatch = product.collection ? normalizeTr(product.collection).includes(qNormalized) : false;
-      const colorMatch = (product.colors || []).some((c: any) => normalizeTr(c.name || '').includes(qNormalized));
+    const scoredProducts: { product: Product; score: number }[] = [];
 
-      return nameMatch || skuMatch || descMatch || catMatch || fabricMatch || styleMatch || collectionMatch || colorMatch;
+    products.forEach((product) => {
+      let score = 0;
+      const normName = normalizeTr(product.name);
+      const normSku = normalizeTr(product.sku);
+      const normCat = normalizeTr(product.category || '');
+      const normFabric = normalizeTr(product.fabric || '');
+      const normStyle = normalizeTr(product.styleCategory || '');
+      const normDesc = normalizeTr(product.description || '');
+      const normColl = product.collection ? normalizeTr(product.collection) : '';
+
+      // Title starts with query (Highest Relevance Priority)
+      if (normName.startsWith(qNormalized)) score += 100;
+      else if (normName.includes(qNormalized)) score += 80;
+
+      // Category / Fabric exact/partial match
+      if (normCat.includes(qNormalized)) score += 60;
+      if (normFabric.includes(qNormalized)) score += 50;
+
+      // SKU / Code match
+      if (normSku.includes(qNormalized)) score += 40;
+
+      // Collection or Style match
+      if (normColl.includes(qNormalized) || normStyle.includes(qNormalized)) score += 30;
+
+      // Colors match
+      if ((product.colors || []).some((c: any) => normalizeTr(c.name || '').includes(qNormalized))) score += 25;
+
+      // Description match
+      if (normDesc.includes(qNormalized)) score += 15;
+
+      if (score > 0) {
+        scoredProducts.push({ product, score });
+      }
     });
+
+    // Sort by relevance score descending
+    scoredProducts.sort((a, b) => b.score - a.score);
+
+    return scoredProducts.map((item) => item.product);
   }, [query, products]);
 
   const recommendedProducts = useMemo(() => products.slice(0, 4), [products]);
@@ -58,7 +89,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
         <div className="max-w-3xl mx-auto text-center space-y-6 mb-12">
           <span className="text-xs uppercase tracking-[0.3em] text-[#B49A6A] font-semibold flex items-center justify-center gap-2">
             <Sparkles className="w-3.5 h-3.5" />
-            VERA ARAMA MOTORU
+            VERA ANLIK İNDEKSLİ ARAMA MOTORU
           </span>
           <h1 className="font-serif text-4xl sm:text-5xl font-normal text-[#242321]">
             Ürün Arama
@@ -69,7 +100,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
           >
             <input
               type="text"
-              placeholder="İpek eşarp, Medine ipeği şal, altın broş ara..."
+              placeholder="Harf yazmaya başlayın (Ör: İpek, Twill, Medine, Broş)..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full py-4 px-6 pr-14 bg-[#FFFFFF] border border-[#E6DFD5] text-sm text-[#242321] placeholder-[#8C857B] focus:outline-none focus:border-[#B49A6A] shadow-sm font-sans"
@@ -87,9 +118,12 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
         {/* Results */}
         {query.trim() && searchResults.length > 0 && (
           <div className="space-y-6">
-            <h2 className="text-xs uppercase tracking-widest text-[#8C857B] font-semibold">
-              "{query}" İle İlgili <strong className="text-[#242321]">{searchResults.length}</strong> Ürün Bulundu
-            </h2>
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#B49A6A] animate-pulse" />
+              <h2 className="text-xs uppercase tracking-widest text-[#8C857B] font-semibold">
+                "{query}" İle Anlık İndekslendi: <strong className="text-[#242321]">{searchResults.length}</strong> Ürün Bulundu
+              </h2>
+            </div>
             <ProductGrid products={searchResults} columns={4} />
           </div>
         )}
@@ -120,7 +154,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
                 <button
                   key={term}
                   onClick={() => setQuery(term)}
-                  className="px-3.5 py-1.5 bg-[#FFFFFF] border border-[#E6DFD5] text-xs text-[#242321] hover:border-[#B49A6A] hover:text-[#B49A6A] transition-colors shadow-sm"
+                  className="px-3.5 py-1.5 bg-[#FFFFFF] border border-[#E6DFD5] text-xs text-[#242321] hover:border-[#B49A6A] hover:text-[#B49A6A] transition-colors shadow-sm font-sans"
                 >
                   {term}
                 </button>

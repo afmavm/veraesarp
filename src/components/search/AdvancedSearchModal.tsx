@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search, X, TrendingUp, History, ArrowRight, Sparkles, Filter, Check, Tag } from 'lucide-react';
+import { Search, X, TrendingUp, History, ArrowRight, Sparkles, Zap, Tag } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Product } from '@/lib/types/ecommerce';
 
@@ -73,62 +73,68 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
     localStorage.removeItem('veraesarp_recent_searches');
   };
 
-  // Live Filtering & Turkish Normalization Search Engine
+  // Instant Relevance-Weighted Search Indexing Engine
   const searchResults = useMemo(() => {
-    if (!query.trim()) return [];
-    const qNormalized = normalizeTr(query);
+    const rawQuery = query.trim();
+    if (!rawQuery) return [];
+    const qNormalized = normalizeTr(rawQuery);
 
-    let filtered = products.filter((product) => {
-      const nameMatch = normalizeTr(product.name).includes(qNormalized);
-      const skuMatch = normalizeTr(product.sku).includes(qNormalized);
-      const descMatch = normalizeTr(product.description || '').includes(qNormalized);
-      const catMatch = normalizeTr(product.category || '').includes(qNormalized);
-      const fabricMatch = normalizeTr(product.fabric || '').includes(qNormalized);
-      const styleMatch = normalizeTr(product.styleCategory || '').includes(qNormalized);
-      const collectionMatch = product.collection ? normalizeTr(product.collection).includes(qNormalized) : false;
-      const colorMatch = (product.colors || []).some((c: any) => normalizeTr(c.name || '').includes(qNormalized));
+    const scoredProducts: { product: Product; score: number }[] = [];
 
-      return nameMatch || skuMatch || descMatch || catMatch || fabricMatch || styleMatch || collectionMatch || colorMatch;
-    });
+    products.forEach((product) => {
+      let score = 0;
+      const normName = normalizeTr(product.name);
+      const normSku = normalizeTr(product.sku);
+      const normCat = normalizeTr(product.category || '');
+      const normFabric = normalizeTr(product.fabric || '');
+      const normStyle = normalizeTr(product.styleCategory || '');
+      const normDesc = normalizeTr(product.description || '');
+      const normColl = product.collection ? normalizeTr(product.collection) : '';
 
-    // Apply category tab filter inside live search modal
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter((p) => p.category === selectedCategory);
-    }
+      // Title starts with query (Highest Relevance Priority)
+      if (normName.startsWith(qNormalized)) score += 100;
+      else if (normName.includes(qNormalized)) score += 80;
 
-    // Apply sorting
-    if (sortBy === 'price-asc') {
-      filtered = [...filtered].sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-desc') {
-      filtered = [...filtered].sort((a, b) => b.price - a.price);
-    }
+      // Category / Fabric exact/partial match
+      if (normCat.includes(qNormalized)) score += 60;
+      if (normFabric.includes(qNormalized)) score += 50;
 
-    return filtered;
-  }, [query, products, selectedCategory, sortBy]);
+      // SKU / Code match
+      if (normSku.includes(qNormalized)) score += 40;
 
-  // Extract matching category tags from search results
-  const matchingCategoryCounts = useMemo(() => {
-    if (!query.trim()) return [];
-    const qNormalized = normalizeTr(query);
-    const counts: Record<string, number> = {};
+      // Collection or Style match
+      if (normColl.includes(qNormalized) || normStyle.includes(qNormalized)) score += 30;
 
-    products.forEach((p) => {
-      const match =
-        normalizeTr(p.name).includes(qNormalized) ||
-        normalizeTr(p.category || '').includes(qNormalized) ||
-        normalizeTr(p.fabric || '').includes(qNormalized);
+      // Colors match
+      if ((product.colors || []).some((c: any) => normalizeTr(c.name || '').includes(qNormalized))) score += 25;
 
-      if (match) {
-        counts[p.category] = (counts[p.category] || 0) + 1;
+      // Description match
+      if (normDesc.includes(qNormalized)) score += 15;
+
+      if (score > 0) {
+        scoredProducts.push({ product, score });
       }
     });
 
-    return Object.entries(counts).map(([cat, count]) => ({
-      category: cat,
-      label: cat === 'esarp' ? 'İpek Eşarp' : cat === 'sal' ? 'Şal Koleksiyonu' : 'Aksesuar & Broş',
-      count,
-    }));
-  }, [query, products]);
+    // Sort by relevance score descending
+    scoredProducts.sort((a, b) => b.score - a.score);
+
+    let resultList = scoredProducts.map((item) => item.product);
+
+    // Apply category tab filter inside live search modal
+    if (selectedCategory !== 'all') {
+      resultList = resultList.filter((p) => p.category === selectedCategory);
+    }
+
+    // Apply price sorting if specified
+    if (sortBy === 'price-asc') {
+      resultList = [...resultList].sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price-desc') {
+      resultList = [...resultList].sort((a, b) => b.price - a.price);
+    }
+
+    return resultList;
+  }, [query, products, selectedCategory, sortBy]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +160,7 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase tracking-[0.3em] text-[#B49A6A] font-semibold flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5" />
-              VERA AKILLI ARAMA MOTORU
+              VERA ANLIK İNDEKSLİ ARAMA MOTORU
             </span>
             <button
               onClick={onClose}
@@ -170,7 +176,7 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
             <Search className="absolute left-4 w-6 h-6 text-[#B49A6A] pointer-events-none" />
             <input
               type="text"
-              placeholder="Saf İpek Eşarp, Twill, Medine İpeği Şal veya Renk Ara..."
+              placeholder="Yazmaya Başlayın (Ör: İpek, Twill, Medine Şal, Saten, Broş)..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full py-4 pl-14 pr-24 bg-[#242321] border border-[#3A3835] focus:border-[#B49A6A] text-base sm:text-lg text-[#F8F5EF] placeholder-[#8C857B] focus:outline-none transition-colors shadow-inner font-sans"
@@ -243,7 +249,7 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="bg-[#242321] border border-[#3A3835] text-[#F8F5EF] p-1.5 rounded focus:outline-none"
                 >
-                  <option value="featured">Öne Çıkanlar</option>
+                  <option value="featured">Alaka Düzeyine Göre</option>
                   <option value="price-asc">Fiyat: Düşükten Yüksek</option>
                   <option value="price-desc">Fiyat: Yüksekten Düşük</option>
                 </select>
@@ -344,25 +350,28 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
           </div>
         )}
 
-        {/* State B: Live Search Results */}
+        {/* State B: Live Instant Indexed Results */}
         {query.trim() && searchResults.length > 0 && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2A2825]">
-              <h3 className="text-xs uppercase tracking-wider text-[#8C857B]">
-                "{query}" Araması İçin <strong className="text-[#F8F5EF] font-semibold">{searchResults.length}</strong> Canlı Ürün Bulundu
-              </h3>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-[#2A2825]">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#B49A6A] animate-pulse" />
+                <h3 className="text-xs uppercase tracking-wider text-[#8C857B]">
+                  "{query}" İle Anlık İndekslendi: <strong className="text-[#F8F5EF] font-semibold text-sm">{searchResults.length} Ürün</strong>
+                </h3>
+              </div>
               <button
                 onClick={handleSearchSubmit}
                 className="text-xs text-[#B49A6A] hover:underline font-semibold flex items-center gap-1"
               >
-                <span>Tüm Detaylı Sonuç Sayfasını Aç</span>
+                <span>Tüm Sonuç Sayfasını Aç</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Live Search Results Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchResults.slice(0, 9).map((product) => (
+              {searchResults.slice(0, 12).map((product) => (
                 <Link
                   key={product.id}
                   href={`/urun/${product.slug}`}
@@ -402,7 +411,7 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
               ))}
             </div>
 
-            {searchResults.length > 9 && (
+            {searchResults.length > 12 && (
               <div className="text-center pt-4">
                 <button
                   onClick={handleSearchSubmit}
@@ -424,7 +433,7 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
             <div>
               <h3 className="font-serif text-xl font-normal text-[#F8F5EF]">"{query}" İle Eşleşen Ürün Bulunamadı</h3>
               <p className="text-xs text-[#8C857B] mt-2 max-w-md mx-auto">
-                Aradığınız kelimeye uygun bir ürün bulunamadı. Farklı bir kelime deneyebilir veya aşağıdaki popüler terimlerden seçim yapabilirsiniz.
+                Aradığınız kelimeye uygun bir ürün bulunamadı. Lütfen farklı bir kelime yazmayı veya aşağıdaki popüler terimlerden birini seçmeyi deneyin.
               </p>
             </div>
 
