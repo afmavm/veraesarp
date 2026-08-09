@@ -64,6 +64,20 @@ export default function ProductModal({
   // Auto-slug tracking
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
+  // Thousands Separator Helper Functions
+  const formatThousandsString = (val: string | number | undefined): string => {
+    if (val === undefined || val === null || val === '') return '';
+    const digits = String(val).replace(/[^0-9]/g, '');
+    if (!digits) return '';
+    return Number(digits).toLocaleString('tr-TR');
+  };
+
+  const parseDigits = (val: any): number => {
+    if (typeof val === 'number') return val;
+    const digits = String(val || '').replace(/[^0-9]/g, '');
+    return digits ? parseInt(digits, 10) : 0;
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -71,45 +85,27 @@ export default function ProductModal({
     barcode: '',
     description: '',
     shortDescription: '',
-    price: 1890,
-    compareAtPrice: 2250,
-    costPrice: 850,
-    stock: 25,
+    price: '',
+    compareAtPrice: '',
+    costPrice: '',
+    stock: '',
     rating: 5.0,
-    reviewCount: 12,
+    reviewCount: 0,
     category: 'esarp' as any,
     subcategory: 'twill-ipek',
     fabric: 'twill' as any,
     styleCategory: 'ofis' as any,
     collection: 'milano-romance',
     videoUrl: '',
-    careInstructions: 'Kuru temizleme önerilir. Elde yıkamada ılık su ve ipek şampuanı tercih edilmelidir.',
+    careInstructions: '',
     dimensions: '90 cm x 90 cm',
   });
 
-  const [imagesList, setImagesList] = useState<string[]>([
-    'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=1200&auto=format&fit=crop',
-  ]);
-
-  const [colorSwatches, setColorSwatches] = useState<ColorOption[]>([
-    { name: 'Krem & Altın', hex: '#F4EBE1' },
-    { name: 'Gece Mavisi', hex: '#1B2A4A' },
-  ]);
-
+  const [imagesList, setImagesList] = useState<string[]>([]);
+  const [colorSwatches, setColorSwatches] = useState<ColorOption[]>([]);
   const [sizesList, setSizesList] = useState<string[]>(['90x90 cm']);
-  const [badgesList, setBadgesList] = useState<('Yeni' | 'Özel Fiyat' | 'Çok Satan' | 'Limited' | 'Flaş İndirim')[]>([
-    'Yeni',
-    'Çok Satan',
-  ]);
-
-  const [featuresList, setFeaturesList] = useState<string[]>([
-    '✓ %100 Saf Twill İpek Kumaş',
-    '✓ Özel İtalyan El İşçiliği İğne Kenar',
-    '✓ Tok Duruş, Şeklini Gün Boyu Koru',
-    '✓ Nefes Alan Doğal İpek Lifler',
-  ]);
-
+  const [badgesList, setBadgesList] = useState<('Yeni' | 'Özel Fiyat' | 'Çok Satan' | 'Limited' | 'Flaş İndirim')[]>([]);
+  const [featuresList, setFeaturesList] = useState<string[]>([]);
   const [variantsList, setVariantsList] = useState<ProductVariant[]>([]);
 
   // Local inputs
@@ -138,12 +134,12 @@ export default function ProductModal({
         slug: productToEdit.slug,
         sku: productToEdit.sku,
         barcode: productToEdit.barcode || '',
-        description: productToEdit.description,
-        shortDescription: productToEdit.shortDescription,
-        price: productToEdit.price,
-        compareAtPrice: productToEdit.compareAtPrice || 0,
-        costPrice: productToEdit.costPrice || 0,
-        stock: productToEdit.stock,
+        description: productToEdit.description || '',
+        shortDescription: productToEdit.shortDescription || '',
+        price: formatThousandsString(productToEdit.price),
+        compareAtPrice: productToEdit.compareAtPrice ? formatThousandsString(productToEdit.compareAtPrice) : '',
+        costPrice: productToEdit.costPrice ? formatThousandsString(productToEdit.costPrice) : '',
+        stock: productToEdit.stock ? formatThousandsString(productToEdit.stock) : '',
         rating: productToEdit.rating || 5.0,
         reviewCount: productToEdit.reviewCount || 0,
         category: productToEdit.category,
@@ -152,8 +148,8 @@ export default function ProductModal({
         styleCategory: productToEdit.styleCategory,
         collection: productToEdit.collection || 'milano-romance',
         videoUrl: productToEdit.videoUrl || '',
-        careInstructions: productToEdit.careInstructions,
-        dimensions: productToEdit.dimensions,
+        careInstructions: productToEdit.careInstructions || '',
+        dimensions: productToEdit.dimensions || '90 cm x 90 cm',
       });
       setImagesList(productToEdit.images || []);
       setColorSwatches(productToEdit.colors || []);
@@ -167,40 +163,29 @@ export default function ProductModal({
         name: '',
         slug: '',
         sku: `VER-MIL-${Math.floor(1000 + Math.random() * 9000)}`,
-        barcode: `8680001${Math.floor(10005 + Math.random() * 89999)}`,
-        description: 'Vera Eşarp’ın ikonik koleksiyonundan %100 saf twill ipek eşarp. İtalyan dokuma ustalarının el işçiliği kenar dikişleri ve mat parıltısı ile gün boyu kayma yapmadan kusursuz duruş sağlar.',
-        shortDescription: '%100 Saf Twill İpek, El Dikişli Kenarlar, 90x90 cm',
-        price: 1890,
-        compareAtPrice: 2250,
-        costPrice: 850,
-        stock: 25,
+        barcode: '',
+        description: '',
+        shortDescription: '',
+        price: '',
+        compareAtPrice: '',
+        costPrice: '',
+        stock: '',
         rating: 5.0,
-        reviewCount: 24,
+        reviewCount: 0,
         category: 'esarp',
         subcategory: 'twill-ipek',
         fabric: 'twill',
         styleCategory: 'ofis',
         collection: 'milano-romance',
         videoUrl: '',
-        careInstructions: 'Kuru temizleme önerilir. Elde yıkamada ılık su ve ipek şampuanı tercih edilmelidir. Düşük ısıda tersten ütüleyiniz.',
+        careInstructions: '',
         dimensions: '90 cm x 90 cm',
       });
-      setImagesList([
-        'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=1200&auto=format&fit=crop',
-        'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=1200&auto=format&fit=crop',
-      ]);
-      setColorSwatches([
-        { name: 'Krem & Altın', hex: '#F4EBE1' },
-        { name: 'Gece Mavisi', hex: '#1B2A4A' },
-      ]);
+      setImagesList([]);
+      setColorSwatches([]);
       setSizesList(['90x90 cm']);
-      setBadgesList(['Yeni', 'Çok Satan']);
-      setFeaturesList([
-        '✓ %100 Saf Twill İpek Kumaş',
-        '✓ Özel İtalyan El İşçiliği İğne Kenar',
-        '✓ Tok Duruş, Şeklini Gün Boyu Koru',
-        '✓ Nefes Alan Doğal İpek Lifler',
-      ]);
+      setBadgesList([]);
+      setFeaturesList([]);
       setVariantsList([]);
       setIsSlugManuallyEdited(false);
     }
@@ -518,10 +503,10 @@ export default function ProductModal({
       slug: generatedSlug,
       sku: formData.sku,
       barcode: formData.barcode,
-      price: Number(formData.price),
-      compareAtPrice: Number(formData.compareAtPrice) || undefined,
-      costPrice: Number(formData.costPrice) || undefined,
-      stock: Number(formData.stock),
+      price: parseDigits(formData.price),
+      compareAtPrice: parseDigits(formData.compareAtPrice) || undefined,
+      costPrice: parseDigits(formData.costPrice) || undefined,
+      stock: parseDigits(formData.stock),
       rating: Number(formData.rating) || 5.0,
       reviewCount: Number(formData.reviewCount) || 0,
       category: formData.category,
@@ -546,8 +531,10 @@ export default function ProductModal({
     });
   };
 
-  const marginAmount = formData.price - formData.costPrice;
-  const marginPercent = formData.price > 0 ? Math.round((marginAmount / formData.price) * 100) : 0;
+  const priceNum = parseDigits(formData.price);
+  const costNum = parseDigits(formData.costPrice);
+  const marginAmount = priceNum - costNum;
+  const marginPercent = priceNum > 0 ? Math.round((marginAmount / priceNum) * 100) : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-hidden">
@@ -585,34 +572,31 @@ export default function ProductModal({
                 <input
                   type="text"
                   required
-                  placeholder="ör: Vera Milano Twill İpek Eşarp — Krem & Altın"
+                  placeholder="ör: Monogram Twill İpek Eşarp"
                   value={formData.name}
                   onChange={handleNameChange}
-                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-serif text-sm focus:border-[#B49A6A] focus:outline-none"
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-semibold text-sm"
                 />
               </div>
 
               <div className="sm:col-span-5">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-[#8C857B]">URL / Slug (Otomatik Oluşturulur)</label>
-                  <span className="text-[10px] text-[#B49A6A]">⚡ Otomatik SEO</span>
-                </div>
+                <label className="block text-[#8C857B] mb-1">URL / Slug (Otomatik)</label>
                 <input
                   type="text"
-                  placeholder="ör: vera-milano-twill-ipek-esarp"
+                  placeholder="ör: monogram-twill-ipek-esarp"
                   value={formData.slug}
                   onChange={(e) => {
-                    setFormData({ ...formData, slug: e.target.value });
                     setIsSlugManuallyEdited(true);
+                    setFormData({ ...formData, slug: e.target.value });
                   }}
-                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#B49A6A] font-mono text-xs focus:border-[#B49A6A] focus:outline-none"
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#B49A6A] font-mono text-[11px]"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
-                <label className="block text-[#8C857B] mb-1">SKU Kodu *</label>
+                <label className="block text-[#8C857B] mb-1">Stok Kodu (SKU) *</label>
                 <input
                   type="text"
                   required
@@ -621,17 +605,19 @@ export default function ProductModal({
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
                 />
               </div>
+
               <div>
-                <label className="block text-[#8C857B] mb-1">Barkod (GTIN)</label>
+                <label className="block text-[#8C857B] mb-1">Barkod No (Opsiyonel)</label>
                 <input
                   type="text"
+                  placeholder="ör: 868000192801"
                   value={formData.barcode}
                   onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                   className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono"
                 />
               </div>
 
-              {/* DYNAMIC CATEGORY SELECT WITH inline CRUD */}
+              {/* DYNAMIC CATEGORY SELECT WITH INLINE CRUD */}
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-[#8C857B]">Kategori *</label>
@@ -657,7 +643,7 @@ export default function ProductModal({
                 </select>
               </div>
 
-              {/* DYNAMIC FABRIC SELECT WITH inline CRUD */}
+              {/* DYNAMIC FABRIC SELECT WITH INLINE CRUD */}
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-[#8C857B]">Kumaş Türü *</label>
@@ -694,38 +680,42 @@ export default function ProductModal({
               <div>
                 <label className="block text-[#8C857B] mb-1">Satış Fiyatı (₺) *</label>
                 <input
-                  type="number"
+                  type="text"
                   required
+                  placeholder="ör: 1.890"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                  className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF] font-serif text-sm"
+                  onChange={(e) => setFormData({ ...formData, price: formatThousandsString(e.target.value) })}
+                  className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF] font-serif text-sm font-semibold"
                 />
               </div>
               <div>
                 <label className="block text-[#8C857B] mb-1">İndirim Öncesi Fiyat (₺)</label>
                 <input
-                  type="number"
+                  type="text"
+                  placeholder="ör: 2.250"
                   value={formData.compareAtPrice}
-                  onChange={(e) => setFormData({ ...formData, compareAtPrice: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, compareAtPrice: formatThousandsString(e.target.value) })}
                   className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
                 />
               </div>
               <div>
                 <label className="block text-[#8C857B] mb-1">Maliyet Fiyatı (₺)</label>
                 <input
-                  type="number"
+                  type="text"
+                  placeholder="ör: 850"
                   value={formData.costPrice}
-                  onChange={(e) => setFormData({ ...formData, costPrice: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, costPrice: formatThousandsString(e.target.value) })}
                   className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF]"
                 />
               </div>
               <div>
                 <label className="block text-[#8C857B] mb-1">Stok Adedi *</label>
                 <input
-                  type="number"
+                  type="text"
                   required
+                  placeholder="ör: 25"
                   value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, stock: formatThousandsString(e.target.value) })}
                   className="w-full p-2.5 bg-[#1C1B1A] border border-[#3A3835] text-[#F8F5EF] font-bold"
                 />
               </div>
