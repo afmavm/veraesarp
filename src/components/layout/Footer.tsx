@@ -134,7 +134,7 @@ export default function Footer() {
         <p>© 2026 {siteSettings.name}. Tüm hakları saklıdır. Premium Kadın Moda &amp; Aksesuar Platformu.</p>
         
         <div className="flex items-center space-x-6 text-[#E8DED1]">
-          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hover:text-emerald-400 text-emerald-400 font-semibold transition-colors flex items-center gap-1.5">
+          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hover:text-[#B49A6A] transition-colors flex items-center gap-1.5">
             <WhatsAppIcon className="w-4 h-4" />
             <span>WhatsApp Destek</span>
           </a>
