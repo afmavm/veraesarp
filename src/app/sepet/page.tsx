@@ -5,26 +5,55 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Trash2, ArrowRight, ShoppingBag, ShieldCheck, Truck, Tag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { SITE_CONFIG } from '@/lib/data/mock-data';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, totalPrice, freeShippingRemaining, clearCart } = useCart();
+  const { coupons } = useData();
   const { showToast } = useToast();
   const [couponCode, setCouponCode] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; text: string; amount: number } | null>(null);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    if (couponCode.toUpperCase() === 'VERA10' || couponCode.toUpperCase() === 'HOŞGELDİN') {
-      setDiscountPercent(10);
-      showToast('Kupon kodu başarıyla uygulandı! (%10 İndirim)', 'success');
-    } else {
-      showToast('Geçersiz veya süresi dolmuş kupon kodu.', 'error');
+    const cleanCode = couponCode.trim().toUpperCase();
+
+    const foundCoupon = coupons.find((c) => c.code.toUpperCase() === cleanCode);
+
+    if (!foundCoupon) {
+      showToast('Geçersiz veya bulunamayan kupon kodu.', 'error');
+      return;
     }
+
+    if (foundCoupon.status !== 'Aktif') {
+      showToast('Bu kupon kodu şu anda pasif durumdadır.', 'error');
+      return;
+    }
+
+    if (totalPrice < foundCoupon.minSpend) {
+      showToast(`Bu kupon için minimum sepet tutarı ₺${foundCoupon.minSpend.toLocaleString('tr-TR')} olmalıdır.`, 'error');
+      return;
+    }
+
+    let calculatedDiscount = 0;
+    if (foundCoupon.discountType === 'percentage') {
+      calculatedDiscount = (totalPrice * foundCoupon.discountValue) / 100;
+    } else {
+      calculatedDiscount = foundCoupon.discountValue;
+    }
+
+    setAppliedCoupon({
+      code: foundCoupon.code,
+      text: foundCoupon.discountText,
+      amount: calculatedDiscount,
+    });
+
+    showToast(`${foundCoupon.code} kuponu uygulandı! (${foundCoupon.discountText})`, 'success');
   };
 
-  const discountAmount = (totalPrice * discountPercent) / 100;
+  const discountAmount = appliedCoupon ? appliedCoupon.amount : 0;
   const finalPrice = Math.max(0, totalPrice - discountAmount);
 
   const progressPercent = Math.min(
@@ -171,7 +200,7 @@ export default function CartPage() {
                   placeholder="Kupon Kodu (ör: VERA10)"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
-                  className="flex-1 py-2 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
+                  className="flex-1 py-2 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs uppercase font-mono focus:outline-none focus:border-[#B49A6A]"
                 />
                 <button
                   type="submit"
@@ -186,10 +215,10 @@ export default function CartPage() {
                   <span>Ara Toplam</span>
                   <span className="text-[#242321] font-medium">₺{totalPrice.toLocaleString('tr-TR')}</span>
                 </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-700">
-                    <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Kupon İndirimi (%{discountPercent})</span>
-                    <span>-₺{discountAmount.toLocaleString('tr-TR')}</span>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" /> Kupon ({appliedCoupon.code})</span>
+                    <span>-₺{appliedCoupon.amount.toLocaleString('tr-TR')}</span>
                   </div>
                 )}
                 <div className="flex justify-between">

@@ -1,4 +1,4 @@
-import { Product, Category, Collection, LookCombination, BlogPost, CustomerOrder, CariAccount, CariTransaction, CargoTrackingData, CampaignRule } from '../types/ecommerce';
+import { Product, Category, Collection, LookCombination, BlogPost, CustomerOrder, CariAccount, CariTransaction, CargoTrackingData, CampaignRule, Coupon } from '../types/ecommerce';
 
 export const SITE_CONFIG = {
   name: 'VERA EŞARP',
@@ -498,5 +498,39 @@ export const MOCK_CAMPAIGNS: CampaignRule[] = [
     subtitle: '2 Ürüne %10, 3 Ürüne Anında %20 İndirim Fırsatı!',
     type: 'tiered_discount',
     isEnabled: true,
+  },
+];
+
+// MOCK KUPON KODLARI
+export const MOCK_COUPONS: Coupon[] = [
+  {
+    id: 'coup-1',
+    code: 'VERA10',
+    discountText: '%10 İndirim',
+    discountType: 'percentage',
+    discountValue: 10,
+    minSpend: 1000,
+    usageCount: 48,
+    status: 'Aktif',
+  },
+  {
+    id: 'coup-2',
+    code: 'HOŞGELDİN',
+    discountText: '%15 İndirim',
+    discountType: 'percentage',
+    discountValue: 15,
+    minSpend: 1500,
+    usageCount: 112,
+    status: 'Aktif',
+  },
+  {
+    id: 'coup-3',
+    code: 'MILANO2026',
+    discountText: '₺250 Sabit İndirim',
+    discountType: 'fixed',
+    discountValue: 250,
+    minSpend: 2000,
+    usageCount: 29,
+    status: 'Aktif',
   },
 ];

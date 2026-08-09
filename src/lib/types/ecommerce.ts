@@ -225,3 +225,16 @@ export interface CampaignRule {
   giftProductImage?: string;
   endTime?: string;
 }
+
+// KUPON KODLARI YÖNETİMİ
+export interface Coupon {
+  id: string;
+  code: string;
+  discountText: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minSpend: number;
+  usageCount: number;
+  status: 'Aktif' | 'Pasif';
+  expiryDate?: string;
+}

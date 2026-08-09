@@ -8,6 +8,7 @@ import {
   CariTransaction,
   CargoTrackingData,
   CampaignRule,
+  Coupon,
 } from '@/lib/types/ecommerce';
 import {
   MOCK_PRODUCTS,
@@ -16,6 +17,7 @@ import {
   MOCK_CARI_TRANSACTIONS,
   MOCK_CARGO_DATA,
   MOCK_CAMPAIGNS,
+  MOCK_COUPONS,
 } from '@/lib/data/mock-data';
 
 interface DataContextType {
@@ -24,6 +26,7 @@ interface DataContextType {
   cariAccounts: CariAccount[];
   cariTransactions: CariTransaction[];
   campaigns: CampaignRule[];
+  coupons: Coupon[];
   cargoData: Record<string, CargoTrackingData>;
   // Product actions
   addProduct: (productData: Partial<Product>) => Product;
@@ -41,9 +44,16 @@ interface DataContextType {
   addCariAccount: (cari: Omit<CariAccount, 'id' | 'createdAt'>) => void;
   deleteCariAccount: (id: string) => void;
   addCariTransaction: (transaction: Omit<CariTransaction, 'id'>) => void;
-  // Campaign actions
-  toggleCampaign: (id: string) => void;
+  // Campaign CRUD
+  addCampaign: (campaign: Omit<CampaignRule, 'id'>) => void;
   updateCampaign: (id: string, updates: Partial<CampaignRule>) => void;
+  deleteCampaign: (id: string) => void;
+  toggleCampaign: (id: string) => void;
+  // Coupon CRUD
+  addCoupon: (couponData: { code: string; discountText: string; discountType: 'percentage' | 'fixed'; discountValue: number; minSpend: number }) => void;
+  updateCoupon: (id: string, updates: Partial<Coupon>) => void;
+  deleteCoupon: (id: string) => void;
+  toggleCouponStatus: (id: string) => void;
   // Cargo helper
   getCargoStatus: (query: string) => CargoTrackingData | null;
 }
@@ -56,6 +66,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [cariAccounts, setCariAccounts] = useState<CariAccount[]>(MOCK_CARI_ACCOUNTS);
   const [cariTransactions, setCariTransactions] = useState<CariTransaction[]>(MOCK_CARI_TRANSACTIONS);
   const [campaigns, setCampaigns] = useState<CampaignRule[]>(MOCK_CAMPAIGNS);
+  const [coupons, setCoupons] = useState<Coupon[]>(MOCK_COUPONS);
   const [cargoData, setCargoData] = useState<Record<string, CargoTrackingData>>(MOCK_CARGO_DATA);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -73,6 +84,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const savedCampaigns = localStorage.getItem('veraesarp_campaigns');
       if (savedCampaigns) setCampaigns(JSON.parse(savedCampaigns));
+
+      const savedCoupons = localStorage.getItem('veraesarp_coupons');
+      if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
     } catch (e) {
       console.error('Failed to load live data from localStorage', e);
     }
@@ -86,11 +100,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('veraesarp_orders', JSON.stringify(orders));
         localStorage.setItem('veraesarp_cari', JSON.stringify(cariAccounts));
         localStorage.setItem('veraesarp_campaigns', JSON.stringify(campaigns));
+        localStorage.setItem('veraesarp_coupons', JSON.stringify(coupons));
       } catch (e) {
         console.error('Failed to persist live data to localStorage', e);
       }
     }
-  }, [products, orders, cariAccounts, campaigns, isInitialized]);
+  }, [products, orders, cariAccounts, campaigns, coupons, isInitialized]);
 
   // Product Actions
   const addProduct = (productData: Partial<Product>): Product => {
@@ -142,7 +157,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addOrder = (order: CustomerOrder) => {
     setOrders((prev) => [order, ...prev]);
 
-    // Create Cargo Timeline dynamically
     const cargoEntry: CargoTrackingData = {
       orderNumber: order.orderNumber,
       trackingCode: order.trackingCode || `YURT-${Math.floor(10000000 + Math.random() * 89999999)}`,
@@ -173,7 +187,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (o.id === orderId) {
           const updated = { ...o, status, trackingCode: trackingCode || o.trackingCode, carrier: carrier || o.carrier };
           
-          // Update cargo timeline if exists
           if (cargoData[o.orderNumber]) {
             const updatedTimeline = [...cargoData[o.orderNumber].timeline];
             if (status === 'Kargoda') {
@@ -220,7 +233,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setCariTransactions((prev) => [newTx, ...prev]);
 
-    // Recalculate Cari Balance
     setCariAccounts((prev) =>
       prev.map((c) => {
         if (c.id === transaction.cariId) {
@@ -239,10 +251,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Campaign Actions
-  const toggleCampaign = (id: string) => {
-    setCampaigns((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isEnabled: !c.isEnabled } : c))
-    );
+  const addCampaign = (campaignData: Omit<CampaignRule, 'id'>) => {
+    const newCmp: CampaignRule = {
+      ...campaignData,
+      id: `cmp-${Date.now()}`,
+    };
+    setCampaigns((prev) => [...prev, newCmp]);
   };
 
   const updateCampaign = (id: string, updates: Partial<CampaignRule>) => {
@@ -251,12 +265,52 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const deleteCampaign = (id: string) => {
+    setCampaigns((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const toggleCampaign = (id: string) => {
+    setCampaigns((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, isEnabled: !c.isEnabled } : c))
+    );
+  };
+
+  // Coupon Actions
+  const addCoupon = (data: { code: string; discountText: string; discountType: 'percentage' | 'fixed'; discountValue: number; minSpend: number }) => {
+    const newCoup: Coupon = {
+      id: `coup-${Date.now()}`,
+      code: data.code.toUpperCase(),
+      discountText: data.discountText,
+      discountType: data.discountType,
+      discountValue: Number(data.discountValue),
+      minSpend: Number(data.minSpend),
+      usageCount: 0,
+      status: 'Aktif',
+    };
+    setCoupons((prev) => [newCoup, ...prev]);
+  };
+
+  const updateCoupon = (id: string, updates: Partial<Coupon>) => {
+    setCoupons((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+    );
+  };
+
+  const deleteCoupon = (id: string) => {
+    setCoupons((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const toggleCouponStatus = (id: string) => {
+    setCoupons((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, status: c.status === 'Aktif' ? 'Pasif' : 'Aktif' } : c))
+    );
+  };
+
   // Cargo helper
   const getCargoStatus = (query: string): CargoTrackingData | null => {
     const q = query.trim().toUpperCase();
     if (cargoData[q]) return cargoData[q];
 
-    // Search by tracking code or order number
     const foundOrder = orders.find(
       (o) => o.orderNumber.toUpperCase() === q || (o.trackingCode && o.trackingCode.toUpperCase() === q)
     );
@@ -265,7 +319,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return cargoData[foundOrder.orderNumber];
     }
 
-    // Default fallback mock if query matches demo order number
     if (q === 'VER-849201' || q === 'YURT-94820194') {
       return MOCK_CARGO_DATA['VER-849201'];
     }
@@ -281,6 +334,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cariAccounts,
         cariTransactions,
         campaigns,
+        coupons,
         cargoData,
         addProduct,
         updateProduct,
@@ -290,8 +344,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         addCariAccount,
         deleteCariAccount,
         addCariTransaction,
-        toggleCampaign,
+        addCampaign,
         updateCampaign,
+        deleteCampaign,
+        toggleCampaign,
+        addCoupon,
+        updateCoupon,
+        deleteCoupon,
+        toggleCouponStatus,
         getCargoStatus,
       }}
     >
