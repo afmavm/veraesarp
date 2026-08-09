@@ -8,6 +8,7 @@ import { useWishlist } from '@/context/WishlistContext';
 
 import { useData } from '@/context/DataContext';
 import { useAuth } from '@/context/AuthContext';
+import AdvancedSearchModal from '@/components/search/AdvancedSearchModal';
 
 export default function Header() {
   const { toggleCart, totalCount } = useCart();
@@ -311,35 +312,8 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Expandable Live Search Bar */}
-          {isSearchOpen && (
-            <div className="mt-4 pt-4 border-t border-[#E6DFD5] transition-all">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (searchQuery.trim()) {
-                    window.location.href = `/arama?q=${encodeURIComponent(searchQuery)}`;
-                  }
-                }}
-                className="relative max-w-2xl mx-auto"
-              >
-                <input
-                  type="text"
-                  placeholder="İpek eşarp, Medine ipeği şal, altın broş ara..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#FFFFFF] border border-[#E6DFD5] py-3 px-5 pr-12 text-sm text-[#242321] placeholder-[#8C857B] focus:outline-none focus:border-[#B49A6A]"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#242321] hover:text-[#B49A6A] p-2"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          )}
+          {/* Advanced Live Search Engine Modal */}
+          <AdvancedSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </div>
       </header>
 
