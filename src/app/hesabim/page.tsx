@@ -23,12 +23,36 @@ import {
   Lock,
   FileText,
   ShoppingBag,
+  Edit2,
+  X,
+  Star,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+
+export interface SavedAddress {
+  id: string;
+  title: string;
+  name: string;
+  phone: string;
+  city: string;
+  district: string;
+  fullAddress: string;
+  isDefault: boolean;
+}
+
+export interface SavedCard {
+  id: string;
+  bank: string;
+  cardType: string;
+  last4: string;
+  holder: string;
+  exp: string;
+  isDefault: boolean;
+}
 
 export default function AccountPage() {
   const { user, isLoggedIn, logout, updateUser } = useAuth();
@@ -70,8 +94,16 @@ export default function AccountPage() {
 
   const userTotalSpent = userOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
-  // Saved Addresses State (Isolated per user)
-  const [addresses, setAddresses] = useState(() => {
+  // Saved Addresses State (Isolated & Persisted per user)
+  const [addresses, setAddresses] = useState<SavedAddress[]>(() => {
+    if (typeof window !== 'undefined' && user) {
+      const stored = localStorage.getItem(`veraesarp_user_addrs_${user.id}`);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {}
+      }
+    }
     if (user?.email === 'ayse.yilmaz@example.com' || user?.id === 'usr-1') {
       return [
         {
@@ -99,11 +131,26 @@ export default function AccountPage() {
     return [];
   });
 
+  const saveAddresses = (list: SavedAddress[]) => {
+    setAddresses(list);
+    if (user) {
+      localStorage.setItem(`veraesarp_user_addrs_${user.id}`, JSON.stringify(list));
+    }
+  };
+
   const [newAddr, setNewAddr] = useState({ title: '', name: '', phone: '', city: '', district: '', fullAddress: '' });
   const [isAddingAddr, setIsAddingAddr] = useState(false);
 
-  // Saved Payment Cards (Isolated per user)
-  const [savedCards, setSavedCards] = useState(() => {
+  // Saved Payment Cards CRUD State (Isolated & Persisted per user)
+  const [savedCards, setSavedCards] = useState<SavedCard[]>(() => {
+    if (typeof window !== 'undefined' && user) {
+      const stored = localStorage.getItem(`veraesarp_user_cards_${user.id}`);
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {}
+      }
+    }
     if (user?.email === 'ayse.yilmaz@example.com' || user?.id === 'usr-1') {
       return [
         { id: 'card-1', bank: 'Garanti BBVA', cardType: 'Mastercard', last4: '8492', holder: 'AYSE YILMAZ', exp: '12/28', isDefault: true },
@@ -112,6 +159,128 @@ export default function AccountPage() {
     }
     return [];
   });
+
+  const saveCards = (list: SavedCard[]) => {
+    setSavedCards(list);
+    if (user) {
+      localStorage.setItem(`veraesarp_user_cards_${user.id}`, JSON.stringify(list));
+    }
+  };
+
+  // Card Modal State for Add & Edit
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [cardForm, setCardForm] = useState({
+    bank: 'Garanti BBVA',
+    cardType: 'Mastercard',
+    cardNumber: '',
+    holder: user?.name || '',
+    expMonth: '12',
+    expYear: '28',
+    isDefault: false,
+  });
+
+  // Open Modal for New Card
+  const openNewCardModal = () => {
+    setEditingCardId(null);
+    setCardForm({
+      bank: 'Garanti BBVA',
+      cardType: 'Mastercard',
+      cardNumber: '',
+      holder: (user?.name || '').toUpperCase(),
+      expMonth: '12',
+      expYear: '28',
+      isDefault: savedCards.length === 0,
+    });
+    setIsCardModalOpen(true);
+  };
+
+  // Open Modal for Editing Existing Card
+  const openEditCardModal = (c: SavedCard) => {
+    setEditingCardId(c.id);
+    const [m, y] = c.exp.split('/');
+    setCardForm({
+      bank: c.bank,
+      cardType: c.cardType,
+      cardNumber: `•••• •••• •••• ${c.last4}`,
+      holder: c.holder,
+      expMonth: m || '12',
+      expYear: y || '28',
+      isDefault: c.isDefault,
+    });
+    setIsCardModalOpen(true);
+  };
+
+  // Save or Update Card
+  const handleSaveCardSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cardForm.holder.trim()) {
+      showToast('Lütfen kart sahibinin adını giriniz.', 'error');
+      return;
+    }
+
+    const cleanCardNum = cardForm.cardNumber.replace(/\s/g, '');
+    const last4 = cleanCardNum.length >= 4 ? cleanCardNum.slice(-4) : '8888';
+    const expDate = `${cardForm.expMonth}/${cardForm.expYear}`;
+
+    let updatedList: SavedCard[] = [];
+
+    if (editingCardId) {
+      // Edit mode
+      updatedList = savedCards.map((c) => {
+        if (c.id === editingCardId) {
+          return {
+            ...c,
+            bank: cardForm.bank,
+            cardType: cardForm.cardType,
+            last4: cleanCardNum.includes('•') ? c.last4 : last4,
+            holder: cardForm.holder.toUpperCase(),
+            exp: expDate,
+            isDefault: cardForm.isDefault,
+          };
+        }
+        return cardForm.isDefault ? { ...c, isDefault: false } : c;
+      });
+      showToast('Kayıtlı ödeme kartı güncellendi.', 'success');
+    } else {
+      // Create new card
+      const newCardObj: SavedCard = {
+        id: `card-${Date.now()}`,
+        bank: cardForm.bank,
+        cardType: cardForm.cardType,
+        last4: last4,
+        holder: cardForm.holder.toUpperCase(),
+        exp: expDate,
+        isDefault: cardForm.isDefault || savedCards.length === 0,
+      };
+
+      updatedList = cardForm.isDefault || savedCards.length === 0
+        ? [newCardObj, ...savedCards.map((c) => ({ ...c, isDefault: false }))]
+        : [...savedCards, newCardObj];
+
+      showToast('Yeni ödeme kartı başarıyla eklendi.', 'success');
+    }
+
+    saveCards(updatedList);
+    setIsCardModalOpen(false);
+  };
+
+  // Delete Card
+  const handleDeleteCard = (id: string) => {
+    const updatedList = savedCards.filter((c) => c.id !== id);
+    saveCards(updatedList);
+    showToast('Ödeme kartı başarıyla silindi.', 'info');
+  };
+
+  // Set Default Card
+  const handleSetDefaultCard = (id: string) => {
+    const updatedList = savedCards.map((c) => ({
+      ...c,
+      isDefault: c.id === id,
+    }));
+    saveCards(updatedList);
+    showToast('Varsayılan ödeme kartı değiştirildi.', 'success');
+  };
 
   // Copy Code State
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -153,14 +322,16 @@ export default function AccountPage() {
   const handleAddAddress = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAddr.title || !newAddr.fullAddress) return;
-    setAddresses([...addresses, { ...newAddr, id: `addr-${Date.now()}`, isDefault: false }]);
+    const updated = [...addresses, { ...newAddr, id: `addr-${Date.now()}`, isDefault: addresses.length === 0 }];
+    saveAddresses(updated);
     setNewAddr({ title: '', name: '', phone: '', city: '', district: '', fullAddress: '' });
     setIsAddingAddr(false);
     showToast('Yeni teslimat adresi kaydedildi.', 'success');
   };
 
   const handleDeleteAddress = (id: string) => {
-    setAddresses(addresses.filter((a) => a.id !== id));
+    const updated = addresses.filter((a) => a.id !== id);
+    saveAddresses(updated);
     showToast('Adres silindi.', 'info');
   };
 
@@ -631,7 +802,7 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* TAB 4: KAYITLI KARTLARIM */}
+            {/* TAB 4: KAYITLI KARTLARIM (Full CRUD: Add, Edit, Delete, Set Default) */}
             {activeTab === 'cards' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center pb-4 border-b border-[#E6DFD5]">
@@ -640,8 +811,8 @@ export default function AccountPage() {
                     <p className="text-xs text-[#8C857B]">İyzico 256-bit SSL Korumalı Tokenized Kart Kütüphanesi</p>
                   </div>
                   <button
-                    onClick={() => showToast('İyzico 3D Secure Kart kaydetme ekranı başlatıldı.', 'info')}
-                    className="px-3 py-1.5 bg-[#B49A6A] text-[#F8F5EF] text-xs uppercase font-semibold flex items-center gap-1 hover:bg-[#988052]"
+                    onClick={openNewCardModal}
+                    className="px-3 py-1.5 bg-[#B49A6A] text-[#F8F5EF] text-xs uppercase font-semibold flex items-center gap-1 hover:bg-[#988052] shadow-sm"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Yeni Kart Ekle</span>
@@ -649,35 +820,85 @@ export default function AccountPage() {
                 </div>
 
                 {savedCards.length === 0 ? (
-                  <div className="text-center py-10 px-4 border border-dashed border-[#E6DFD5] space-y-3">
+                  <div className="text-center py-10 px-4 border border-dashed border-[#E6DFD5] space-y-3 rounded-sm">
                     <CreditCard className="w-8 h-8 text-[#B49A6A] mx-auto" />
                     <p className="text-xs text-[#8C857B]">Henüz kayıtlı bir ödeme kartınız bulunmamaktadır.</p>
                     <button
-                      onClick={() => showToast('İyzico 3D Secure Kart kaydetme ekranı başlatıldı.', 'info')}
-                      className="px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A]"
+                      onClick={openNewCardModal}
+                      className="px-4 py-2 bg-[#242321] text-[#F8F5EF] text-xs uppercase font-semibold hover:bg-[#B49A6A] shadow-md"
                     >
-                      + Yeni Kart Ekle
+                      + İlk Kartınızı Ekleyin
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {savedCards.map((c) => (
-                      <div key={c.id} className="p-5 bg-[#1C1B1A] text-[#F8F5EF] border border-[#B49A6A] space-y-4 shadow-md">
-                        <div className="flex justify-between items-center border-b border-[#3A3835] pb-2">
-                          <span className="font-mono text-xs text-[#B49A6A] font-bold uppercase">{c.bank}</span>
-                          <span className="text-xs font-bold text-white uppercase">{c.cardType}</span>
+                      <div key={c.id} className="p-5 bg-[#1C1B1A] text-[#F8F5EF] border border-[#B49A6A] space-y-4 shadow-xl rounded-sm relative group">
+                        {/* Header Badge */}
+                        <div className="flex justify-between items-center border-b border-[#3A3835] pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs text-[#B49A6A] font-bold uppercase">{c.bank}</span>
+                            {c.isDefault && (
+                              <span className="px-2 py-0.5 bg-[#B49A6A]/20 border border-[#B49A6A] text-[#B49A6A] text-[9px] uppercase font-bold rounded-full flex items-center gap-1">
+                                <Star className="w-2.5 h-2.5 fill-current" />
+                                <span>Varsayılan</span>
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs font-bold text-white uppercase tracking-wider">{c.cardType}</span>
                         </div>
-                        <div className="font-mono text-base tracking-widest text-white">
+
+                        {/* Card Number Mask */}
+                        <div className="font-mono text-lg tracking-widest text-white py-1">
                           •••• •••• •••• {c.last4}
                         </div>
+
+                        {/* Holder & Exp */}
                         <div className="flex justify-between items-end text-[11px] text-[#8C857B]">
                           <div>
-                            <span>KART SAHİBİ</span>
-                            <strong className="block text-white font-medium">{c.holder}</strong>
+                            <span className="block text-[9px] uppercase tracking-wider">KART SAHİBİ</span>
+                            <strong className="block text-white font-medium text-xs">{c.holder}</strong>
                           </div>
-                          <div>
-                            <span>SON KULLANMA</span>
-                            <strong className="block text-white font-medium">{c.exp}</strong>
+                          <div className="text-right">
+                            <span className="block text-[9px] uppercase tracking-wider">SON KULLANMA</span>
+                            <strong className="block text-white font-medium text-xs">{c.exp}</strong>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons Bar (Edit, Delete, Set Default) */}
+                        <div className="pt-3 border-t border-[#3A3835] flex items-center justify-between text-xs">
+                          {!c.isDefault ? (
+                            <button
+                              onClick={() => handleSetDefaultCard(c.id)}
+                              className="text-[11px] text-[#B49A6A] hover:underline flex items-center gap-1"
+                            >
+                              <Star className="w-3 h-3" />
+                              <span>Varsayılan Yap</span>
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              <span>Ana Ödeme Kartı</span>
+                            </span>
+                          )}
+
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => openEditCardModal(c)}
+                              className="text-xs text-[#8C857B] hover:text-[#F8F5EF] flex items-center gap-1"
+                              title="Kartı Düzenle"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                              <span>Düzenle</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCard(c.id)}
+                              className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1"
+                              title="Kartı Sil"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Sil</span>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -837,6 +1058,135 @@ export default function AccountPage() {
           </main>
         </div>
       </div>
+
+      {/* Card Add & Edit Interactive Modal Dialog */}
+      {isCardModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 sm:p-8 max-w-md w-full text-[#F8F5EF] space-y-4 shadow-2xl rounded-sm">
+            <div className="flex items-center justify-between border-b border-[#3A3835] pb-3">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-[#B49A6A]" />
+                <h3 className="font-serif text-lg font-normal text-[#F8F5EF]">
+                  {editingCardId ? 'Kayıtlı Kartı Düzenle' : 'Yeni Ödeme Kartı Ekle'}
+                </h3>
+              </div>
+              <button onClick={() => setIsCardModalOpen(false)} className="p-1 text-[#8C857B] hover:text-[#F8F5EF]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCardSubmit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-[#8C857B] mb-1">Banka Adı *</label>
+                <select
+                  value={cardForm.bank}
+                  onChange={(e) => setCardForm({ ...cardForm, bank: e.target.value })}
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                >
+                  <option value="Garanti BBVA">Garanti BBVA</option>
+                  <option value="İş Bankası">İş Bankası</option>
+                  <option value="Akbank">Akbank</option>
+                  <option value="Yapı Kredi">Yapı Kredi</option>
+                  <option value="Ziraat Bankası">Ziraat Bankası</option>
+                  <option value="QNB Finansbank">QNB Finansbank</option>
+                  <option value="DenizBank">DenizBank</option>
+                  <option value="Diğer Banka">Diğer Banka</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[#8C857B] mb-1">Kart Sahibi Ad Soyad *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="ör: AYŞE YILMAZ"
+                  value={cardForm.holder}
+                  onChange={(e) => setCardForm({ ...cardForm, holder: e.target.value.toUpperCase() })}
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#8C857B] mb-1">Kart Numarası *</label>
+                <input
+                  type="text"
+                  required
+                  maxLength={19}
+                  placeholder="•••• •••• •••• ••••"
+                  value={cardForm.cardNumber}
+                  onChange={(e) => setCardForm({ ...cardForm, cardNumber: e.target.value })}
+                  className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[#8C857B] mb-1">Kart Tipi</label>
+                  <select
+                    value={cardForm.cardType}
+                    onChange={(e) => setCardForm({ ...cardForm, cardType: e.target.value })}
+                    className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                  >
+                    <option value="Mastercard">Mastercard</option>
+                    <option value="Visa">Visa</option>
+                    <option value="Troy">Troy</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[#8C857B] mb-1">Son Kullanma (Ay/Yıl)</label>
+                  <div className="flex gap-1">
+                    <select
+                      value={cardForm.expMonth}
+                      onChange={(e) => setCardForm({ ...cardForm, expMonth: e.target.value })}
+                      className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map((m) => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={cardForm.expYear}
+                      onChange={(e) => setCardForm({ ...cardForm, expYear: e.target.value })}
+                      className="w-full p-2.5 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
+                    >
+                      {['25', '26', '27', '28', '29', '30', '31', '32'].map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer text-[#8C857B] pt-1">
+                <input
+                  type="checkbox"
+                  checked={cardForm.isDefault}
+                  onChange={(e) => setCardForm({ ...cardForm, isDefault: e.target.checked })}
+                  className="accent-[#B49A6A]"
+                />
+                <span>Bu kartı varsayılan ödeme kartım olarak belirle</span>
+              </label>
+
+              <div className="pt-4 border-t border-[#3A3835] flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCardModalOpen(false)}
+                  className="px-4 py-2 bg-[#3A3835] text-[#F8F5EF]"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-[#B49A6A] text-[#F8F5EF] font-semibold uppercase tracking-wider hover:bg-[#988052]"
+                >
+                  {editingCardId ? 'Güncelle' : 'Kartı Kaydet'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
