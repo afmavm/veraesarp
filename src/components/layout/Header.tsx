@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function Header() {
   const { toggleCart, totalCount } = useCart();
   const { wishlistCount } = useWishlist();
-  const { campaigns } = useData();
+  const { campaigns, siteSettings } = useData();
   const { user, isLoggedIn, isAdmin, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -412,8 +412,8 @@ export default function Header() {
             </div>
 
             <div className="pt-6 border-t border-[#E6DFD5] space-y-3 text-xs text-[#5A5652]">
-              <p>Müşteri Hizmetleri: <strong>+90 (212) 555 83 72</strong></p>
-              <p>Hafta içi 09:00 - 18:00</p>
+              <p>Müşteri Hizmetleri: <strong>{siteSettings.contactPhone}</strong></p>
+              <p>{siteSettings.workingHours}</p>
             </div>
           </div>
         </div>
