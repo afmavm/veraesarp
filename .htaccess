@@ -1,9 +1,9 @@
-# VERA EŞARP cPanel Apache Configuration
+# VERA EŞARP cPanel Apache Configuration (Port 38472)
 RewriteEngine On
 
 # Redirect HTTP to HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
 
-# Proxy all incoming web traffic to Next.js Standalone Port 3000
-RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
+# Proxy to unique dedicated port 38472
+RewriteRule ^(.*)$ http://127.0.0.1:38472/$1 [P,L]

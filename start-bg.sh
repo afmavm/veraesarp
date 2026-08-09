@@ -1,15 +1,13 @@
 #!/bin/bash
-# Vera Eşarp Node.js Server Standalone Runner for cPanel
-echo "Vera Eşarp Standalone Sunucusu Başlatılıyor..."
-fuser -k 3000/tcp 2>/dev/null || pkill -f "node" 2>/dev/null
+# Vera Eşarp Node.js Server Runner for cPanel Shared Hosting
+PORT=38472
+
+echo "Vera Eşarp Sunucusu Port $PORT üzerinde başlatılıyor..."
+fuser -k ${PORT}/tcp 2>/dev/null || pkill -f "server.js" 2>/dev/null
 sleep 1
 
-# Copy public and static assets to standalone folder
-cp -rn public .next/standalone/ 2>/dev/null
-cp -rn .next/static .next/standalone/.next/ 2>/dev/null
-
-PORT=3000 nohup node .next/standalone/server.js > server.log 2>&1 &
+PORT=${PORT} nohup node server.js > server.log 2>&1 &
 sleep 2
 
-echo "✅ Sunucu Başlatma Durumu:"
+echo "✅ Port $PORT sunucu durumu:"
 head -n 20 server.log
