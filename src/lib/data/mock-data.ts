@@ -14,6 +14,39 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   workingHours: 'Hafta içi 09:00 - 18:00',
   taxOffice: 'Şişli V.D.',
   taxNumber: '1948201948',
+  footerColumns: [
+    {
+      title: 'Alışveriş',
+      links: [
+        { label: 'Yeni Gelenler', url: '/kategori/yeni-gelenler' },
+        { label: 'İpek Eşarp', url: '/kategori/esarp' },
+        { label: 'Medine İpeği Şal', url: '/kategori/sal' },
+        { label: 'Aksesuar & Broş', url: '/kategori/aksesuar' },
+        { label: 'Özel Koleksiyonlar', url: '/koleksiyonlar' },
+      ],
+    },
+    {
+      title: 'Vera World',
+      links: [
+        { label: 'Hakkımızda', url: '/kurumsal/hakkimizda' },
+        { label: "Vera'nın Hikâyesi", url: '/kurumsal/hikayemiz' },
+        { label: 'Stil Rehberi', url: '/stil-rehberi' },
+        { label: 'Mağazalarımız', url: '/kurumsal/magazalar' },
+        { label: 'İletişim', url: '/kurumsal/iletisim' },
+      ],
+    },
+    {
+      title: 'Müşteri İlişkileri',
+      links: [
+        { label: 'Kargo ve Teslimat', url: '/kurumsal/kargo-ve-teslimat' },
+        { label: 'İade ve Değişim', url: '/kurumsal/iade-ve-degisim' },
+        { label: 'Sık Sorulan Sorular', url: '/kurumsal/sss' },
+        { label: 'Gizlilik & Çerez Politikası', url: '/kurumsal/gizlilik-ve-cerez' },
+        { label: 'KVKK Aydınlatma Metni', url: '/kurumsal/kvkk' },
+        { label: 'Mesafeli Satış Sözleşmesi', url: '/kurumsal/mesafeli-satis-sozlesmesi' },
+      ],
+    },
+  ],
 };
 
 export const SITE_CONFIG = DEFAULT_SITE_SETTINGS;

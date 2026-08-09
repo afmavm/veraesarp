@@ -254,6 +254,16 @@ export interface Coupon {
   expiryDate?: string;
 }
 
+export interface FooterLink {
+  label: string;
+  url: string;
+}
+
+export interface FooterColumn {
+  title: string;
+  links: FooterLink[];
+}
+
 // SİTE & MARKA AYARLARI (Footer, İletişim & Kurumsal Bilgiler)
 export interface SiteSettings {
   name: string;
@@ -269,4 +279,5 @@ export interface SiteSettings {
   workingHours: string;
   taxOffice?: string;
   taxNumber?: string;
+  footerColumns?: FooterColumn[];
 }

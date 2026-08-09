@@ -76,42 +76,56 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 1: Alışveriş */}
-          <div className="space-y-3">
-            <h4 className="font-serif text-lg font-medium text-[#F8F5EF]">Alışveriş</h4>
-            <ul className="space-y-2 text-xs text-[#8C857B]">
-              <li><Link href="/kategori/yeni-gelenler" className="hover:text-[#B49A6A] transition-colors">Yeni Gelenler</Link></li>
-              <li><Link href="/kategori/esarp" className="hover:text-[#B49A6A] transition-colors">İpek Eşarp</Link></li>
-              <li><Link href="/kategori/sal" className="hover:text-[#B49A6A] transition-colors">Medine İpeği Şal</Link></li>
-              <li><Link href="/kategori/aksesuar" className="hover:text-[#B49A6A] transition-colors">Aksesuar &amp; Broş</Link></li>
-              <li><Link href="/koleksiyonlar" className="hover:text-[#B49A6A] transition-colors">Özel Koleksiyonlar</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 2: Vera & Kurumsal */}
-          <div className="space-y-3">
-            <h4 className="font-serif text-lg font-medium text-[#F8F5EF]">Vera World</h4>
-            <ul className="space-y-2 text-xs text-[#8C857B]">
-              <li><Link href="/kurumsal/hakkimizda" className="hover:text-[#B49A6A] transition-colors">Hakkımızda</Link></li>
-              <li><Link href="/kurumsal/hikayemiz" className="hover:text-[#B49A6A] transition-colors">Vera'nın Hikâyesi</Link></li>
-              <li><Link href="/stil-rehberi" className="hover:text-[#B49A6A] transition-colors">Stil Rehberi</Link></li>
-              <li><Link href="/kurumsal/magazalar" className="hover:text-[#B49A6A] transition-colors">Mağazalarımız</Link></li>
-              <li><Link href="/kurumsal/iletisim" className="hover:text-[#B49A6A] transition-colors">İletişim</Link></li>
-            </ul>
-          </div>
-
-          {/* Column 3: Yardım & Müşteri */}
-          <div className="space-y-3">
-            <h4 className="font-serif text-lg font-medium text-[#F8F5EF]">Müşteri İlişkileri</h4>
-            <ul className="space-y-2 text-xs text-[#8C857B]">
-              <li><Link href="/kurumsal/kargo-ve-teslimat" className="hover:text-[#B49A6A] transition-colors">Kargo ve Teslimat</Link></li>
-              <li><Link href="/kurumsal/iade-ve-degisim" className="hover:text-[#B49A6A] transition-colors">İade ve Değişim</Link></li>
-              <li><Link href="/kurumsal/sss" className="hover:text-[#B49A6A] transition-colors">Sık Sorulan Sorular</Link></li>
-              <li><Link href="/kurumsal/gizlilik-ve-cerez" className="hover:text-[#B49A6A] transition-colors">Gizlilik &amp; Çerez Politikası</Link></li>
-              <li><Link href="/kurumsal/kvkk" className="hover:text-[#B49A6A] transition-colors">KVKK Aydınlatma Metni</Link></li>
-              <li><Link href="/kurumsal/mesafeli-satis-sozlesmesi" className="hover:text-[#B49A6A] transition-colors">Mesafeli Satış Sözleşmesi</Link></li>
-            </ul>
-          </div>
+          {/* Dynamic Footer Columns */}
+          {(siteSettings.footerColumns && siteSettings.footerColumns.length > 0
+            ? siteSettings.footerColumns
+            : [
+                {
+                  title: 'Alışveriş',
+                  links: [
+                    { label: 'Yeni Gelenler', url: '/kategori/yeni-gelenler' },
+                    { label: 'İpek Eşarp', url: '/kategori/esarp' },
+                    { label: 'Medine İpeği Şal', url: '/kategori/sal' },
+                    { label: 'Aksesuar & Broş', url: '/kategori/aksesuar' },
+                    { label: 'Özel Koleksiyonlar', url: '/koleksiyonlar' },
+                  ],
+                },
+                {
+                  title: 'Vera World',
+                  links: [
+                    { label: 'Hakkımızda', url: '/kurumsal/hakkimizda' },
+                    { label: "Vera'nın Hikâyesi", url: '/kurumsal/hikayemiz' },
+                    { label: 'Stil Rehberi', url: '/stil-rehberi' },
+                    { label: 'Mağazalarımız', url: '/kurumsal/magazalar' },
+                    { label: 'İletişim', url: '/kurumsal/iletisim' },
+                  ],
+                },
+                {
+                  title: 'Müşteri İlişkileri',
+                  links: [
+                    { label: 'Kargo ve Teslimat', url: '/kurumsal/kargo-ve-teslimat' },
+                    { label: 'İade ve Değişim', url: '/kurumsal/iade-ve-degisim' },
+                    { label: 'Sık Sorulan Sorular', url: '/kurumsal/sss' },
+                    { label: 'Gizlilik & Çerez Politikası', url: '/kurumsal/gizlilik-ve-cerez' },
+                    { label: 'KVKK Aydınlatma Metni', url: '/kurumsal/kvkk' },
+                    { label: 'Mesafeli Satış Sözleşmesi', url: '/kurumsal/mesafeli-satis-sozlesmesi' },
+                  ],
+                },
+              ]
+          ).map((col, idx) => (
+            <div key={idx} className="space-y-3">
+              <h4 className="font-serif text-lg font-medium text-[#F8F5EF]">{col.title}</h4>
+              <ul className="space-y-2 text-xs text-[#8C857B]">
+                {col.links.map((link, lIdx) => (
+                  <li key={lIdx}>
+                    <Link href={link.url} className="hover:text-[#B49A6A] transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
