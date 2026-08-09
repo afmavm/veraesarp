@@ -153,9 +153,9 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#242321]/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#171615]/90 backdrop-blur-lg animate-in fade-in duration-200">
       {/* Search Header Container */}
-      <div className="bg-[#1C1B1A] border-b border-[#B49A6A]/30 p-4 sm:p-6 shadow-2xl">
+      <div className="bg-[#1C1B1A] border-b border-[#B49A6A]/30 p-4 sm:p-6 shadow-2xl shrink-0">
         <div className="max-w-5xl mx-auto space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase tracking-[0.3em] text-[#B49A6A] font-semibold flex items-center gap-2">
@@ -171,29 +171,30 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
             </button>
           </div>
 
-          {/* Main Search Input Form */}
+          {/* Main Search Input Form (Padded pr-36 to completely clear the ARA button and prevent overlap) */}
           <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-            <Search className="absolute left-4 w-6 h-6 text-[#B49A6A] pointer-events-none" />
+            <Search className="absolute left-4 w-5 h-5 text-[#B49A6A] pointer-events-none" />
             <input
               type="text"
               placeholder="Yazmaya Başlayın (Ör: İpek, Twill, Medine Şal, Saten, Broş)..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full py-4 pl-14 pr-24 bg-[#242321] border border-[#3A3835] focus:border-[#B49A6A] text-base sm:text-lg text-[#F8F5EF] placeholder-[#8C857B] focus:outline-none transition-colors shadow-inner font-sans"
+              className="w-full py-4 pl-12 pr-36 sm:pr-40 bg-[#242321] border border-[#3A3835] focus:border-[#B49A6A] text-sm sm:text-base text-[#F8F5EF] placeholder-[#8C857B] focus:outline-none transition-colors shadow-inner font-sans rounded-md"
               autoFocus
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                className="absolute right-14 p-1 text-[#8C857B] hover:text-[#F8F5EF]"
+                className="absolute right-24 sm:right-28 top-1/2 -translate-y-1/2 p-1.5 text-[#8C857B] hover:text-[#F8F5EF] hover:bg-[#3A3835] rounded-full transition-colors"
+                title="Aramayı Temizle"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
             <button
               type="submit"
-              className="absolute right-3 px-4 py-2 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shadow-md rounded"
+              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 px-4 sm:px-5 py-2.5 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shadow-md rounded shrink-0"
             >
               Ara
             </button>
@@ -201,9 +202,9 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
 
           {/* Filter Bar inside Modal (shown when typing) */}
           {query.trim() && (
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs border-t border-[#2A2825]">
-              <div className="flex items-center gap-2">
-                <span className="text-[#8C857B]">Kategori:</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 text-xs border-t border-[#2A2825]">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[#8C857B] font-medium">Kategori:</span>
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('all')}
@@ -243,11 +244,11 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[#8C857B]">Sırala:</span>
+                <span className="text-[#8C857B] font-medium">Sırala:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-[#242321] border border-[#3A3835] text-[#F8F5EF] p-1.5 rounded focus:outline-none"
+                  className="bg-[#242321] border border-[#3A3835] text-[#F8F5EF] px-2 py-1 rounded focus:outline-none text-xs"
                 >
                   <option value="featured">Alaka Düzeyine Göre</option>
                   <option value="price-asc">Fiyat: Düşükten Yüksek</option>
@@ -259,8 +260,8 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
         </div>
       </div>
 
-      {/* Modal Results & Recommendations Content */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-5xl w-full mx-auto space-y-8 text-[#F8F5EF]">
+      {/* Modal Results & Recommendations Scrollable Body Container */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-5xl w-full mx-auto space-y-8 text-[#F8F5EF]">
         {/* State A: Initial State (No query typed) */}
         {!query.trim() && (
           <div className="space-y-8">
@@ -412,7 +413,7 @@ export default function AdvancedSearchModal({ isOpen, onClose }: AdvancedSearchM
             </div>
 
             {searchResults.length > 12 && (
-              <div className="text-center pt-4">
+              <div className="text-center pt-4 pb-6">
                 <button
                   onClick={handleSearchSubmit}
                   className="px-6 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shadow-lg rounded"
