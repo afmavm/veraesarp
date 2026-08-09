@@ -1,15 +1,21 @@
-# VERA EŞARP cPanel Apache Reverse Proxy to Next.js (Port 3000)
+# VERA EŞARP cPanel Apache Configuration
 DirectoryIndex disabled
+Options -Indexes +FollowSymLinks
 RewriteEngine On
 
 # Redirect HTTP to HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
 
-# Homepage Proxy Rule (Exact match)
-RewriteRule ^$ http://127.0.0.1:3000/ [P,L]
+# Proxy Pass Rules for cPanel Apache
+<IfModule mod_proxy.c>
+  ProxyPreserveHost On
+  ProxyPass / http://127.0.0.1:3000/
+  ProxyPassReverse / http://127.0.0.1:3000/
+</IfModule>
 
-# Inner Pages Proxy Rule
+# Fallback Proxy Rules
+RewriteRule ^$ http://127.0.0.1:3000/ [P,L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
