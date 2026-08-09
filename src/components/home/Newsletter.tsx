@@ -3,18 +3,24 @@
 import React, { useState } from 'react';
 import { Mail, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
+import { sendNewsletterConfirmationEmail } from '@/lib/email/email-service';
 
 export default function Newsletter() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { showToast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
-      setIsSubmitted(true);
-      showToast('Vera dünyasına hoş geldiniz! Özel e-posta onayınız gönderildi.', 'success');
-      setEmail('');
+      try {
+        await sendNewsletterConfirmationEmail(email.trim());
+        setIsSubmitted(true);
+        showToast(`📩 Vera dünyasına hoş geldiniz! ${email.trim()} adresine bülten onay e-postası gönderildi.`, 'success');
+        setEmail('');
+      } catch (err) {
+        showToast('Bülten aboneliği sırasında bir hata oluştu.', 'error');
+      }
     }
   };
 
