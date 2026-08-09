@@ -68,7 +68,7 @@ export default function HomePage() {
           <div className="text-center space-y-3 mb-12">
             <span className="text-xs uppercase tracking-[0.3em] text-[#B49A6A] font-semibold flex items-center justify-center gap-2">
               <InstagramIcon className="w-4 h-4" />
-              @VERAESARP
+              @verabutik2007
             </span>
             <h2 className="font-serif text-3xl sm:text-5xl font-normal text-[#242321]">
               Vera'dan İlham Al
@@ -87,7 +87,7 @@ export default function HomePage() {
             ].map((imgUrl, i) => (
               <a
                 key={i}
-                href="https://instagram.com"
+                href="https://instagram.com/verabutik2007"
                 target="_blank"
                 rel="noreferrer"
                 className="group relative aspect-square bg-[#E8DED1] overflow-hidden block shadow-sm"
