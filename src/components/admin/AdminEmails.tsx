@@ -33,12 +33,21 @@ export default function AdminEmails() {
       refreshLogs();
     };
 
+    const handleEmailError = (e: any) => {
+      refreshLogs();
+      if (e.detail?.error) {
+        showToast(`❌ SMTP Gönderim Hatası (${e.detail.recipient}): ${e.detail.error}`, 'error');
+      }
+    };
+
     if (typeof window !== 'undefined') {
       window.addEventListener('veraesarp_email_sent', handleEmailSent);
+      window.addEventListener('veraesarp_email_error', handleEmailError);
     }
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('veraesarp_email_sent', handleEmailSent);
+        window.removeEventListener('veraesarp_email_error', handleEmailError);
       }
     };
   }, []);
@@ -185,9 +194,21 @@ export default function AdminEmails() {
                     <td className="p-3 font-medium text-[#F8F5EF]">{log.recipient}</td>
                     <td className="p-3 text-[#E8DED1] truncate max-w-xs">{log.subject}</td>
                     <td className="p-3">
-                      <span className="inline-flex items-center gap-1 text-emerald-400 text-[11px] font-semibold">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{log.status}</span>
+                      <span
+                        className={`inline-flex items-center gap-1 text-[11px] font-semibold ${
+                          log.status.includes('Hata') || log.status.includes('Failed')
+                            ? 'text-rose-400'
+                            : log.status.includes('Sending')
+                            ? 'text-amber-400'
+                            : 'text-emerald-400'
+                        }`}
+                      >
+                        {log.status.includes('Hata') ? (
+                          <ShieldAlert className="w-3.5 h-3.5" />
+                        ) : (
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        )}
+                        <span className="truncate max-w-[200px]" title={log.status}>{log.status}</span>
                       </span>
                     </td>
                     <td className="p-3 text-right">

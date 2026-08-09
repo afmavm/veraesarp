@@ -6,7 +6,7 @@ export interface SentEmailLog {
   subject: string;
   type: 'welcome' | 'password_reset' | 'order_confirmation' | 'order_status' | 'campaign' | 'newsletter';
   sentAt: string;
-  status: 'Delivered' | 'Pending';
+  status: string;
   htmlContent: string;
 }
 
@@ -25,14 +25,59 @@ export function getEmailLogs(): SentEmailLog[] {
   return emailLogsCache;
 }
 
+export function updateLogStatus(id: string, newStatus: string) {
+  emailLogsCache = emailLogsCache.map((l) => (l.id === id ? { ...l, status: newStatus } : l));
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('veraesarp_email_logs', JSON.stringify(emailLogsCache.slice(0, 100)));
+      window.dispatchEvent(new CustomEvent('veraesarp_email_sent', { detail: { id, newStatus } }));
+    } catch (e) {}
+  }
+}
+
 function saveEmailLog(log: SentEmailLog) {
   emailLogsCache = [log, ...emailLogsCache];
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('veraesarp_email_logs', JSON.stringify(emailLogsCache.slice(0, 100)));
-      // Dispatch custom event to notify UI / Toast / Admin Log viewer
       window.dispatchEvent(new CustomEvent('veraesarp_email_sent', { detail: log }));
     } catch (e) {}
+  }
+}
+
+// Real Server-Side Dispatcher via Next.js API Route /api/email/send
+async function dispatchRealServerEmail(log: SentEmailLog) {
+  if (typeof window === 'undefined') return;
+  try {
+    const res = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipient: log.recipient,
+        subject: log.subject,
+        htmlContent: log.htmlContent,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      updateLogStatus(log.id, 'Delivered (Gerçek SMTP İletildi)');
+    } else {
+      const errDetail = data.error || 'SMTP Gönderilemedi';
+      updateLogStatus(log.id, `Hata: ${errDetail}`);
+      window.dispatchEvent(
+        new CustomEvent('veraesarp_email_error', {
+          detail: { recipient: log.recipient, error: errDetail },
+        })
+      );
+    }
+  } catch (err: any) {
+    updateLogStatus(log.id, 'Hata: Sunucu Bağlantı Hatası');
+    window.dispatchEvent(
+      new CustomEvent('veraesarp_email_error', {
+        detail: { recipient: log.recipient, error: 'Sunucuya ulaşılamadı' },
+      })
+    );
   }
 }
 
@@ -97,11 +142,12 @@ export function sendWelcomeEmail(user: { name: string; email: string }) {
     subject,
     type: 'welcome',
     sentAt: new Date().toLocaleString('tr-TR'),
-    status: 'Delivered',
+    status: 'Sending (SMTP Gönderiliyor...)',
     htmlContent,
   };
 
   saveEmailLog(log);
+  dispatchRealServerEmail(log);
   return log;
 }
 
@@ -137,11 +183,12 @@ export function sendPasswordResetEmail(email: string, resetCode: string) {
     subject,
     type: 'password_reset',
     sentAt: new Date().toLocaleString('tr-TR'),
-    status: 'Delivered',
+    status: 'Sending (SMTP Gönderiliyor...)',
     htmlContent,
   };
 
   saveEmailLog(log);
+  dispatchRealServerEmail(log);
   return log;
 }
 
@@ -212,11 +259,12 @@ export function sendOrderConfirmationEmail(order: {
     subject,
     type: 'order_confirmation',
     sentAt: new Date().toLocaleString('tr-TR'),
-    status: 'Delivered',
+    status: 'Sending (SMTP Gönderiliyor...)',
     htmlContent,
   };
 
   saveEmailLog(log);
+  dispatchRealServerEmail(log);
   return log;
 }
 
@@ -266,11 +314,12 @@ export function sendOrderStatusUpdateEmail(order: {
     subject,
     type: 'order_status',
     sentAt: new Date().toLocaleString('tr-TR'),
-    status: 'Delivered',
+    status: 'Sending (SMTP Gönderiliyor...)',
     htmlContent,
   };
 
   saveEmailLog(log);
+  dispatchRealServerEmail(log);
   return log;
 }
 
@@ -314,11 +363,12 @@ export function sendCampaignPromoEmail(email: string, title: string, contentText
     subject,
     type: 'campaign',
     sentAt: new Date().toLocaleString('tr-TR'),
-    status: 'Delivered',
+    status: 'Sending (SMTP Gönderiliyor...)',
     htmlContent,
   };
 
   saveEmailLog(log);
+  dispatchRealServerEmail(log);
   return log;
 }
 
@@ -350,10 +400,11 @@ export function sendNewsletterConfirmationEmail(email: string) {
     subject,
     type: 'newsletter',
     sentAt: new Date().toLocaleString('tr-TR'),
-    status: 'Delivered',
+    status: 'Sending (SMTP Gönderiliyor...)',
     htmlContent,
   };
 
   saveEmailLog(log);
+  dispatchRealServerEmail(log);
   return log;
 }

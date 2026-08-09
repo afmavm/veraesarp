@@ -13,11 +13,46 @@ export default function AdminSettings() {
   const [iyzicoApiKey, setIyzicoApiKey] = useState('iyzi_sandbox_api_key_8492019482');
   const [iyzicoSecretKey, setIyzicoSecretKey] = useState('iyzi_sandbox_secret_99482019');
   const [isTestMode, setIsTestMode] = useState(true);
+  const [isTestingSmtp, setIsTestingSmtp] = useState(false);
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
     updateSiteSettings(formData);
-    showToast('Site, iletişim, marka ve API entegrasyon ayarları başarıyla kaydedildi!', 'success');
+    showToast('Site, iletişim, marka ve E-Posta SMTP ayarları başarıyla kaydedildi!', 'success');
+  };
+
+  const handleTestSmtpConnection = async () => {
+    setIsTestingSmtp(true);
+    showToast('⚡ SMTP sunucusuna bağlanılıyor...', 'info');
+    try {
+      const targetEmail = formData.emailSettings?.smtpUser || formData.contactEmail || 'destek@veraesarp.com';
+      const res = await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipient: targetEmail,
+          subject: '⚡ Vera Eşarp — Live SMTP Sunucu Bağlantı Testi',
+          htmlContent: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #1C1B1A; color: #F8F5EF; border-radius: 8px;">
+              <h2 style="color: #B49A6A;">Vera Eşarp Live SMTP Testi Başarılı!</h2>
+              <p>Yönetim panelinden girdiğiniz SMTP sunucu ayarları doğrulandı.</p>
+              <p style="font-mono; color: #8C857B;">Sunucu: ${formData.emailSettings?.smtpHost}:${formData.emailSettings?.smtpPort}</p>
+            </div>
+          `,
+          customSettings: formData.emailSettings,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`🎉 SMTP Sunucu Bağlantısı Başarılı! Test e-postası (${targetEmail}) adresine gönderildi.`, 'success');
+      } else {
+        showToast(`❌ SMTP Bağlantı Hatası: ${data.error}`, 'error');
+      }
+    } catch (err: any) {
+      showToast('❌ E-posta API sunucusuna bağlanılamadı.', 'error');
+    } finally {
+      setIsTestingSmtp(false);
+    }
   };
 
   return (
@@ -195,12 +230,11 @@ export default function AdminSettings() {
             </div>
             <button
               type="button"
-              onClick={() => {
-                showToast('⚡ SMTP Sunucu Bağlantısı Test Edildi! Test e-postası (destek@veraesarp.com) adresine iletildi.', 'success');
-              }}
-              className="px-3.5 py-1.5 bg-[#242321] text-[#B49A6A] border border-[#B49A6A]/40 text-xs font-semibold hover:bg-[#B49A6A] hover:text-[#F8F5EF] transition-colors"
+              disabled={isTestingSmtp}
+              onClick={handleTestSmtpConnection}
+              className="px-3.5 py-1.5 bg-[#242321] text-[#B49A6A] border border-[#B49A6A]/40 text-xs font-semibold hover:bg-[#B49A6A] hover:text-[#F8F5EF] transition-colors disabled:opacity-50"
             >
-              ⚡ Sunucu Bağlantısını Test Et
+              {isTestingSmtp ? '⚡ Bağlanılıyor...' : '⚡ Sunucu Bağlantısını Test Et'}
             </button>
           </div>
 

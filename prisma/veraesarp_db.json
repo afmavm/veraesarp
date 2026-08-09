@@ -12,7 +12,18 @@
     "whatsappPhone": "+90 534 490 25 57",
     "workingHours": "Hafta içi 09:00 - 18:00",
     "taxOffice": "Şişli V.D.",
-    "taxNumber": "1948201948"
+    "taxNumber": "1948201948",
+    "emailSettings": {
+      "isEnabled": true,
+      "provider": "smtp",
+      "smtpHost": "smtp.turkticaret.net",
+      "smtpPort": 587,
+      "smtpUser": "destek@veraesarp.com",
+      "senderName": "Vera Eşarp",
+      "senderEmail": "destek@veraesarp.com",
+      "encryption": "tls",
+      "smtpPassword": "Veraesarp.25"
+    }
   },
   "products": [
     {
@@ -312,6 +323,21 @@
   "orders": [],
   "cariAccounts": [
     {
+      "id": "cari-usr-1786302079915",
+      "code": "CAR-MUS-004",
+      "title": "Muhammed AKÇELİK E-Ticaret Danışmanı",
+      "taxOffice": "Bireysel Müşteri",
+      "taxNumber": "-",
+      "type": "Müşteri",
+      "balance": 0,
+      "balanceType": "Alacaklı",
+      "phone": "05441494851",
+      "email": "afmavm@gmail.com",
+      "address": "Bireysel Üyelik Adresi",
+      "city": "İstanbul",
+      "createdAt": "2026-08-09"
+    },
+    {
       "id": "cari-101",
       "code": "CAR-TED-01",
       "title": "Milano S.p.A İpek Dokuma Fabrikası",
@@ -439,5 +465,5 @@
       "status": "Aktif"
     }
   ],
-  "updatedAt": "2026-08-09T17:50:34.096Z"
+  "updatedAt": "2026-08-09T19:06:00.064Z"
 }
