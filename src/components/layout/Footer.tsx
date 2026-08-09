@@ -83,21 +83,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="bg-[#FFFFFF] p-2 rounded shadow-md transition-transform duration-300 group-hover:scale-105 border border-[#B49A6A]/30 shrink-0">
+            <Link href="/" className="inline-block group">
+              <div className="bg-[#FFFFFF] p-3 rounded-lg shadow-xl transition-transform duration-300 group-hover:scale-105 border border-[#B49A6A]/40 inline-block">
                 <img
                   src="/logo.png"
                   alt="Vera Eşarp Logo"
-                  className="h-12 w-auto object-contain"
+                  className="h-20 sm:h-24 w-auto object-contain"
                 />
-              </div>
-              <div>
-                <span className="font-serif text-2xl tracking-[0.2em] text-[#F8F5EF] font-semibold uppercase block leading-none">
-                  {siteSettings.name.split(' ')[0] || 'VERA'}
-                </span>
-                <span className="block text-[9px] tracking-[0.35em] text-[#B49A6A] font-sans uppercase font-medium mt-1">
-                  {siteSettings.name.split(' ').slice(1).join(' ') || 'E Ş A R P'}
-                </span>
               </div>
             </Link>
             <p className="text-xs text-[#8C857B] leading-relaxed max-w-sm">

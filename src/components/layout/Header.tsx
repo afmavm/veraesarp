@@ -62,22 +62,14 @@ export default function Header() {
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
-            {/* Logo (Official Brand Emblem & Typography) */}
-            <div className="shrink-0 mr-4 lg:mr-6 xl:mr-8">
-              <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            {/* Official Prominent Brand Logo */}
+            <div className="shrink-0 mr-4 lg:mr-8 xl:mr-10 py-1">
+              <Link href="/" className="inline-block group">
                 <img
                   src="/logo.png"
-                  alt="Vera Eşarp Logo"
-                  className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  alt="Vera Eşarp"
+                  className="h-14 sm:h-16 lg:h-20 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="text-left">
-                  <span className="font-serif text-xl sm:text-2xl tracking-[0.2em] text-[#242321] font-semibold uppercase block leading-none">
-                    VERA
-                  </span>
-                  <span className="block text-[8px] sm:text-[9px] tracking-[0.35em] text-[#B49A6A] font-sans uppercase font-medium mt-0.5">
-                    E Ş A R P
-                  </span>
-                </div>
               </Link>
             </div>
 
@@ -331,13 +323,9 @@ export default function Header() {
           <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-[#F8F5EF] shadow-2xl p-6 flex flex-col justify-between overflow-y-auto">
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-[#E6DFD5]">
-                <div className="flex items-center gap-2.5">
-                  <img src="/logo.png" alt="Vera Eşarp Logo" className="h-9 w-auto object-contain" />
-                  <div>
-                    <span className="font-serif text-lg font-semibold tracking-widest block leading-none text-[#242321]">VERA</span>
-                    <span className="text-[8px] tracking-[0.3em] text-[#B49A6A] font-sans uppercase font-medium block mt-0.5">E Ş A R P</span>
-                  </div>
-                </div>
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="inline-block">
+                  <img src="/logo.png" alt="Vera Eşarp Logo" className="h-14 w-auto object-contain" />
+                </Link>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-[#242321]">
                   <X className="w-6 h-6" />
                 </button>
