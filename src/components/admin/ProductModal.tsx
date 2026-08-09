@@ -291,41 +291,85 @@ export default function ProductModal({
     });
   };
 
-  // Dominant Color Extractor Engine
+  // Dominant Color Extractor Engine (HSL Studio Background Filtering & Cluster Bucket Analysis)
   const rgbToHex = (r: number, g: number, b: number) =>
-    '#' + [r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+    '#' + [r, g, b].map((x) => Math.max(0, Math.min(255, x)).toString(16).padStart(2, '0')).join('').toUpperCase();
+
+  const rgbToHsl = (r: number, g: number, b: number) => {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0;
+    const l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return { h: h * 360, s, l };
+  };
 
   const getClosestColorName = (r: number, g: number, b: number): string => {
-    const PALETTE = [
-      { name: 'Krem & Altın', r: 244, g: 235, b: 225 },
-      { name: 'Altın Vizon', r: 180, g: 154, b: 106 },
-      { name: 'Gece Mavisi', r: 27, g: 42, b: 74 },
-      { name: 'Gül Vizonu', r: 198, g: 160, b: 150 },
-      { name: 'Safır Mavi', r: 40, g: 80, b: 160 },
-      { name: 'Zümrüt Yeşili', r: 34, g: 110, b: 70 },
-      { name: 'Zarif Bordo', r: 130, g: 30, b: 45 },
-      { name: 'Pudra Pembe', r: 240, g: 195, b: 205 },
-      { name: 'Mürdüm & Mor', r: 100, g: 40, b: 90 },
-      { name: 'Fildişi Beyaz', r: 250, g: 248, b: 242 },
-      { name: 'Asil Siyah', r: 30, g: 30, b: 30 },
-      { name: 'Toprak Taba', r: 160, g: 90, b: 45 },
-      { name: 'Gümüş Gri', r: 180, g: 185, b: 190 },
-    ];
+    const { h, s, l } = rgbToHsl(r, g, b);
 
-    let minDistance = Infinity;
-    let closestName = 'Özel Ton';
+    // Low saturation / Monochromatic checks
+    if (s < 0.18) {
+      if (l > 0.82) return 'Fildişi Beyaz';
+      if (l > 0.60) return 'Gümüş Gri';
+      if (l > 0.35) return 'Duman Grisi';
+      return 'Asil Siyah';
+    }
 
-    PALETTE.forEach((item) => {
-      const dist = Math.sqrt(
-        Math.pow(r - item.r, 2) + Math.pow(g - item.g, 2) + Math.pow(b - item.b, 2)
-      );
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestName = item.name;
-      }
-    });
+    // High / Medium Saturation Color Range Matching
+    if (h >= 170 && h <= 210) {
+      if (l < 0.45) return 'Petrol Mavi';
+      if (l > 0.70) return 'Su Yeşili / Turkuaz';
+      return 'Okyanus Mavisi';
+    }
 
-    return closestName;
+    if (h > 210 && h <= 250) {
+      if (l < 0.38) return 'Gece Mavisi';
+      if (l > 0.75) return 'Bebek Mavisi';
+      return 'Safır Mavi';
+    }
+
+    if (h >= 120 && h < 170) {
+      if (l < 0.40) return 'Zümrüt Yeşili';
+      return 'Mint Yeşili';
+    }
+
+    if (h >= 65 && h < 120) {
+      return 'Haki / Zeytin';
+    }
+
+    if (h >= 45 && h < 65) {
+      if (l > 0.75) return 'Krem & Altın';
+      return 'Altın Sarısı';
+    }
+
+    if (h >= 15 && h < 45) {
+      if (l < 0.45) return 'Toprak Taba';
+      if (l > 0.65) return 'Gül Vizonu';
+      return 'Vizon';
+    }
+
+    if (h >= 250 && h < 320) {
+      if (l < 0.40) return 'Mürdüm & Mor';
+      return 'Pudra Pembe';
+    }
+
+    if (h >= 320 || h < 15) {
+      if (l < 0.38) return 'Zarif Bordo';
+      if (l > 0.70) return 'Pudra Pembe';
+      return 'Gül Kurusu';
+    }
+
+    return 'Vizon';
   };
 
   const extractDominantColor = (dataUrl: string): Promise<{ name: string; hex: string }> => {
@@ -334,40 +378,97 @@ export default function ProductModal({
       img.crossOrigin = 'Anonymous';
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = 64;
-        canvas.height = 64;
+        const width = 128;
+        const height = 128;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
         if (!ctx) {
           resolve({ name: 'Vizon', hex: '#B49A6A' });
           return;
         }
-        ctx.drawImage(img, 0, 0, 64, 64);
-        const imgData = ctx.getImageData(0, 0, 64, 64).data;
 
-        let rSum = 0, gSum = 0, bSum = 0, count = 0;
-        for (let i = 0; i < imgData.length; i += 16) {
-          const r = imgData[i];
-          const g = imgData[i + 1];
-          const b = imgData[i + 2];
-          const a = imgData[i + 3];
+        ctx.drawImage(img, 0, 0, width, height);
+        const imgData = ctx.getImageData(0, 0, width, height).data;
 
-          // Exclude white background and dark borders
-          if (a > 200 && !(r > 245 && g > 245 && b > 245)) {
-            rSum += r;
-            gSum += g;
-            bSum += b;
-            count++;
+        // Sample pixels focusing on central product region (ignoring studio borders)
+        const pixelSamples: { r: number; g: number; b: number; s: number; h: number; l: number }[] = [];
+
+        for (let y = Math.floor(height * 0.10); y < Math.floor(height * 0.90); y += 2) {
+          for (let x = Math.floor(width * 0.10); x < Math.floor(width * 0.90); x += 2) {
+            const index = (y * width + x) * 4;
+            const r = imgData[index];
+            const g = imgData[index + 1];
+            const b = imgData[index + 2];
+            const a = imgData[index + 3];
+
+            if (a < 200) continue; // Transparent
+
+            const { h, s, l } = rgbToHsl(r, g, b);
+
+            // Filter out studio background white/off-white (R,G,B > 218 or Lightness > 0.88 or low sat near white)
+            const isStudioWhite = (r > 218 && g > 218 && b > 218) || l > 0.88 || (s < 0.12 && l > 0.75);
+            // Filter out deep shadows / black borders
+            const isDeepShadow = l < 0.08 || (r < 20 && g < 20 && b < 20);
+
+            if (!isStudioWhite && !isDeepShadow) {
+              pixelSamples.push({ r, g, b, h, s, l });
+            }
           }
         }
 
-        if (count === 0) {
-          resolve({ name: 'Krem & Altın', hex: '#F4EBE1' });
+        // If no product color was found (e.g., pure white or pure black product photo), sample all non-transparent pixels
+        if (pixelSamples.length === 0) {
+          for (let i = 0; i < imgData.length; i += 16) {
+            const r = imgData[i];
+            const g = imgData[i + 1];
+            const b = imgData[i + 2];
+            const a = imgData[i + 3];
+            if (a > 200) {
+              const { h, s, l } = rgbToHsl(r, g, b);
+              pixelSamples.push({ r, g, b, h, s, l });
+            }
+          }
+        }
+
+        if (pixelSamples.length === 0) {
+          resolve({ name: 'Fildişi Beyaz', hex: '#F8F5EF' });
           return;
         }
 
-        const rAvg = Math.round(rSum / count);
-        const gAvg = Math.round(gSum / count);
-        const bAvg = Math.round(bSum / count);
+        // Quantize colors into HSL Hue Buckets to find the MOST DOMINANT product hue
+        const BUCKETS_COUNT = 18;
+        const buckets: { rSum: number; gSum: number; bSum: number; count: number }[] = Array.from({ length: BUCKETS_COUNT }, () => ({
+          rSum: 0, gSum: 0, bSum: 0, count: 0
+        }));
+
+        pixelSamples.forEach((p) => {
+          let bIdx = 0;
+          if (p.s < 0.15) {
+            bIdx = 0; // Monochromatic
+          } else {
+            bIdx = 1 + Math.floor((p.h / 360) * (BUCKETS_COUNT - 1));
+            bIdx = Math.min(BUCKETS_COUNT - 1, Math.max(1, bIdx));
+          }
+          buckets[bIdx].rSum += p.r;
+          buckets[bIdx].gSum += p.g;
+          buckets[bIdx].bSum += p.b;
+          buckets[bIdx].count++;
+        });
+
+        // Find bucket with max count
+        let maxCount = -1;
+        let bestBucket = buckets[0];
+        buckets.forEach((b) => {
+          if (b.count > maxCount) {
+            maxCount = b.count;
+            bestBucket = b;
+          }
+        });
+
+        const rAvg = Math.round(bestBucket.rSum / bestBucket.count);
+        const gAvg = Math.round(bestBucket.gSum / bestBucket.count);
+        const bAvg = Math.round(bestBucket.bSum / bestBucket.count);
 
         const hex = rgbToHex(rAvg, gAvg, bAvg);
         const name = getClosestColorName(rAvg, gAvg, bAvg);
