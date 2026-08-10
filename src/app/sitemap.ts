@@ -41,9 +41,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/kurumsal/gizlilik-ve-cerez`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
   ];
 
-  // Dynamic Product routes
-  const productRoutes: MetadataRoute.Sitemap = MOCK_PRODUCTS.map((p) => ({
-    url: `${baseUrl}/kategori/${p.category}/${p.slug}`,
+  // Dynamic Product routes — fetched from live database API for real-time indexing
+  let liveProducts = MOCK_PRODUCTS;
+  try {
+    const baseUrlForFetch = process.env.NEXT_PUBLIC_APP_URL || 'https://veraesarp.com';
+    const dbRes = await fetch(`${baseUrlForFetch}/api/db`, { next: { revalidate: 60 } });
+    if (dbRes.ok) {
+      const dbJson = await dbRes.json();
+      if (dbJson.success && dbJson.data?.products?.length) {
+        liveProducts = dbJson.data.products;
+      }
+    }
+  } catch (_e) {
+    // fallback to MOCK_PRODUCTS already set above
+  }
+
+  const productRoutes: MetadataRoute.Sitemap = liveProducts.map((p: any) => ({
+    url: `${baseUrl}/urun/${p.slug}`,
     lastModified: safeDate(p.createdAt),
     changeFrequency: 'weekly',
     priority: 0.8,

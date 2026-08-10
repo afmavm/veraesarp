@@ -1,6 +1,7 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { InstagramIcon } from '@/components/ui/Icons';
 import Hero from '@/components/home/Hero';
@@ -11,10 +12,11 @@ import EditorialStory from '@/components/home/EditorialStory';
 import StyleGuideSection from '@/components/home/StyleGuideSection';
 import Newsletter from '@/components/home/Newsletter';
 import ProductGrid from '@/components/product/ProductGrid';
-import { MOCK_PRODUCTS } from '@/lib/data/mock-data';
+import { useData } from '@/context/DataContext';
 
 export default function HomePage() {
-  const newProducts = MOCK_PRODUCTS.filter((p) => p.isNew).slice(0, 4);
+  const { products } = useData();
+  const newProducts = products.filter((p) => p.isNew).slice(0, 4);
 
   return (
     <div className="space-y-0">
@@ -62,49 +64,28 @@ export default function HomePage() {
       {/* SECTION 7: STİL REHBERİ */}
       <StyleGuideSection />
 
-      {/* SECTION 8: INSTAGRAM / SOSYAL İLHAM */}
-      <section className="py-20 bg-[#F8F5EF] border-t border-[#E6DFD5]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-3 mb-12">
-            <span className="text-xs uppercase tracking-[0.3em] text-[#B49A6A] font-semibold flex items-center justify-center gap-2">
-              <InstagramIcon className="w-4 h-4" />
-              @verabutik2007
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-normal text-[#242321]">
-              Vera'dan İlham Al
-            </h2>
-            <p className="text-xs sm:text-sm text-[#5A5652] max-w-md mx-auto">
-              Stilinizi #VeraKombinim etiketiyle paylaşın, resmi hesabımızda yerinizi alın.
-            </p>
+      {/* SECTION 8: INSTAGRAM & COMMUNITY */}
+      <section className="py-20 bg-[#242321] text-[#F8F5EF]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <div className="flex items-center justify-center gap-2 text-[#B49A6A]">
+            <InstagramIcon className="w-5 h-5" />
+            <span className="text-xs uppercase tracking-[0.3em] font-semibold">@veraesarp</span>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              'https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?q=80&w=600&auto=format&fit=crop',
-              'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop',
-              'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=600&auto=format&fit=crop',
-              'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop',
-            ].map((imgUrl, i) => (
-              <a
-                key={i}
-                href="https://instagram.com/verabutik2007"
-                target="_blank"
-                rel="noreferrer"
-                className="group relative aspect-square bg-[#E8DED1] overflow-hidden block shadow-sm"
-              >
-                <Image
-                  src={imgUrl}
-                  alt={`Vera Instagram ${i + 1}`}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 25vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-[#242321]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[#F8F5EF]">
-                  <InstagramIcon className="w-8 h-8 text-[#B49A6A]" />
-                </div>
-              </a>
-            ))}
-          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl font-normal">
+            Vera ile Stilini Paylaş
+          </h2>
+          <p className="text-xs text-[#8C857B] max-w-lg mx-auto leading-relaxed">
+            #VeraEşarp etiketiyle stilini paylaş, topluluğumuza katıl. Her ay en güzel kombinleri öne çıkarıyoruz.
+          </p>
+          <a
+            href="https://instagram.com/veraesarp"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-8 py-3 border border-[#B49A6A] text-[#B49A6A] text-xs font-semibold uppercase tracking-widest hover:bg-[#B49A6A] hover:text-[#F8F5EF] transition-all"
+          >
+            <InstagramIcon className="w-4 h-4" />
+            Instagram'da Takip Et
+          </a>
         </div>
       </section>
 

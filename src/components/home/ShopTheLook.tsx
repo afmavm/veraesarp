@@ -4,14 +4,16 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
-import { MOCK_LOOKS, MOCK_PRODUCTS } from '@/lib/data/mock-data';
+import { MOCK_LOOKS } from '@/lib/data/mock-data';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
+import { useData } from '@/context/DataContext';
 
 export default function ShopTheLook() {
   const [activeLookIndex] = useState(0);
   const { addToCart } = useCart();
   const { showToast } = useToast();
+  const { products } = useData();
   const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
 
   const currentLook = MOCK_LOOKS[activeLookIndex];
@@ -35,7 +37,7 @@ export default function ShopTheLook() {
             {/* List of items in look */}
             <div className="space-y-4 pt-4 border-t border-[#E6DFD5]">
               {currentLook.hotspots.map((hs) => {
-                const product = MOCK_PRODUCTS.find((p) => p.id === hs.productId);
+                const product = products.find((p) => p.id === hs.productId);
                 if (!product) return null;
 
                 return (
@@ -93,7 +95,7 @@ export default function ShopTheLook() {
 
             {/* Hotspots */}
             {currentLook.hotspots.map((hs) => {
-              const product = MOCK_PRODUCTS.find((p) => p.id === hs.productId);
+              const product = products.find((p) => p.id === hs.productId);
               if (!product) return null;
 
               const isHotspotActive = activeHotspotId === hs.id;

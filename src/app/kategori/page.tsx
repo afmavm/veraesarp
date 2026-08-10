@@ -1,16 +1,16 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/lib/data/mock-data';
+import { MOCK_CATEGORIES } from '@/lib/data/mock-data';
 import ProductGrid from '@/components/product/ProductGrid';
-
-export const metadata = {
-  title: 'Koleksiyonlar ve Kategoriler | VERA EŞARP',
-  description: '%100 Saf İpek Eşarp, Medine İpeği Şal ve Özel Aksesuar Kategorileri.',
-};
+import { useData } from '@/context/DataContext';
 
 export default function CategoryIndexPage() {
+  const { products } = useData();
+
   return (
     <div className="py-12 bg-[#F8F5EF] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
@@ -74,12 +74,12 @@ export default function CategoryIndexPage() {
           ))}
         </div>
 
-        {/* Popular Items */}
+        {/* Popular Items — Live from DataContext */}
         <div className="pt-12 border-t border-[#E6DFD5]">
           <h2 className="font-serif text-3xl font-normal text-[#242321] mb-8 text-center">
             Öne Çıkan Ürünler
           </h2>
-          <ProductGrid products={MOCK_PRODUCTS} columns={4} />
+          <ProductGrid products={products} columns={4} />
         </div>
       </div>
     </div>

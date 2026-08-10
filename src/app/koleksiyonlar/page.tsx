@@ -1,16 +1,16 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { MOCK_COLLECTIONS, MOCK_PRODUCTS } from '@/lib/data/mock-data';
+import { MOCK_COLLECTIONS } from '@/lib/data/mock-data';
 import ProductGrid from '@/components/product/ProductGrid';
-
-export const metadata = {
-  title: 'Özel Koleksiyonlar | VERA EŞARP',
-  description: 'Milano Romance 2026, Minimal Essence ve Soirée Luxury özel tasarım koleksiyonları.',
-};
+import { useData } from '@/context/DataContext';
 
 export default function CollectionsPage() {
+  const { products } = useData();
+
   return (
     <div className="py-12 bg-[#F8F5EF] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20">
@@ -30,7 +30,7 @@ export default function CollectionsPage() {
         {/* Collections Stack */}
         <div className="space-y-16">
           {MOCK_COLLECTIONS.map((col, index) => {
-            const colProducts = MOCK_PRODUCTS.filter((p) => p.collection === col.slug);
+            const colProducts = products.filter((p) => p.collection === col.slug);
 
             return (
               <div key={col.id} className="space-y-8">
@@ -65,10 +65,17 @@ export default function CollectionsPage() {
                   </div>
                 </div>
 
-                {/* Collection Products Grid */}
+                {/* Collection Products Grid — Live from DataContext */}
                 {colProducts.length > 0 && (
                   <div className="pt-4">
                     <ProductGrid products={colProducts} columns={4} />
+                  </div>
+                )}
+
+                {/* Show all products if collection has no matches yet */}
+                {colProducts.length === 0 && (
+                  <div className="pt-4">
+                    <p className="text-xs text-[#8C857B] text-center py-4">Bu koleksiyonda henüz ürün bulunmuyor.</p>
                   </div>
                 )}
               </div>
