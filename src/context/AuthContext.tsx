@@ -33,6 +33,7 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (updates: Partial<UserProfile>) => void;
   updatePassword: (currentPass: string, newPass: string) => AuthResult;
+  resetPasswordDirectly: (email: string, newPass: string) => AuthResult;
 }
 
 // Store Official Admin Account
@@ -55,50 +56,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [registeredUsers, setRegisteredUsers] = useState<UserProfile[]>([OFFICIAL_ADMIN_ACCOUNT]);
 
-  // Load Saved Users & Active Session from Storage
+  // Load Saved Users & Active Session from Server DB & LocalStorage
   useEffect(() => {
-    try {
-      const savedUsers = localStorage.getItem('veraesarp_registered_users');
-      if (savedUsers) {
-        const parsed: UserProfile[] = JSON.parse(savedUsers);
-        const hasAdmin = parsed.some((u) => u.email === OFFICIAL_ADMIN_ACCOUNT.email);
-        const filtered = parsed.filter(
-          (u) => u.email !== 'ayse.yilmaz@example.com' && u.email !== 'demo@veraesarp.com'
-        );
-        const updatedUsers = hasAdmin ? filtered : [OFFICIAL_ADMIN_ACCOUNT, ...filtered];
-        setRegisteredUsers(updatedUsers);
-        localStorage.setItem('veraesarp_registered_users', JSON.stringify(updatedUsers));
-      } else {
-        localStorage.setItem('veraesarp_registered_users', JSON.stringify([OFFICIAL_ADMIN_ACCOUNT]));
-        setRegisteredUsers([OFFICIAL_ADMIN_ACCOUNT]);
+    async function loadUserDatabase() {
+      let loadedUsers: UserProfile[] = [];
+
+      // 1. Try loading from Server DB first
+      try {
+        const res = await fetch('/api/db');
+        const json = await res.json();
+        if (json.success && json.data && json.data.registeredUsers && Array.isArray(json.data.registeredUsers)) {
+          loadedUsers = json.data.registeredUsers;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch registeredUsers from server DB', e);
       }
 
-      const savedSession = localStorage.getItem('veraesarp_user_session');
-      if (savedSession) {
-        const sessionUser: UserProfile = JSON.parse(savedSession);
-        if (sessionUser.email === 'ayse.yilmaz@example.com' || sessionUser.email === 'demo@veraesarp.com') {
-          localStorage.removeItem('veraesarp_user_session');
-          setUser(null);
+      // 2. Fallback to localStorage if server DB had no registeredUsers
+      if (loadedUsers.length === 0) {
+        try {
+          const savedUsers = localStorage.getItem('veraesarp_registered_users');
+          if (savedUsers) {
+            loadedUsers = JSON.parse(savedUsers);
+          }
+        } catch (e) {}
+      }
+
+      // Ensure official admin exists in list
+      const hasAdmin = loadedUsers.some((u) => u.email.toLowerCase() === OFFICIAL_ADMIN_ACCOUNT.email.toLowerCase());
+      const finalUsers = hasAdmin ? loadedUsers : [OFFICIAL_ADMIN_ACCOUNT, ...loadedUsers];
+
+      setRegisteredUsers(finalUsers);
+      try {
+        localStorage.setItem('veraesarp_registered_users', JSON.stringify(finalUsers));
+      } catch (e) {}
+
+      // Load active user session
+      try {
+        const savedSession = localStorage.getItem('veraesarp_user_session');
+        if (savedSession) {
+          const sessionUser: UserProfile = JSON.parse(savedSession);
+          if (sessionUser.email === 'ayse.yilmaz@example.com' || sessionUser.email === 'demo@veraesarp.com') {
+            localStorage.removeItem('veraesarp_user_session');
+            setUser(null);
+          } else {
+            setUser(sessionUser);
+          }
         } else {
-          setUser(sessionUser);
+          setUser(null);
         }
-      } else {
+      } catch (e) {
         setUser(null);
       }
-    } catch (e) {
-      console.error('Failed to load user database', e);
-      setUser(null);
     }
+
+    loadUserDatabase();
   }, []);
 
-  // Synchronize registered Users array to localStorage
+  // Synchronize registered Users array to localStorage & Server DB permanently
   const saveRegisteredUsers = (usersList: UserProfile[]) => {
     setRegisteredUsers(usersList);
+
+    // Save to LocalStorage
     try {
       localStorage.setItem('veraesarp_registered_users', JSON.stringify(usersList));
     } catch (e) {
-      console.error('Failed to save registered users', e);
+      console.error('Failed to save registered users to localStorage', e);
     }
+
+    // Persist to Permanent Server DB
+    fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ registeredUsers: usersList }),
+    }).catch((err) => console.error('Failed to save registeredUsers to server DB', err));
   };
 
   // 1. Credentials Login Verification
@@ -114,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const foundUser = registeredUsers.find((u) => {
       const matchEmail = u.email.toLowerCase() === cleanInput;
       const matchPhone = u.phone.replace(/[^0-9]/g, '') === cleanInput.replace(/[^0-9]/g, '');
-      const matchPass = u.password === cleanPass;
+      const matchPass = (u.password || '').trim() === cleanPass;
       return (matchEmail || matchPhone) && matchPass;
     });
 
@@ -209,7 +240,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // 3. User Password Update
+  // 3. User Password Update (authenticated profile change)
   const updatePassword = (currentPass: string, newPass: string): AuthResult => {
     if (!user) {
       return { success: false, message: 'Lütfen önce hesabınıza giriş yapınız.' };
@@ -226,24 +257,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, message: 'Yeni şifreniz en az 6 karakter olmalıdır.' };
     }
 
-    // Check if current password is correct
+    // Find user record in registeredUsers database
     const targetUser = registeredUsers.find(
       (u) => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase()
     );
 
-    if (!targetUser || targetUser.password !== cleanCurrent) {
+    if (!targetUser || (targetUser.password || '').trim() !== cleanCurrent) {
       return { success: false, message: '⚠️ Mevcut şifrenizi yanlış girdiniz!' };
     }
 
-    // Update password in user registry
+    // Update password in registeredUsers registry
     const updatedUsers = registeredUsers.map((u) =>
       u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase()
         ? { ...u, password: cleanNew }
         : u
     );
+
     saveRegisteredUsers(updatedUsers);
 
-    return { success: true, message: '🔒 Şifreniz başarıyla değiştirildi ve kaydedildi!' };
+    return { success: true, message: '🔒 Şifreniz başarıyla değiştirildi ve kalıcı olarak kaydedildi!' };
+  };
+
+  // 4. Direct Password Reset (Forgot Password / Admin Reset)
+  const resetPasswordDirectly = (email: string, newPass: string): AuthResult => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanNew = (newPass || '').trim();
+
+    if (!cleanEmail || !cleanNew) {
+      return { success: false, message: 'E-posta adresi ve yeni şifre zorunludur.' };
+    }
+
+    if (cleanNew.length < 6) {
+      return { success: false, message: 'Yeni şifre en az 6 karakter olmalıdır.' };
+    }
+
+    const targetUser = registeredUsers.find((u) => u.email.toLowerCase() === cleanEmail);
+    if (!targetUser) {
+      return { success: false, message: '⚠️ Bu e-posta adresine ait kayıtlı kullanıcı bulunamadı.' };
+    }
+
+    const updatedUsers = registeredUsers.map((u) =>
+      u.email.toLowerCase() === cleanEmail ? { ...u, password: cleanNew } : u
+    );
+
+    saveRegisteredUsers(updatedUsers);
+
+    return { success: true, message: '🔒 Şifreniz başarıyla sıfırlandı ve yenilendi! Yeni şifrenizle giriş yapabilirsiniz.' };
   };
 
   const isAdmin = !!user && (user.role === 'admin' || user.isAdmin === true || user.email === 'destek@veraesarp.com');
@@ -260,6 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         updateUser,
         updatePassword,
+        resetPasswordDirectly,
       }}
     >
       {children}

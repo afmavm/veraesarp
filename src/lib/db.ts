@@ -27,6 +27,7 @@ export interface DatabaseSchema {
   cariTransactions: CariTransaction[];
   campaigns: CampaignRule[];
   coupons: Coupon[];
+  registeredUsers?: any[];
   updatedAt: string;
 }
 

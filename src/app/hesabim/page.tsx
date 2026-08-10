@@ -26,6 +26,8 @@ import {
   Edit2,
   X,
   Star,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -88,6 +90,10 @@ export default function AccountPage() {
     email: user?.email || '',
     phone: user?.phone || '',
   });
+
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -1048,38 +1054,65 @@ export default function AccountPage() {
                 <form onSubmit={handlePasswordSave} className="space-y-4 max-w-lg text-xs">
                   <div>
                     <label className="block text-[#8C857B] mb-1">Mevcut Şifre *</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={secForm.currentPass}
-                      onChange={(e) => setSecForm({ ...secForm, currentPass: e.target.value })}
-                      className="w-full p-2.5 bg-[#FFFFFF] border border-[#E6DFD5] text-[#242321]"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showCurrentPass ? 'text' : 'password'}
+                        required
+                        placeholder="••••••••"
+                        value={secForm.currentPass}
+                        onChange={(e) => setSecForm({ ...secForm, currentPass: e.target.value })}
+                        className="w-full p-2.5 pr-10 bg-[#FFFFFF] border border-[#E6DFD5] text-[#242321] focus:border-[#B49A6A] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPass(!showCurrentPass)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C857B] hover:text-[#242321]"
+                      >
+                        {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div>
-                    <label className="block text-[#8C857B] mb-1">Yeni Şifre *</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={secForm.newPass}
-                      onChange={(e) => setSecForm({ ...secForm, newPass: e.target.value })}
-                      className="w-full p-2.5 bg-[#FFFFFF] border border-[#E6DFD5] text-[#242321]"
-                    />
+                    <label className="block text-[#8C857B] mb-1">Yeni Şifre * (En az 6 karakter)</label>
+                    <div className="relative">
+                      <input
+                        type={showNewPass ? 'text' : 'password'}
+                        required
+                        placeholder="••••••••"
+                        value={secForm.newPass}
+                        onChange={(e) => setSecForm({ ...secForm, newPass: e.target.value })}
+                        className="w-full p-2.5 pr-10 bg-[#FFFFFF] border border-[#E6DFD5] text-[#242321] focus:border-[#B49A6A] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPass(!showNewPass)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C857B] hover:text-[#242321]"
+                      >
+                        {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-[#8C857B] mb-1">Yeni Şifre Tekrarı *</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={secForm.confirmPass}
-                      onChange={(e) => setSecForm({ ...secForm, confirmPass: e.target.value })}
-                      className="w-full p-2.5 bg-[#FFFFFF] border border-[#E6DFD5] text-[#242321]"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPass ? 'text' : 'password'}
+                        required
+                        placeholder="••••••••"
+                        value={secForm.confirmPass}
+                        onChange={(e) => setSecForm({ ...secForm, confirmPass: e.target.value })}
+                        className="w-full p-2.5 pr-10 bg-[#FFFFFF] border border-[#E6DFD5] text-[#242321] focus:border-[#B49A6A] focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPass(!showConfirmPass)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8C857B] hover:text-[#242321]"
+                      >
+                        {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="pt-4">

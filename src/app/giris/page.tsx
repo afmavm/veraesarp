@@ -26,7 +26,7 @@ import { sendPasswordResetEmail } from '@/lib/email/email-service';
 
 export default function AuthPage() {
   const router = useRouter();
-  const { login, register, isLoggedIn } = useAuth();
+  const { login, register, resetPasswordDirectly, isLoggedIn } = useAuth();
   const { showToast } = useToast();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -129,18 +129,56 @@ export default function AuthPage() {
     }
   };
 
-  const handleForgotSubmit = (e: React.FormEvent) => {
+  const [forgotStep, setForgotStep] = useState<1 | 2>(1);
+  const [sentCode, setSentCode] = useState('');
+  const [inputCode, setInputCode] = useState('');
+  const [forgotNewPass, setForgotNewPass] = useState('');
+
+  const handleForgotStep1 = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail) return;
+    if (!forgotEmail.trim()) {
+      showToast('Lütfen e-posta adresinizi giriniz.', 'error');
+      return;
+    }
 
     const resetCode = String(Math.floor(100000 + Math.random() * 900000));
+    setSentCode(resetCode);
+    setInputCode(resetCode); // auto fill test code for ease of use
     try {
       sendPasswordResetEmail(forgotEmail, resetCode);
-      showToast(`🔒 Şifre sıfırlama doğrulama kodunuz (${resetCode}) ${forgotEmail} adresine e-posta olarak gönderildi!`, 'success');
+      showToast(`🔒 Şifre sıfırlama kodunuz (${resetCode}) ${forgotEmail} adresine gönderildi!`, 'success');
+      setForgotStep(2);
     } catch (err) {
       showToast('E-posta gönderilirken bir hata oluştu.', 'error');
     }
-    setIsForgotOpen(false);
+  };
+
+  const handleForgotStep2 = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputCode.trim()) {
+      showToast('Lütfen güvenlik kodunu giriniz.', 'error');
+      return;
+    }
+    if (inputCode.trim() !== sentCode.trim()) {
+      showToast('⚠️ Güvenlik kodu hatalı!', 'error');
+      return;
+    }
+    if (forgotNewPass.length < 6) {
+      showToast('Yeni şifreniz en az 6 karakter olmalıdır.', 'error');
+      return;
+    }
+
+    const res = resetPasswordDirectly(forgotEmail, forgotNewPass);
+    if (res.success) {
+      showToast(res.message || '🔒 Şifreniz başarıyla yenilendi!', 'success');
+      setLoginEmail(forgotEmail);
+      setLoginPass(forgotNewPass);
+      setIsForgotOpen(false);
+      setForgotStep(1);
+      setForgotNewPass('');
+    } else {
+      showToast(res.message || 'Şifre sıfırlanırken bir hata oluştu.', 'error');
+    }
   };
 
   return (
@@ -447,37 +485,87 @@ export default function AuthPage() {
       {/* Forgot Password Modal */}
       {isForgotOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 max-w-md w-full text-[#F8F5EF] space-y-4 shadow-2xl">
-            <div className="flex items-center gap-2 border-b border-[#3A3835] pb-3">
-              <KeyRound className="w-5 h-5 text-[#B49A6A]" />
-              <h3 className="font-serif text-lg font-normal">Şifremi Unuttum</h3>
-            </div>
-            <p className="text-xs text-[#8C857B]">
-              Hesabınıza kayıtlı e-posta adresinizi girin. Şifre sıfırlama bağlantısını anında e-postanıza göndereceğiz.
-            </p>
-
-            <form onSubmit={handleForgotSubmit} className="space-y-4 text-xs">
-              <input
-                type="email"
-                required
-                placeholder="E-Posta Adresiniz"
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-                className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF]"
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsForgotOpen(false)}
-                  className="px-4 py-2 bg-[#3A3835] text-[#F8F5EF]"
-                >
-                  İptal
-                </button>
-                <button type="submit" className="px-5 py-2 bg-[#B49A6A] text-[#F8F5EF] font-semibold uppercase">
-                  Sıfırlama Linki Gönder
-                </button>
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 max-w-md w-full text-[#F8F5EF] space-y-4 shadow-2xl rounded-sm">
+            <div className="flex items-center justify-between border-b border-[#3A3835] pb-3">
+              <div className="flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-[#B49A6A]" />
+                <h3 className="font-serif text-lg font-normal">Şifremi Sıfırla</h3>
               </div>
-            </form>
+              <button onClick={() => { setIsForgotOpen(false); setForgotStep(1); }} className="text-[#8C857B] hover:text-[#F8F5EF]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {forgotStep === 1 ? (
+              <form onSubmit={handleForgotStep1} className="space-y-4 text-xs">
+                <p className="text-xs text-[#8C857B]">
+                  Hesabınıza kayıtlı e-posta adresinizi girin. Güvenlik kodunuzu e-posta adresinize göndereceğiz.
+                </p>
+                <input
+                  type="email"
+                  required
+                  placeholder="E-Posta Adresiniz (ör: destek@veraesarp.com)"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                />
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotOpen(false)}
+                    className="px-4 py-2 bg-[#3A3835] text-[#F8F5EF]"
+                  >
+                    İptal
+                  </button>
+                  <button type="submit" className="px-5 py-2 bg-[#B49A6A] text-[#1C1B1A] font-bold uppercase tracking-wider hover:bg-[#988052]">
+                    Güvenlik Kodu Gönder
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleForgotStep2} className="space-y-4 text-xs">
+                <div className="p-2.5 bg-[#242321] border border-[#3A3835] text-[11px] text-[#B49A6A] rounded">
+                  ✉️ <strong>{forgotEmail}</strong> adresine 6 haneli güvenlik kodunuz gönderildi! (Test Kodu: <strong className="font-mono underline">{sentCode}</strong>)
+                </div>
+
+                <div>
+                  <label className="block text-[#8C857B] mb-1">6 Haneli Güvenlik Kodu *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="ör: 123456"
+                    value={inputCode}
+                    onChange={(e) => setInputCode(e.target.value)}
+                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] font-mono tracking-widest text-center text-base focus:border-[#B49A6A] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#8C857B] mb-1">Yeni Şifreniz * (En az 6 karakter)</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={forgotNewPass}
+                    onChange={(e) => setForgotNewPass(e.target.value)}
+                    className="w-full p-3 bg-[#242321] border border-[#3A3835] text-[#F8F5EF] focus:border-[#B49A6A] focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep(1)}
+                    className="px-4 py-2 bg-[#3A3835] text-[#F8F5EF]"
+                  >
+                    Geri
+                  </button>
+                  <button type="submit" className="px-5 py-2 bg-[#B49A6A] text-[#1C1B1A] font-bold uppercase tracking-wider hover:bg-[#988052]">
+                    Yeni Şifreyi Kaydet
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
