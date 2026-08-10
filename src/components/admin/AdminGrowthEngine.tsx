@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Sparkles, Gift, Tag, Clock, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, X, Percent, Layers, Crown, PackageCheck } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Sparkles, Gift, Tag, Clock, Plus, Trash2, Edit, Save, ToggleLeft, ToggleRight, X, Percent,
+  Layers, Crown, PackageCheck, Eye, TrendingUp, Zap, ArrowRight
+} from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { CampaignRule } from '@/lib/types/ecommerce';
 import { useToast } from '@/context/ToastContext';
@@ -12,6 +15,7 @@ export default function AdminGrowthEngine() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<CampaignRule | null>(null);
+  const [previewCmp, setPreviewCmp] = useState<CampaignRule | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -36,6 +40,8 @@ export default function AdminGrowthEngine() {
     bundleTitle: 'Eşarp + Altın Broş İkili Kombin Seti',
     vipTierOnly: false,
   });
+
+  const activeCount = useMemo(() => campaigns.filter((c) => c.isEnabled).length, [campaigns]);
 
   const handleOpenModal = (cmpToEdit?: CampaignRule) => {
     if (cmpToEdit) {
@@ -114,10 +120,10 @@ export default function AdminGrowthEngine() {
 
     if (editingCampaign) {
       updateCampaign(editingCampaign.id, payload);
-      showToast('Kampanya stratejisi senaryo detaylarıyla güncellendi!', 'success');
+      showToast('✅ Kampanya stratejisi güncellendi ve vitrine yansıtıldı!', 'success');
     } else {
       addCampaign(payload);
-      showToast('Yeni kampanya stratejisi oluşturuldu ve vitrine yansıtıldı!', 'success');
+      showToast('🚀 Yeni kampanya stratejisi tanımlandı & yayınlandı!', 'success');
     }
 
     setIsModalOpen(false);
@@ -134,16 +140,42 @@ export default function AdminGrowthEngine() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 pb-4 border-b border-[#2A2825]">
         <div>
           <h1 className="font-serif text-3xl font-normal text-[#F8F5EF]">Satış Stratejileri &amp; Büyüme Motoru</h1>
-          <p className="text-xs text-[#8C857B]">5 farklı ticari indirim senaryosu tanımlayın, geri sayım sayaçlarını ve sepet kurallarını yönetin.</p>
+          <p className="text-xs text-[#8C857B]">
+            Ticari indirim senaryoları tanımlayın, geri sayım sayaçlarını, sepet hediyelerini ve çapraz satış kurallarını yönetin.
+          </p>
         </div>
 
         <button
           onClick={() => handleOpenModal()}
-          className="px-5 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors flex items-center justify-center gap-2 shadow-lg"
+          className="px-5 py-3 bg-[#B49A6A] text-[#1C1B1A] text-xs font-bold uppercase tracking-wider hover:bg-[#988052] transition-colors flex items-center justify-center gap-2 shadow-lg rounded shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Yeni Kampanya Ekle</span>
         </button>
+      </div>
+
+      {/* Growth Performance KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-4 bg-[#1C1B1A] border border-[#2A2825] space-y-1">
+          <span className="text-[10px] uppercase text-[#8C857B] font-semibold tracking-wider">Aktif Vitrin Stratejileri</span>
+          <p className="font-serif text-2xl text-emerald-400 font-semibold">{activeCount} / {campaigns.length}</p>
+          <span className="text-[10px] text-emerald-400">Canlı Yayındaki Senaryolar</span>
+        </div>
+        <div className="p-4 bg-[#1C1B1A] border border-[#2A2825] space-y-1">
+          <span className="text-[10px] uppercase text-[#8C857B] font-semibold tracking-wider">Tahmini Dönüşüm Artışı</span>
+          <p className="font-serif text-2xl text-[#B49A6A] font-semibold">+%28.5</p>
+          <span className="text-[10px] text-[#B49A6A]">Flaş İndirim Etkisi</span>
+        </div>
+        <div className="p-4 bg-[#1C1B1A] border border-[#2A2825] space-y-1">
+          <span className="text-[10px] uppercase text-[#8C857B] font-semibold tracking-wider">Sepet Tutarı Artış Trendi</span>
+          <p className="font-serif text-2xl text-amber-400 font-semibold">₺2.840</p>
+          <span className="text-[10px] text-amber-400">Sepet Hediyesi Sayesinde</span>
+        </div>
+        <div className="p-4 bg-[#1C1B1A] border border-[#2A2825] space-y-1">
+          <span className="text-[10px] uppercase text-[#8C857B] font-semibold tracking-wider">Hediye Broş Stok Kalan</span>
+          <p className="font-serif text-2xl text-[#F8F5EF] font-semibold">42 Adet</p>
+          <span className="text-[10px] text-emerald-400">Kullanılabilir Stok</span>
+        </div>
       </div>
 
       {/* Campaign Cards Grid */}
@@ -151,13 +183,13 @@ export default function AdminGrowthEngine() {
         {campaigns.map((cmp) => (
           <div
             key={cmp.id}
-            className={`p-6 bg-[#1C1B1A] border transition-all space-y-4 flex flex-col justify-between ${
-              cmp.isEnabled ? 'border-[#B49A6A] shadow-xl' : 'border-[#2A2825] opacity-60'
+            className={`p-6 bg-[#1C1B1A] border transition-all space-y-4 flex flex-col justify-between rounded shadow-xl ${
+              cmp.isEnabled ? 'border-[#B49A6A]' : 'border-[#2A2825] opacity-60'
             }`}
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#B49A6A] px-2 py-0.5 bg-[#242321] border border-[#3A3835]">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-[#B49A6A] px-2.5 py-1 bg-[#242321] border border-[#3A3835] rounded">
                   {cmp.type === 'flash_sale'
                     ? '⚡ Flaş İndirim'
                     : cmp.type === 'free_gift'
@@ -186,7 +218,7 @@ export default function AdminGrowthEngine() {
 
             {/* Dynamic Scenario Metrics */}
             <div className="pt-4 border-t border-[#2A2825] text-xs text-[#E8DED1] flex items-center justify-between">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {cmp.type === 'flash_sale' && (
                   <p>İndirim: <strong className="text-emerald-400">%{cmp.discountPercentage}</strong> • Geri Sayım: <strong className="text-[#B49A6A]">Aktif</strong></p>
                 )}
@@ -208,17 +240,24 @@ export default function AdminGrowthEngine() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => setPreviewCmp(cmp)}
+                  className="p-2 bg-[#242321] border border-[#3A3835] text-[#8C857B] hover:text-[#B49A6A] transition-colors rounded"
+                  title="Müşteri Görünümü İncele"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
                 <button
                   onClick={() => handleOpenModal(cmp)}
-                  className="p-2 bg-[#242321] border border-[#3A3835] text-[#E8DED1] hover:text-[#B49A6A] hover:border-[#B49A6A]"
+                  className="p-2 bg-[#242321] border border-[#3A3835] text-[#E8DED1] hover:text-[#B49A6A] hover:border-[#B49A6A] transition-colors rounded"
                   title="Düzenle"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(cmp.id)}
-                  className="p-2 bg-[#242321] border border-[#3A3835] text-rose-400 hover:bg-rose-900/30 hover:border-rose-500"
+                  className="p-2 bg-[#242321] border border-[#3A3835] text-rose-400 hover:bg-rose-900/30 hover:border-rose-500 transition-colors rounded"
                   title="Sil"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -229,10 +268,47 @@ export default function AdminGrowthEngine() {
         ))}
       </div>
 
+      {/* STOREFRONT PREVIEW DRAWER */}
+      {previewCmp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] p-6 max-w-lg w-full text-[#F8F5EF] space-y-4 shadow-2xl rounded">
+            <div className="flex justify-between items-center pb-3 border-b border-[#2A2825]">
+              <h3 className="font-serif text-lg text-[#F8F5EF]">Vitrin Müşteri Banner Önizlemesi</h3>
+              <button onClick={() => setPreviewCmp(null)} className="text-[#8C857B] hover:text-[#F8F5EF]">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 bg-[#242321] border border-[#B49A6A]/50 rounded space-y-2 text-center">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#B49A6A] px-2 py-0.5 bg-[#171615] rounded border border-[#3A3835]">
+                {previewCmp.type}
+              </span>
+              <h4 className="font-serif text-xl font-normal text-[#F8F5EF]">{previewCmp.title}</h4>
+              <p className="text-xs text-[#E8DED1]">{previewCmp.subtitle}</p>
+
+              {previewCmp.type === 'flash_sale' && (
+                <div className="pt-2 text-xs text-amber-400 font-mono flex items-center justify-center gap-2 font-bold">
+                  <Zap className="w-4 h-4" /> Geri Sayım: 23 Saat 59 Dakika 48 Saniye
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setPreviewCmp(null)}
+                className="px-4 py-2 bg-[#B49A6A] text-[#1C1B1A] text-xs font-bold uppercase rounded"
+              >
+                Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* DYNAMIC SCENARIO MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-hidden">
-          <div className="bg-[#1C1B1A] border border-[#B49A6A] max-w-lg w-full max-h-[92vh] text-[#F8F5EF] flex flex-col shadow-2xl rounded-sm overflow-hidden">
+          <div className="bg-[#1C1B1A] border border-[#B49A6A] max-w-lg w-full max-h-[92vh] text-[#F8F5EF] flex flex-col shadow-2xl rounded overflow-hidden">
             {/* Modal Header */}
             <div className="p-5 border-b border-[#2A2825] flex justify-between items-center bg-[#1C1B1A] shrink-0">
               <h2 className="font-serif text-xl font-normal">
@@ -285,7 +361,7 @@ export default function AdminGrowthEngine() {
 
               {/* SENARYO 1: FLAŞ İNDİRİM ALANLARI */}
               {formData.type === 'flash_sale' && (
-                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3 rounded">
                   <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
                     ⚡ Flaş İndirim Senaryo Ayarları
                   </span>
@@ -315,7 +391,7 @@ export default function AdminGrowthEngine() {
                   </div>
 
                   <div>
-                    <label className="block text-[#8C857B] mb-1">Son Geçerlilik Tarihi &amp; Saati (Geri Sayım Sayacı)</label>
+                    <label className="block text-[#8C857B] mb-1">Son Geçerlilik Tarihi &amp; Saati</label>
                     <input
                       type="datetime-local"
                       value={formData.endTime}
@@ -328,7 +404,7 @@ export default function AdminGrowthEngine() {
 
               {/* SENARYO 2: SEPET HEDİYESİ ALANLARI */}
               {formData.type === 'free_gift' && (
-                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3 rounded">
                   <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
                     🎁 Sepet Hediyesi Senaryo Ayarları
                   </span>
@@ -369,7 +445,7 @@ export default function AdminGrowthEngine() {
 
               {/* SENARYO 3: KADEMELİ İNDİRİM ALANLARI */}
               {formData.type === 'tiered_discount' && (
-                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3 rounded">
                   <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
                     🛍️ Kademeli İndirim (Çok Al Az Öde) Senaryo Ayarları
                   </span>
@@ -398,7 +474,7 @@ export default function AdminGrowthEngine() {
 
               {/* SENARYO 4: KOMBİN PAKET ALANLARI */}
               {formData.type === 'bundle_save' && (
-                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3">
+                <div className="p-4 bg-[#242321] border border-[#3A3835] space-y-3 rounded">
                   <span className="text-[11px] font-semibold text-[#B49A6A] uppercase tracking-wider block">
                     📦 Kombin Paket Senaryo Ayarları
                   </span>
@@ -437,7 +513,7 @@ export default function AdminGrowthEngine() {
               <button
                 type="submit"
                 form="campaignForm"
-                className="px-6 py-2.5 bg-[#B49A6A] text-[#F8F5EF] font-semibold uppercase tracking-wider hover:bg-[#988052]"
+                className="px-6 py-2.5 bg-[#B49A6A] text-[#1C1B1A] font-bold uppercase tracking-wider hover:bg-[#988052] rounded"
               >
                 {editingCampaign ? 'Stratejiyi Güncelle' : 'Stratejiyi Kaydet & Yayınla'}
               </button>
