@@ -4,27 +4,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Truck, Plus, Trash2, Save, ToggleLeft, ToggleRight, AlertCircle, CheckCircle2, Upload, X, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/context/ToastContext';
+import { useData, CargoCarrier } from '@/context/DataContext';
 
-export interface CargoCarrier {
-  id: string;
-  name: string;
-  logo: string;          // emoji / metin fallback
-  logoImage?: string;    // base64 veya URL
-  fee: number;
-  eta: string;
-  isActive: boolean;
-}
+// Re-export so odeme/page.tsx backward-compat import still works
+export type { CargoCarrier };
 
-const DEFAULT_CARRIERS: CargoCarrier[] = [
-  { id: 'yurtici', name: 'Yurtiçi Kargo', logo: '🟡', fee: 49, eta: '1-2 iş günü', isActive: true },
-  { id: 'mng',     name: 'MNG Kargo',      logo: '🔵', fee: 45, eta: '1-2 iş günü', isActive: true },
-  { id: 'aras',    name: 'Aras Kargo',     logo: '🟠', fee: 44, eta: '1-3 iş günü', isActive: true },
-  { id: 'ptt',     name: 'PTT Kargo',      logo: '⚫', fee: 39, eta: '2-4 iş günü', isActive: true },
-  { id: 'surat',   name: 'Sürat Kargo',    logo: '🔴', fee: 47, eta: '1-2 iş günü', isActive: true },
-];
-
-const STORAGE_KEY = 'veraesarp_carriers';
-const MAX_LOGO_SIZE_KB = 150; // base64 olarak ~150 KB limit
+const MAX_LOGO_SIZE_KB = 150;
 
 /* ─── Logo hücresi: göster + upload butonu ─────────────────────────── */
 function LogoCell({
@@ -205,9 +190,27 @@ function NewLogoUpload({
 /* ─── Ana bileşen ───────────────────────────────────────────────────── */
 export default function AdminCargoSettings() {
   const { showToast } = useToast();
-  const [carriers, setCarriers] = useState<CargoCarrier[]>(DEFAULT_CARRIERS);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(1000);
+  const { carriers: ctxCarriers, freeShippingThreshold: ctxThreshold, updateCarriers } = useData();
+
+  // Local editing state — initialized from DataContext (live)
+  const [carriers, setCarriers] = useState<CargoCarrier[]>(ctxCarriers);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(ctxThreshold);
   const [isSaved, setIsSaved] = useState(false);
+  const [hasUnsaved, setHasUnsaved] = useState(false);
+
+  // Sync when DataContext changes externally (e.g. another tab)
+  useEffect(() => {
+    setCarriers(ctxCarriers);
+    setFreeShippingThreshold(ctxThreshold);
+  }, [ctxCarriers, ctxThreshold]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    const changed =
+      JSON.stringify(carriers) !== JSON.stringify(ctxCarriers) ||
+      freeShippingThreshold !== ctxThreshold;
+    setHasUnsaved(changed);
+  }, [carriers, freeShippingThreshold, ctxCarriers, ctxThreshold]);
 
   // Yeni kargo formu
   const [newName, setNewName]         = useState('');
@@ -216,36 +219,12 @@ export default function AdminCargoSettings() {
   const [newFee, setNewFee]           = useState('');
   const [newEta, setNewEta]           = useState('1-2 iş günü');
 
-  // LocalStorage'dan yükle
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.carriers) setCarriers(parsed.carriers);
-        if (parsed.freeShippingThreshold) setFreeShippingThreshold(parsed.freeShippingThreshold);
-      }
-    } catch {}
-  }, []);
-
-  const save = (updatedCarriers: CargoCarrier[], threshold?: number) => {
-    const data = {
-      carriers: updatedCarriers,
-      freeShippingThreshold: threshold ?? freeShippingThreshold,
-    };
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch {
-      showToast('Depolama alanı yetersiz! Logo boyutunu küçültmeyi deneyin.', 'error');
-      return;
-    }
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2500);
-  };
-
   const handleSaveAll = () => {
-    save(carriers, freeShippingThreshold);
-    showToast('Kargo ayarları kaydedildi ve ödeme sayfasına uygulandı!', 'success');
+    updateCarriers(carriers, freeShippingThreshold);
+    setIsSaved(true);
+    setHasUnsaved(false);
+    setTimeout(() => setIsSaved(false), 2500);
+    showToast('✅ Kargo ayarları kaydedildi — ödeme sayfasına anlık uygulandı!', 'success');
   };
 
   const handleLogoImageChange = (id: string, base64: string | undefined) => {
@@ -288,10 +267,16 @@ export default function AdminCargoSettings() {
         </div>
         <button
           onClick={handleSaveAll}
-          className="flex items-center gap-2 px-6 py-3 bg-[#B49A6A] text-[#F8F5EF] text-xs font-semibold uppercase tracking-wider hover:bg-[#988052] transition-colors shadow-lg shrink-0"
+          className={`flex items-center gap-2 px-6 py-3 text-xs font-semibold uppercase tracking-wider transition-all shadow-lg shrink-0 rounded ${
+            isSaved
+              ? 'bg-emerald-600 text-white'
+              : hasUnsaved
+              ? 'bg-[#B49A6A] text-[#1C1B1A] animate-pulse'
+              : 'bg-[#B49A6A] text-[#1C1B1A] hover:bg-[#988052]'
+          }`}
         >
           {isSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          {isSaved ? 'Kaydedildi!' : 'Değişiklikleri Kaydet'}
+          {isSaved ? 'Kaydedildi!' : hasUnsaved ? '● Değişiklikleri Kaydet' : 'Değişiklikleri Kaydet'}
         </button>
       </div>
 

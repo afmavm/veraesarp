@@ -9,49 +9,29 @@ import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { CustomerOrder } from '@/lib/types/ecommerce';
 import { IL_LISTESI, getIlceler } from '@/lib/data/turkey-locations';
-import { CargoCarrier } from '@/components/admin/AdminCargoSettings';
 
 export default function CheckoutPage() {
   const { cart, totalPrice, freeShippingRemaining, clearCart } = useCart();
-  const { addOrder } = useData();
+  const { addOrder, carriers: ctxCarriers, freeShippingThreshold } = useData();
   const { showToast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'bank_transfer'>('credit_card');
   const [copiedIban, setCopiedIban] = useState(false);
 
-  // Kargo Firma Tanımları (LocalStorage'dan dinamik yüklenir)
-  const [carriers, setCarriers] = useState<CargoCarrier[]>([
-    { id: 'yurtici', name: 'Yurtiçi Kargo', logo: '🟡', fee: 49, eta: '1-2 iş günü', isActive: true },
-    { id: 'mng', name: 'MNG Kargo', logo: '🔵', fee: 45, eta: '1-2 iş günü', isActive: true },
-    { id: 'aras', name: 'Aras Kargo', logo: '🟠', fee: 44, eta: '1-3 iş günü', isActive: true },
-    { id: 'ptt', name: 'PTT Kargo', logo: '⚫', fee: 39, eta: '2-4 iş günü', isActive: true },
-    { id: 'surat', name: 'Sürat Kargo', logo: '🔴', fee: 47, eta: '1-2 iş günü', isActive: true },
-  ]);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(1000);
-  const [selectedCarrierId, setSelectedCarrierId] = useState('yurtici');
+  // Yalnızca aktif kargo firmalarını kullan — DataContext'ten canlı gelir
+  const carriers = ctxCarriers.filter((c) => c.isActive !== false);
+  const [selectedCarrierId, setSelectedCarrierId] = useState('');
 
+  // Seçili carrier: first active ya da DataContext'ten gelen liste değişince reset
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('veraesarp_carriers');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.carriers && Array.isArray(parsed.carriers)) {
-          const activeOnly = parsed.carriers.filter((c: CargoCarrier) => c.isActive !== false);
-          if (activeOnly.length > 0) {
-            setCarriers(activeOnly);
-            setSelectedCarrierId((prevId) => {
-              const exists = activeOnly.some((c: CargoCarrier) => c.id === prevId);
-              return exists ? prevId : activeOnly[0].id;
-            });
-          }
-        }
-        if (parsed.freeShippingThreshold) {
-          setFreeShippingThreshold(Number(parsed.freeShippingThreshold));
-        }
-      }
-    } catch (e) {}
-  }, []);
+    if (carriers.length > 0) {
+      setSelectedCarrierId((prev) => {
+        const exists = carriers.some((c) => c.id === prev);
+        return exists ? prev : carriers[0].id;
+      });
+    }
+  }, [carriers]);
 
   const [formData, setFormData] = useState({
     firstName: '',

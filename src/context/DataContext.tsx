@@ -11,6 +11,24 @@ import {
   Coupon,
   SiteSettings,
 } from '@/lib/types/ecommerce';
+
+export interface CargoCarrier {
+  id: string;
+  name: string;
+  logo: string;
+  logoImage?: string;
+  fee: number;
+  eta: string;
+  isActive: boolean;
+}
+
+export const DEFAULT_CARRIERS: CargoCarrier[] = [
+  { id: 'yurtici', name: 'Yurtiçi Kargo', logo: '🟡', fee: 49, eta: '1-2 iş günü', isActive: true },
+  { id: 'mng',     name: 'MNG Kargo',      logo: '🔵', fee: 45, eta: '1-2 iş günü', isActive: true },
+  { id: 'aras',    name: 'Aras Kargo',     logo: '🟠', fee: 44, eta: '1-3 iş günü', isActive: true },
+  { id: 'ptt',     name: 'PTT Kargo',      logo: '⚫', fee: 39, eta: '2-4 iş günü', isActive: true },
+  { id: 'surat',   name: 'Sürat Kargo',    logo: '🔴', fee: 47, eta: '1-2 iş günü', isActive: true },
+];
 import {
   MOCK_PRODUCTS,
   MOCK_ORDERS,
@@ -33,6 +51,10 @@ interface DataContextType {
   coupons: Coupon[];
   cargoData: Record<string, CargoTrackingData>;
   isDbLoading: boolean;
+  // Cargo Carriers (admin-managed)
+  carriers: CargoCarrier[];
+  freeShippingThreshold: number;
+  updateCarriers: (carriers: CargoCarrier[], threshold: number) => void;
   // Site settings action
   updateSiteSettings: (newSettings: Partial<SiteSettings>) => void;
   // Product actions
@@ -81,6 +103,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [campaigns, setCampaigns] = useState<CampaignRule[]>(MOCK_CAMPAIGNS);
   const [coupons, setCoupons] = useState<Coupon[]>(MOCK_COUPONS);
   const [cargoData, setCargoData] = useState<Record<string, CargoTrackingData>>(MOCK_CARGO_DATA);
+  const [carriers, setCarriers] = useState<CargoCarrier[]>(DEFAULT_CARRIERS);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(1000);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isDbLoading, setIsDbLoading] = useState(true);
 
@@ -98,6 +122,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (json.data.cariTransactions) setCariTransactions(json.data.cariTransactions);
           if (json.data.campaigns) setCampaigns(json.data.campaigns);
           if (json.data.coupons) setCoupons(json.data.coupons);
+          if (json.data.carriers?.length) setCarriers(json.data.carriers);
+          if (json.data.freeShippingThreshold) setFreeShippingThreshold(json.data.freeShippingThreshold);
         }
       } catch (e) {
         console.error('Database fetch fallback to localStorage', e);
@@ -119,6 +145,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           const savedCoupons = localStorage.getItem('veraesarp_coupons');
           if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
+
+          // Kargo firmaları localStorage fallback
+          const savedCarriers = localStorage.getItem('veraesarp_carriers');
+          if (savedCarriers) {
+            const parsedCarriers = JSON.parse(savedCarriers);
+            if (parsedCarriers.carriers?.length) setCarriers(parsedCarriers.carriers);
+            if (parsedCarriers.freeShippingThreshold) setFreeShippingThreshold(parsedCarriers.freeShippingThreshold);
+          }
         } catch (err) {
           console.error(err);
         }
@@ -216,6 +250,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cariTransactions,
         campaigns,
         coupons,
+        carriers,
+        freeShippingThreshold,
       };
 
       // LocalStorage Cache
@@ -226,6 +262,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('veraesarp_cari', JSON.stringify(cariAccounts));
         localStorage.setItem('veraesarp_campaigns', JSON.stringify(campaigns));
         localStorage.setItem('veraesarp_coupons', JSON.stringify(coupons));
+        localStorage.setItem('veraesarp_carriers', JSON.stringify({ carriers, freeShippingThreshold }));
       } catch (e) {
         console.error(e);
       }
@@ -243,7 +280,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
         .catch((err) => console.error('Database sync failed', err));
     }
-  }, [siteSettings, products, orders, cariAccounts, cariTransactions, campaigns, coupons, isInitialized]);
+  }, [siteSettings, products, orders, cariAccounts, cariTransactions, campaigns, coupons, carriers, freeShippingThreshold, isInitialized]);
 
   // 4. Real-Time Live Synchronization & 3-Second Database Polling for Admin Dashboard
   useEffect(() => {
@@ -300,6 +337,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Site Settings Actions
   const updateSiteSettings = (newSettings: Partial<SiteSettings>) => {
     setSiteSettings((prev) => ({ ...prev, ...newSettings }));
+  };
+
+  // Cargo Carriers Actions
+  const updateCarriers = (newCarriers: CargoCarrier[], threshold: number) => {
+    setCarriers(newCarriers);
+    setFreeShippingThreshold(threshold);
   };
 
   // Product Actions
@@ -720,6 +763,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         coupons,
         cargoData,
         isDbLoading,
+        carriers,
+        freeShippingThreshold,
+        updateCarriers,
         updateSiteSettings,
         addProduct,
         updateProduct,
