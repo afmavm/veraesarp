@@ -116,6 +116,8 @@ export default function CheckoutPage() {
         city: formData.city,
       },
       items: cart.map((item) => ({
+        id: item.product.id,
+        productId: item.product.id,
         productName: item.product.name,
         color: typeof item.selectedColor === 'string' ? item.selectedColor : (item.selectedColor as any)?.name || 'Standart',
         quantity: item.quantity,

@@ -235,9 +235,67 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      }).catch((err) => console.error('Database sync failed', err));
+      })
+        .then(() => {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('veraesarp_data_changed'));
+          }
+        })
+        .catch((err) => console.error('Database sync failed', err));
     }
   }, [siteSettings, products, orders, cariAccounts, cariTransactions, campaigns, coupons, isInitialized]);
+
+  // 4. Real-Time Live Synchronization & 3-Second Database Polling for Admin Dashboard
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleSyncFromStorage = () => {
+      try {
+        const savedOrders = localStorage.getItem('veraesarp_orders');
+        if (savedOrders) setOrders(JSON.parse(savedOrders));
+
+        const savedProducts = localStorage.getItem('veraesarp_products');
+        if (savedProducts) setProducts(JSON.parse(savedProducts));
+
+        const savedCari = localStorage.getItem('veraesarp_cari');
+        if (savedCari) setCariAccounts(JSON.parse(savedCari));
+
+        const savedSettings = localStorage.getItem('veraesarp_site_settings');
+        if (savedSettings) setSiteSettings(JSON.parse(savedSettings));
+      } catch (e) {}
+    };
+
+    window.addEventListener('storage', handleSyncFromStorage);
+    window.addEventListener('veraesarp_data_changed', handleSyncFromStorage);
+
+    // Automatic 3-second background polling to reflect new orders & stock deductions live on Admin Dashboard
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/db');
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.products?.length) {
+            setProducts((prev) => (JSON.stringify(prev) !== JSON.stringify(json.data.products) ? json.data.products : prev));
+          }
+          if (json.data.orders) {
+            setOrders((prev) => (JSON.stringify(prev) !== JSON.stringify(json.data.orders) ? json.data.orders : prev));
+          }
+          if (json.data.cariAccounts) {
+            setCariAccounts((prev) => (JSON.stringify(prev) !== JSON.stringify(json.data.cariAccounts) ? json.data.cariAccounts : prev));
+          }
+          if (json.data.siteSettings) {
+            setSiteSettings((prev) => (JSON.stringify(prev) !== JSON.stringify(json.data.siteSettings) ? json.data.siteSettings : prev));
+          }
+        }
+      } catch (e) {}
+    }, 3000);
+
+    return () => {
+      window.removeEventListener('storage', handleSyncFromStorage);
+      window.removeEventListener('veraesarp_data_changed', handleSyncFromStorage);
+      clearInterval(pollInterval);
+    };
+  }, []);
 
   // Site Settings Actions
   const updateSiteSettings = (newSettings: Partial<SiteSettings>) => {
@@ -294,6 +352,31 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Order Actions
   const addOrder = (order: CustomerOrder) => {
     setOrders((prev) => [order, ...prev]);
+
+    // Deduct stock for each purchased product item automatically
+    if (order.items && order.items.length > 0) {
+      setProducts((prevProducts) =>
+        prevProducts.map((product) => {
+          const matchedItem = order.items.find(
+            (item: any) =>
+              (item.id && item.id === product.id) ||
+              (item.productId && item.productId === product.id) ||
+              (item.productName && product.name && item.productName.trim().toLowerCase() === product.name.trim().toLowerCase())
+          );
+
+          if (matchedItem) {
+            const qtyToDeduct = Number(matchedItem.quantity) || 1;
+            const newStock = Math.max(0, (product.stock || 0) - qtyToDeduct);
+            return {
+              ...product,
+              stock: newStock,
+              inStock: newStock > 0,
+            };
+          }
+          return product;
+        })
+      );
+    }
 
     // Record coupon usage by customer email to prevent reuse
     if (order.couponCode) {
