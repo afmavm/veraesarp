@@ -53,6 +53,16 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Vera Admin',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'application-name': 'Vera Eşarp',
+  },
 };
 
 export default function RootLayout({
