@@ -7,11 +7,12 @@ export NODE_ENV=production
 export NODE_OPTIONS="--max-old-space-size=512"
 
 echo "Vera Eşarp Sunucusu Port $PORT üzerinde başlatılıyor..."
-fuser -k ${PORT}/tcp 2>/dev/null || pkill -f "server.js" 2>/dev/null
-sleep 1
+pkill -9 -f "server.js" 2>/dev/null
+fuser -k -9 ${PORT}/tcp 2>/dev/null
+sleep 2
 
 PORT=${PORT} nohup node server.js > server.log 2>&1 &
-sleep 2
+sleep 3
 
 echo "✅ Port $PORT sunucu durumu:"
 head -n 20 server.log
