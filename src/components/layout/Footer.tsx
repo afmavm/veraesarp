@@ -7,6 +7,7 @@ import { InstagramIcon, PinterestIcon, FacebookIcon, WhatsAppIcon } from '@/comp
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
 import { sendNewsletterConfirmationEmail } from '@/lib/email/email-service';
+import PaymentMethods from '@/components/layout/PaymentMethods';
 
 export default function Footer() {
   const { siteSettings } = useData();
@@ -247,6 +248,9 @@ export default function Footer() {
           ))}
         </div>
       </div>
+
+      {/* Desteklenen Kartlar & Resmi İyzico Logo Bandı */}
+      <PaymentMethods />
 
       {/* Bottom Bar: Copyright & Social */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-[#3A3835] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#8C857B]">

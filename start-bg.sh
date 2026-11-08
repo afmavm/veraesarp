@@ -1,6 +1,10 @@
 #!/bin/bash
 # Vera Eşarp Node.js Server Runner for cPanel Shared Hosting
+cd "$(dirname "$0")" 2>/dev/null || cd ~/public_html 2>/dev/null
+
 PORT=38472
+export NODE_ENV=production
+export NODE_OPTIONS="--max-old-space-size=512"
 
 echo "Vera Eşarp Sunucusu Port $PORT üzerinde başlatılıyor..."
 fuser -k ${PORT}/tcp 2>/dev/null || pkill -f "server.js" 2>/dev/null

@@ -3,7 +3,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShieldCheck, CheckCircle2, Lock, CreditCard, Truck, Landmark, Copy, Check } from 'lucide-react';
+import {
+  ShieldCheck,
+  CheckCircle2,
+  Lock,
+  CreditCard,
+  Truck,
+  Landmark,
+  Copy,
+  Check,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/context/ToastContext';
@@ -11,19 +22,21 @@ import { CustomerOrder } from '@/lib/types/ecommerce';
 import { IL_LISTESI, getIlceler } from '@/lib/data/turkey-locations';
 
 export default function CheckoutPage() {
-  const { cart, totalPrice, freeShippingRemaining, clearCart } = useCart();
+  const { cart, totalPrice, clearCart } = useCart();
   const { addOrder, carriers: ctxCarriers, freeShippingThreshold } = useData();
   const { showToast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'bank_transfer'>('credit_card');
   const [copiedIban, setCopiedIban] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(true);
 
   // Yalnızca aktif kargo firmalarını kullan — DataContext'ten canlı gelir
   const carriers = ctxCarriers.filter((c) => c.isActive !== false);
   const [selectedCarrierId, setSelectedCarrierId] = useState('');
 
-  // Seçili carrier: first active ya da DataContext'ten gelen liste değişince reset
   useEffect(() => {
     if (carriers.length > 0) {
       setSelectedCarrierId((prev) => {
@@ -41,6 +54,7 @@ export default function CheckoutPage() {
     city: 'Erzurum',
     district: 'Yakutiye',
     address: '',
+    cardHolderName: '',
     cardNumber: '',
     cardExpiry: '',
     cardCvc: '',
@@ -48,10 +62,40 @@ export default function CheckoutPage() {
   });
   const [placedOrderNumber, setPlacedOrderNumber] = useState('');
 
+  // Handle 3D Secure Callback Redirect (?status=success&orderNo=... or ?status=error&message=...)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const orderNo = params.get('orderNo');
+    const message = params.get('message');
+
+    if (status === 'success' && orderNo) {
+      setPlacedOrderNumber(orderNo);
+      clearCart();
+      setStep(3);
+      showToast(`🎉 3D Secure ödemeniz onaylandı! Sipariş No: ${orderNo}`, 'success');
+      window.history.replaceState({}, '', '/odeme');
+    } else if (status === 'error') {
+      const errMsg = message || '3D Secure ödeme işlemi tamamlanamadı.';
+      setPaymentError(errMsg);
+      setStep(2);
+      showToast(`❌ ${errMsg}`, 'error');
+      window.history.replaceState({}, '', '/odeme');
+    }
+  }, [clearCart, showToast]);
+
   // Kargo ücreti hesaplama
-  const selectedCarrier = carriers.find((c) => c.id === selectedCarrierId) || carriers[0] || {
-    id: 'standard', name: 'Kargo', logo: '🚚', fee: 40, eta: '1-3 iş günü', isActive: true
-  };
+  const selectedCarrier =
+    carriers.find((c) => c.id === selectedCarrierId) ||
+    carriers[0] || {
+      id: 'standard',
+      name: 'Kargo',
+      logo: '🚚',
+      fee: 40,
+      eta: '1-3 iş günü',
+      isActive: true,
+    };
   const isFreeShipping = totalPrice >= freeShippingThreshold;
   const shippingFee = isFreeShipping ? 0 : selectedCarrier.fee;
   const grandTotal = totalPrice + shippingFee;
@@ -59,10 +103,11 @@ export default function CheckoutPage() {
   // İle göre ilçe listesini hesapla
   const ilceler = useMemo(() => getIlceler(formData.city), [formData.city]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     if (name === 'city') {
-      // İl değişince ilçeyi o ilin ilk ilçesine sıfırla
       const newIlceler = getIlceler(value);
       setFormData({ ...formData, city: value, district: newIlceler[0] || '' });
     } else {
@@ -76,13 +121,42 @@ export default function CheckoutPage() {
       showToast('Lütfen gerekli adres alanlarını doldurunuz.', 'error');
       return;
     }
+    setPaymentError(null);
     setStep(2);
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPaymentError(null);
+
+    if (!termsAccepted) {
+      showToast(
+        'Lütfen Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesini onaylayınız.',
+        'error'
+      );
+      return;
+    }
+
+    if (paymentMethod === 'credit_card') {
+      const cleanNumber = formData.cardNumber.replace(/\D/g, '');
+      if (cleanNumber.length < 15) {
+        setPaymentError('Lütfen geçerli 16 haneli kart numaranızı giriniz.');
+        showToast('Lütfen geçerli bir kart numarası giriniz.', 'error');
+        return;
+      }
+      if (!formData.cardExpiry || formData.cardExpiry.length < 5) {
+        setPaymentError('Lütfen son kullanma tarihini AA/YY formatında giriniz.');
+        showToast('Lütfen son kullanma tarihini giriniz (AA/YY).', 'error');
+        return;
+      }
+      if (!formData.cardCvc || formData.cardCvc.length < 3) {
+        setPaymentError('Lütfen kartınızın arkasındaki 3 haneli güvenlik kodunu (CVV/CVC) giriniz.');
+        showToast('Lütfen geçerli bir CVV kodu giriniz.', 'error');
+        return;
+      }
+    }
+
     const orderNo = `VER-${Math.floor(100000 + Math.random() * 900000)}`;
-    setPlacedOrderNumber(orderNo);
 
     const newOrder: CustomerOrder = {
       id: `ord-${Date.now()}`,
@@ -96,10 +170,11 @@ export default function CheckoutPage() {
         city: formData.city,
       },
       items: cart.map((item) => ({
-        id: item.product.id,
-        productId: item.product.id,
         productName: item.product.name,
-        color: typeof item.selectedColor === 'string' ? item.selectedColor : (item.selectedColor as any)?.name || 'Standart',
+        color:
+          typeof item.selectedColor === 'string'
+            ? item.selectedColor
+            : (item.selectedColor as any)?.name || 'Standart',
         quantity: item.quantity,
         price: item.product.price,
         image: item.product.images[0] || '',
@@ -108,27 +183,97 @@ export default function CheckoutPage() {
       shipping: shippingFee,
       discount: 0,
       total: grandTotal,
-      status: 'Hazırlanıyor',
-      paymentMethod: paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Banka Havalesi',
+      status: paymentMethod === 'credit_card' ? 'Ödeme Bekliyor' : 'Hazırlanıyor',
+      paymentMethod:
+        paymentMethod === 'credit_card' ? 'Kredi Kartı (İyzico 3D Secure)' : 'Banka Havalesi',
       createdAt: new Date().toISOString().slice(0, 10),
     };
 
-    addOrder(newOrder);
-    clearCart();
-    setStep(3);
-    showToast(`Siparişiniz alındı! Sipariş No: ${orderNo}`, 'success');
+    if (paymentMethod === 'bank_transfer') {
+      setPlacedOrderNumber(orderNo);
+      addOrder(newOrder);
+      clearCart();
+      setStep(3);
+      showToast(`Siparişiniz alındı! Sipariş No: ${orderNo}`, 'success');
+      return;
+    }
+
+    // Credit Card -> Call Server Iyzico 3D Secure Endpoint
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order: newOrder,
+          paymentMethod: 'credit_card',
+          cardHolderName:
+            formData.cardHolderName || `${formData.firstName} ${formData.lastName}`.trim(),
+          cardNumber: formData.cardNumber.replace(/\s/g, ''),
+          cardExpiry: formData.cardExpiry,
+          cardCvc: formData.cardCvc,
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        const errText = resData.error || 'Ödeme işlemi başlatılırken bir hata oluştu.';
+        setPaymentError(errText);
+        showToast(`❌ ${errText}`, 'error');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Sync order to client context before redirecting to 3DS bank page
+      addOrder(newOrder);
+
+      if (resData.status === '3ds_redirect' && resData.threeDSHtmlContent) {
+        showToast('🔒 Bankanızın 3D Secure onay ekranına yönlendiriliyorsunuz...', 'info');
+        let html = resData.threeDSHtmlContent;
+        try {
+          const decoded = atob(resData.threeDSHtmlContent);
+          if (
+            decoded.includes('<form') ||
+            decoded.includes('<html') ||
+            decoded.includes('<!DOCTYPE')
+          ) {
+            html = decoded;
+          }
+        } catch (e) {
+          // already plain HTML
+        }
+
+        document.open();
+        document.write(html);
+        document.close();
+        return;
+      }
+
+      setPlacedOrderNumber(orderNo);
+      clearCart();
+      setStep(3);
+      showToast(`Siparişiniz alındı! Sipariş No: ${orderNo}`, 'success');
+    } catch (err: any) {
+      setPaymentError(err?.message || 'Ödeme servisine bağlanırken bir hata oluştu.');
+      showToast('Ödeme servisine bağlanırken bir hata oluştu.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (step === 3) {
     return (
-      <div className="py-20 bg-[#F8F5EF] min-h-screen flex items-center justify-center">
+      <div className="py-20 bg-[#F8F5EF] min-h-screen flex items-center justify-center px-4">
         <div className="max-w-lg w-full bg-[#FFFFFF] p-8 sm:p-12 border border-[#E6DFD5] text-center space-y-6 shadow-2xl">
           <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
           <div className="space-y-2">
-            <span className="text-xs uppercase tracking-widest text-[#B49A6A] font-semibold">TEŞEKKÜR EDERİZ</span>
+            <span className="text-xs uppercase tracking-widest text-[#B49A6A] font-semibold">
+              TEŞEKKÜR EDERİZ
+            </span>
             <h1 className="font-serif text-3xl font-normal text-[#242321]">Siparişiniz Alındı</h1>
             <p className="text-xs text-[#5A5652] leading-relaxed">
               Sipariş Numaranız: <strong className="text-[#242321]">{placedOrderNumber}</strong>
@@ -136,7 +281,8 @@ export default function CheckoutPage() {
           </div>
 
           <p className="text-xs text-[#8C857B] leading-relaxed">
-            Sipariş detaylarınız <strong>{formData.email}</strong> adresine gönderildi. Ürününüz özenli Vera hediye paketiyle hazırlanıp kargoya verilecektir.
+            Sipariş detaylarınız kayıtlı iletişim adresinize iletildi. Ürününüz özenli Vera hediye
+            paketiyle hazırlanıp kargoya verilecektir.
           </p>
 
           <Link
@@ -156,9 +302,13 @@ export default function CheckoutPage() {
         {/* Checkout Header Step Bar */}
         <div className="max-w-xl mx-auto mb-12">
           <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-widest">
-            <span className={step >= 1 ? 'text-[#B49A6A]' : 'text-[#8C857B]'}>1. Teslimat Adresi</span>
+            <span className={step >= 1 ? 'text-[#B49A6A]' : 'text-[#8C857B]'}>
+              1. Teslimat Adresi
+            </span>
             <span className="text-[#8C857B]">—</span>
-            <span className={step >= 2 ? 'text-[#B49A6A]' : 'text-[#8C857B]'}>2. Ödeme Bilgileri</span>
+            <span className={step >= 2 ? 'text-[#B49A6A]' : 'text-[#8C857B]'}>
+              2. Güvenli Ödeme (İyzico 3D)
+            </span>
           </div>
         </div>
 
@@ -173,7 +323,9 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Ad *</label>
+                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                      Ad *
+                    </label>
                     <input
                       type="text"
                       name="firstName"
@@ -184,7 +336,9 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Soyad *</label>
+                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                      Soyad *
+                    </label>
                     <input
                       type="text"
                       name="lastName"
@@ -198,7 +352,9 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">E-Posta Adresi *</label>
+                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                      E-Posta Adresi *
+                    </label>
                     <input
                       type="email"
                       name="email"
@@ -209,7 +365,9 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Telefon *</label>
+                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                      Telefon *
+                    </label>
                     <input
                       type="tel"
                       name="phone"
@@ -224,7 +382,9 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">İl *</label>
+                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                      İl *
+                    </label>
                     <select
                       name="city"
                       value={formData.city}
@@ -232,12 +392,16 @@ export default function CheckoutPage() {
                       className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
                     >
                       {IL_LISTESI.map((il) => (
-                        <option key={il} value={il}>{il}</option>
+                        <option key={il} value={il}>
+                          {il}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">İlçe *</label>
+                    <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                      İlçe *
+                    </label>
                     <select
                       name="district"
                       value={formData.district}
@@ -245,14 +409,18 @@ export default function CheckoutPage() {
                       className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
                     >
                       {ilceler.map((ilce) => (
-                        <option key={ilce} value={ilce}>{ilce}</option>
+                        <option key={ilce} value={ilce}>
+                          {ilce}
+                        </option>
                       ))}
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Açık Adres *</label>
+                  <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                    Açık Adres *
+                  </label>
                   <textarea
                     name="address"
                     required
@@ -273,7 +441,12 @@ export default function CheckoutPage() {
                   {isFreeShipping && (
                     <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-700">
                       <span>🎉</span>
-                      <span><strong>{freeShippingThreshold.toLocaleString('tr-TR')} ₺ ve üzeri alışveriş</strong> yapıyorsunuz — kargo ücretsizdir!</span>
+                      <span>
+                        <strong>
+                          {freeShippingThreshold.toLocaleString('tr-TR')} ₺ ve üzeri alışveriş
+                        </strong>{' '}
+                        yapıyorsunuz — kargo ücretsizdir!
+                      </span>
                     </div>
                   )}
 
@@ -298,23 +471,39 @@ export default function CheckoutPage() {
                           />
                           {carrier.logoImage ? (
                             <div className="relative w-8 h-8 rounded border border-[#E6DFD5] bg-white shrink-0 overflow-hidden flex items-center justify-center p-0.5">
-                              <Image src={carrier.logoImage} alt={carrier.name} fill className="object-contain" unoptimized />
+                              <Image
+                                src={carrier.logoImage}
+                                alt={carrier.name}
+                                fill
+                                className="object-contain"
+                                unoptimized
+                              />
                             </div>
                           ) : (
                             <span className="text-base shrink-0">{carrier.logo}</span>
                           )}
                           <div>
-                            <span className="text-xs font-semibold text-[#242321]">{carrier.name}</span>
-                            <span className="block text-[10px] text-[#8C857B]">Tahmini teslimat: {carrier.eta}</span>
+                            <span className="text-xs font-semibold text-[#242321]">
+                              {carrier.name}
+                            </span>
+                            <span className="block text-[10px] text-[#8C857B]">
+                              Tahmini teslimat: {carrier.eta}
+                            </span>
                           </div>
                         </div>
-                        <span className={`text-xs font-bold shrink-0 ${
-                          isFreeShipping ? 'text-emerald-600 line-through opacity-60' : 'text-[#242321]'
-                        }`}>
+                        <span
+                          className={`text-xs font-bold shrink-0 ${
+                            isFreeShipping
+                              ? 'text-emerald-600 line-through opacity-60'
+                              : 'text-[#242321]'
+                          }`}
+                        >
                           ₺{carrier.fee}
                         </span>
                         {isFreeShipping && (
-                          <span className="text-[10px] font-bold text-emerald-600 shrink-0">ÜCRETSİZ</span>
+                          <span className="text-[10px] font-bold text-emerald-600 shrink-0">
+                            ÜCRETSİZ
+                          </span>
                         )}
                       </label>
                     ))}
@@ -331,7 +520,12 @@ export default function CheckoutPage() {
             ) : (
               <form onSubmit={handlePaymentSubmit} className="space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-[#E6DFD5]">
-                  <h2 className="font-serif text-2xl text-[#242321]">Ödeme Yöntemi</h2>
+                  <div>
+                    <h2 className="font-serif text-2xl text-[#242321]">Ödeme Yöntemi</h2>
+                    <p className="text-[11px] text-[#8C857B] mt-0.5">
+                      256-Bit SSL şifreleme ve İyzico 3D Secure güvencesiyle ödeme yapın.
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setStep(1)}
@@ -341,35 +535,56 @@ export default function CheckoutPage() {
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  {/* Kredi Kartı Seçeneği */}
+                {paymentError && (
+                  <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 text-red-800 text-xs">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="font-semibold">Ödeme Hatası: </strong>
+                      <span>{paymentError}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Kredi Kartı (İyzico) Seçeneği */}
                   <label
-                    className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${
+                    className={`flex items-center justify-between gap-3 p-4 border cursor-pointer transition-colors ${
                       paymentMethod === 'credit_card'
-                        ? 'border-[#B49A6A] bg-[#F8F5EF]'
+                        ? 'border-[#B49A6A] bg-[#F8F5EF] shadow-sm'
                         : 'border-[#E6DFD5] bg-white hover:border-[#B49A6A]/50'
                     }`}
                   >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="credit_card"
-                      checked={paymentMethod === 'credit_card'}
-                      onChange={() => setPaymentMethod('credit_card')}
-                      className="accent-[#B49A6A]"
-                    />
-                    <CreditCard className="w-5 h-5 text-[#B49A6A]" />
-                    <div>
-                      <span className="text-xs font-semibold text-[#242321]">Kredi / Banka Kartı</span>
-                      <span className="block text-[10px] text-[#8C857B]">İyzico & 3D Secure Güvenceli</span>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="credit_card"
+                        checked={paymentMethod === 'credit_card'}
+                        onChange={() => setPaymentMethod('credit_card')}
+                        className="accent-[#B49A6A]"
+                      />
+                      <CreditCard className="w-5 h-5 text-[#B49A6A] shrink-0" />
+                      <div>
+                        <span className="text-xs font-semibold text-[#242321] block">
+                          Kredi / Banka Kartı
+                        </span>
+                        <span className="block text-[10px] text-[#8C857B]">
+                          İyzico 3D Secure Online Ödeme
+                        </span>
+                      </div>
                     </div>
+                    <img
+                      src="/images/iyzico/iyzico_ile_ode_colored_horizontal.svg"
+                      alt="iyzico ile Öde"
+                      className="h-5 w-auto object-contain shrink-0"
+                    />
                   </label>
 
                   {/* Banka Havalesi Seçeneği */}
                   <label
                     className={`flex items-center gap-3 p-4 border cursor-pointer transition-colors ${
                       paymentMethod === 'bank_transfer'
-                        ? 'border-[#B49A6A] bg-[#F8F5EF]'
+                        ? 'border-[#B49A6A] bg-[#F8F5EF] shadow-sm'
                         : 'border-[#E6DFD5] bg-white hover:border-[#B49A6A]/50'
                     }`}
                   >
@@ -381,60 +596,117 @@ export default function CheckoutPage() {
                       onChange={() => setPaymentMethod('bank_transfer')}
                       className="accent-[#B49A6A]"
                     />
-                    <Landmark className="w-5 h-5 text-[#B49A6A]" />
+                    <Landmark className="w-5 h-5 text-[#B49A6A] shrink-0" />
                     <div>
-                      <span className="text-xs font-semibold text-[#242321]">Banka Havalesi / EFT</span>
-                      <span className="block text-[10px] text-[#8C857B]">Siparişiniz havale onayından sonra hazırlanır</span>
+                      <span className="text-xs font-semibold text-[#242321] block">
+                        Banka Havalesi / EFT
+                      </span>
+                      <span className="block text-[10px] text-[#8C857B]">
+                        Havale onayından sonra hazırlanır
+                      </span>
                     </div>
                   </label>
                 </div>
 
                 {/* Kredi Kartı Alanları */}
                 {paymentMethod === 'credit_card' && (
-                  <div className="space-y-4 pt-2">
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Kart Üzerindeki İsim *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="AYŞE YILMAZ"
-                        className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
+                  <div className="space-y-4 p-5 bg-[#F8F5EF]/60 border border-[#E6DFD5]">
+                    <div className="flex items-center justify-between pb-3 border-b border-[#E6DFD5]">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-[#B49A6A]" />
+                        <span className="text-xs font-semibold text-[#242321]">
+                          Kart Bilgileri (3D Secure Güvenceli)
+                        </span>
+                      </div>
+                      <img
+                        src="/images/iyzico-brand-logo.png"
+                        alt="iyzico ile Öde - Visa - Mastercard - Troy"
+                        className="h-5 w-auto object-contain"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Kart Numarası *</label>
+                      <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                        Kart Üzerindeki İsim *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="AD SOYAD"
+                        value={formData.cardHolderName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, cardHolderName: e.target.value.toUpperCase() })
+                        }
+                        className="w-full py-2.5 px-3 bg-[#FFFFFF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                        Kart Numarası *
+                      </label>
                       <input
                         type="text"
                         required
                         placeholder="0000 0000 0000 0000"
                         maxLength={19}
-                        className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
+                        value={formData.cardNumber}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '');
+                          const formatted = raw.match(/.{1,4}/g)?.join(' ') || raw;
+                          setFormData({ ...formData, cardNumber: formatted.slice(0, 19) });
+                        }}
+                        className="w-full py-2.5 px-3 bg-[#FFFFFF] border border-[#E6DFD5] text-xs font-mono tracking-wider focus:outline-none focus:border-[#B49A6A]"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">Son Kullanma (AA/YY) *</label>
+                        <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                          Son Kullanma (AA/YY) *
+                        </label>
                         <input
                           type="text"
                           required
                           placeholder="12/28"
                           maxLength={5}
-                          className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
+                          value={formData.cardExpiry}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/\D/g, '');
+                            if (val.length > 2) {
+                              val = `${val.slice(0, 2)}/${val.slice(2, 4)}`;
+                            }
+                            setFormData({ ...formData, cardExpiry: val.slice(0, 5) });
+                          }}
+                          className="w-full py-2.5 px-3 bg-[#FFFFFF] border border-[#E6DFD5] text-xs font-mono focus:outline-none focus:border-[#B49A6A]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">CVC / CVV *</label>
+                        <label className="block text-xs uppercase tracking-wider text-[#5A5652] mb-1">
+                          CVC / CVV *
+                        </label>
                         <input
                           type="password"
                           required
                           placeholder="123"
                           maxLength={4}
-                          className="w-full py-2.5 px-3 bg-[#F8F5EF] border border-[#E6DFD5] text-xs focus:outline-none focus:border-[#B49A6A]"
+                          value={formData.cardCvc}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                            setFormData({ ...formData, cardCvc: val });
+                          }}
+                          className="w-full py-2.5 px-3 bg-[#FFFFFF] border border-[#E6DFD5] text-xs font-mono focus:outline-none focus:border-[#B49A6A]"
                         />
                       </div>
                     </div>
+
+                    <p className="text-[11px] text-[#8C857B] flex items-center gap-1.5 pt-1">
+                      <Lock className="w-3.5 h-3.5 text-[#B49A6A] shrink-0" />
+                      <span>
+                        Kart bilgileriniz Vera Eşarp sunucularında saklanmaz; doğrudan İyzico
+                        PCI-DSS Level 1 güvenlik altyapısı üzerinden işlenir.
+                      </span>
+                    </p>
                   </div>
                 )}
 
@@ -443,10 +715,10 @@ export default function CheckoutPage() {
                   <div className="space-y-3 pt-2">
                     <p className="text-[11px] text-[#8C857B] leading-relaxed bg-amber-50 border border-amber-200 p-3">
                       ⚠️ Havale / EFT yaptıktan sonra siparişiniz 1 iş günü içinde hazırlanır.
-                      Aşağıdaki hesap bilgilerini kullanın ve açıklama kısmına ad-soyadınızı yazmayı unutmayın.
+                      Aşağıdaki hesap bilgilerini kullanın ve açıklama kısmına ad-soyadınızı yazmayı
+                      unutmayın.
                     </p>
 
-                    {/* Hesap Kartları */}
                     {[
                       {
                         banka: 'Ziraat Bankası',
@@ -465,16 +737,28 @@ export default function CheckoutPage() {
                         logo: '🏦',
                       },
                     ].map((bank) => (
-                      <div key={bank.banka} className="bg-[#F8F5EF] border border-[#E6DFD5] p-4 space-y-2">
+                      <div
+                        key={bank.banka}
+                        className="bg-[#F8F5EF] border border-[#E6DFD5] p-4 space-y-2"
+                      >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#242321]">{bank.logo} {bank.banka}</span>
+                          <span className="text-xs font-bold text-[#242321]">
+                            {bank.logo} {bank.banka}
+                          </span>
                           <span className="text-[10px] text-[#8C857B]">{bank.subesi}</span>
                         </div>
                         <div className="text-[11px] text-[#5A5652] space-y-1">
-                          <p><strong className="text-[#242321]">Hesap Adı:</strong> {bank.hesapAdi}</p>
-                          <p><strong className="text-[#242321]">Hesap No:</strong> {bank.hesapNo}</p>
+                          <p>
+                            <strong className="text-[#242321]">Hesap Adı:</strong> {bank.hesapAdi}
+                          </p>
+                          <p>
+                            <strong className="text-[#242321]">Hesap No:</strong> {bank.hesapNo}
+                          </p>
                           <div className="flex items-center justify-between gap-2">
-                            <p><strong className="text-[#242321]">IBAN:</strong> <span className="font-mono">{bank.iban}</span></p>
+                            <p>
+                              <strong className="text-[#242321]">IBAN:</strong>{' '}
+                              <span className="font-mono">{bank.iban}</span>
+                            </p>
                             <button
                               type="button"
                               onClick={() => {
@@ -484,7 +768,11 @@ export default function CheckoutPage() {
                               }}
                               className="flex items-center gap-1 text-[10px] text-[#B49A6A] hover:underline shrink-0"
                             >
-                              {copiedIban ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                              {copiedIban ? (
+                                <Check className="w-3 h-3 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
                               Kopyala
                             </button>
                           </div>
@@ -493,20 +781,62 @@ export default function CheckoutPage() {
                     ))}
 
                     <p className="text-[10px] text-[#8C857B] text-center">
-                      Havale belgesi için <strong>destek@veraesarp.com</strong> adresine e-posta gönderin.
+                      Havale belgesi için <strong>destek@veraesarp.com</strong> adresine e-posta
+                      gönderin.
                     </p>
                   </div>
                 )}
 
+                {/* İyzico Yönergesi: Mesafeli Satış Sözleşmesi ve Ön Bilgilendirme Onayı */}
+                <label className="flex items-start gap-2.5 p-3.5 bg-[#F8F5EF] border border-[#E6DFD5] cursor-pointer text-xs text-[#5A5652]">
+                  <input
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="accent-[#B49A6A] mt-0.5 w-4 h-4 shrink-0"
+                  />
+                  <span className="leading-relaxed">
+                    <Link
+                      href="/kurumsal/mesafeli-satis-sozlesmesi"
+                      target="_blank"
+                      className="text-[#242321] font-semibold underline hover:text-[#B49A6A]"
+                    >
+                      Ön Bilgilendirme Koşulları ve Mesafeli Satış Sözleşmesi
+                    </Link>
+                    &apos;ni,{' '}
+                    <Link
+                      href="/kurumsal/iade-ve-degisim"
+                      target="_blank"
+                      className="text-[#242321] font-semibold underline hover:text-[#B49A6A]"
+                    >
+                      İptal &amp; İade Şartları
+                    </Link>
+                    &apos;nı okudum ve kabul ediyorum.
+                  </span>
+                </label>
+
                 <button
                   type="submit"
-                  className="w-full py-4 bg-[#242321] text-[#F8F5EF] text-xs font-semibold uppercase tracking-widest hover:bg-[#B49A6A] transition-colors shadow-xl flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-[#242321] text-[#F8F5EF] text-xs font-semibold uppercase tracking-widest hover:bg-[#B49A6A] transition-colors shadow-xl flex items-center justify-center gap-2 disabled:opacity-60"
                 >
-                  <Lock className="w-4 h-4" />
-                  {paymentMethod === 'bank_transfer'
-                    ? <span>Siparişi Onayla &amp; Havale Talimatını Al</span>
-                    : <span>Siparişi Onayla &amp; ₺{grandTotal.toLocaleString('tr-TR')} Öde</span>
-                  }
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>3D Secure Başlatılıyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      {paymentMethod === 'bank_transfer' ? (
+                        <span>Siparişi Onayla &amp; Havale Talimatını Al</span>
+                      ) : (
+                        <span>
+                          3D Secure ile Güvenle Öde (₺{grandTotal.toLocaleString('tr-TR')})
+                        </span>
+                      )}
+                    </>
+                  )}
                 </button>
               </form>
             )}
@@ -522,11 +852,18 @@ export default function CheckoutPage() {
               {cart.map((item) => (
                 <div key={item.id} className="flex gap-3 items-center">
                   <div className="relative w-12 h-14 bg-[#E8DED1] shrink-0">
-                    <Image src={item.product.images[0]} alt={item.product.name} fill className="object-cover" />
+                    <Image
+                      src={item.product.images[0]}
+                      alt={item.product.name}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <div className="flex-1 text-xs">
                     <h4 className="font-serif text-[#242321] line-clamp-1">{item.product.name}</h4>
-                    <p className="text-[#8C857B]">Adet: {item.quantity} • {item.selectedColor.name}</p>
+                    <p className="text-[#8C857B]">
+                      Adet: {item.quantity} • {item.selectedColor.name}
+                    </p>
                   </div>
                   <span className="text-xs font-semibold text-[#242321]">
                     ₺{(item.product.price * item.quantity).toLocaleString('tr-TR')}
@@ -538,7 +875,9 @@ export default function CheckoutPage() {
             <div className="pt-4 border-t border-[#E6DFD5] space-y-2 text-xs text-[#5A5652]">
               <div className="flex justify-between">
                 <span>Ara Toplam</span>
-                <span className="text-[#242321] font-medium">₺{totalPrice.toLocaleString('tr-TR')}</span>
+                <span className="text-[#242321] font-medium">
+                  ₺{totalPrice.toLocaleString('tr-TR')}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1.5">
@@ -546,7 +885,13 @@ export default function CheckoutPage() {
                   <span className="inline-flex items-center gap-1 text-[10px] text-[#8C857B] bg-[#F8F5EF] px-2 py-0.5 border border-[#E6DFD5]">
                     {selectedCarrier.logoImage ? (
                       <span className="relative w-4 h-4 inline-block">
-                        <Image src={selectedCarrier.logoImage} alt={selectedCarrier.name} fill className="object-contain" unoptimized />
+                        <Image
+                          src={selectedCarrier.logoImage}
+                          alt={selectedCarrier.name}
+                          fill
+                          className="object-contain"
+                          unoptimized
+                        />
                       </span>
                     ) : (
                       <span>{selectedCarrier.logo}</span>
@@ -557,18 +902,39 @@ export default function CheckoutPage() {
                 {isFreeShipping ? (
                   <span className="text-emerald-600 font-semibold">ÜCRETSİZ</span>
                 ) : (
-                  <span className="text-[#242321] font-medium">₺{shippingFee.toLocaleString('tr-TR')}</span>
+                  <span className="text-[#242321] font-medium">
+                    ₺{shippingFee.toLocaleString('tr-TR')}
+                  </span>
                 )}
               </div>
               {!isFreeShipping && freeShippingThreshold > totalPrice && (
                 <p className="text-[10px] text-[#8C857B]">
-                  ₺{(freeShippingThreshold - totalPrice).toLocaleString('tr-TR')} daha ekleyin → kargo ücretsiz!
+                  ₺{(freeShippingThreshold - totalPrice).toLocaleString('tr-TR')} daha ekleyin →
+                  kargo ücretsiz!
                 </p>
               )}
               <div className="flex justify-between text-base font-semibold text-[#242321] pt-2 border-t border-[#E6DFD5]">
                 <span>Toplam</span>
-                <span className="font-serif text-xl text-[#B49A6A]">₺{grandTotal.toLocaleString('tr-TR')}</span>
+                <span className="font-serif text-xl text-[#B49A6A]">
+                  ₺{grandTotal.toLocaleString('tr-TR')}
+                </span>
               </div>
+            </div>
+
+            {/* Resmi iyzico Güven Rozeti */}
+            <div className="pt-3 border-t border-[#E6DFD5] flex flex-col items-center gap-2">
+              <Image
+                src="/images/iyzico-brand-logo.png"
+                alt="iyzico ile Öde - Visa - Mastercard - Troy"
+                width={260}
+                height={24}
+                className="h-6 w-auto object-contain"
+                unoptimized
+              />
+              <span className="text-[10px] text-[#8C857B] flex items-center gap-1">
+                <Lock className="w-3 h-3 text-[#B49A6A]" />
+                256-Bit SSL &amp; İyzico 3D Secure Korumalı Ödeme
+              </span>
             </div>
           </div>
         </div>

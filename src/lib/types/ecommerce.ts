@@ -159,7 +159,7 @@ export interface CustomerOrder {
   shipping: number;
   discount: number;
   total: number;
-  status: 'Hazırlanıyor' | 'Kargoda' | 'Teslim Edildi' | 'İptal Edildi';
+  status: 'Ödeme Bekliyor' | 'Hazırlanıyor' | 'Kargoda' | 'Teslim Edildi' | 'İptal Edildi';
   trackingCode?: string;
   carrier?: 'Yurtiçi Kargo' | 'Aras Kargo' | 'MNG Kargo' | 'Trendyol Express';
   paymentMethod: string;
@@ -311,6 +311,12 @@ export interface SiteSettings {
   footerColumns?: FooterColumn[];
   valuePropositions?: ValuePropositionItem[];
   emailSettings?: EmailServerSettings;
+  iyzicoSettings?: {
+    apiKey: string;
+    secretKey: string;
+    baseUrl: string;
+    isEnabled?: boolean;
+  };
   // Kategori sayfası filtre yönetimi
   fabricFilters?: FilterOption[];   // Kumaş Türü filtre seçenekleri
   styleFilters?: FilterOption[];    // Kullanım Stili filtre seçenekleri
